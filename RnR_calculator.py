@@ -13,6 +13,7 @@ from abs_util.util_cf import *
 from abs_util.util_sr import *
 from Waterfall import *
 from ACF_adjuster import *
+from Accounts.AssetPoolAccount import AssetPoolAccount
 
 logger = get_logger(__name__)
 
@@ -47,9 +48,11 @@ class RnR_calculator():
             #cf_adjusted = adjust_cashflow(cf_original,data_c,scenario_id,param,scenario,redemption_flag)
             ACFa = ACF_adjuster(ProjectName,cf_original,supplement_assets_params,scenario,scenario_id,dt_param,fee_rate_param)
             cf_adjusted = ACFa.adjust_ACF()
-            prepare_for_waterfall = ACFa.prepare_for_waterfall(cf_adjusted)
+
+            AP_Acc = AssetPoolAccount(cf_adjusted)
             
-            WF = Waterfall(prepare_for_waterfall,dt_param,fee_rate_param)
+            WF = Waterfall(AP_Acc.recylce_principal,AP_Acc.recylce_interest,dt_param,fee_rate_param)
+            
             WF.run_Accounts(tranches_ABC)
             
             BasicInfo = WF.BasicInfo_calculator(scenario_id,tranches_ABC)
