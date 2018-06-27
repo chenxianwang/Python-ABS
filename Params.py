@@ -54,11 +54,11 @@ Bonds['C'] = {'ptg':0.21,'amount':amount_total_issuance * 0.21,'rate':0.0}
 Bonds['EE'] = {'ptg':0,'amount':10000000000,'rate':0.0}
 
 scenarios = {}
-#scenarios['best'] = {'rate_default':0.1177308747934320,'rate_prepay':0.292533942034579,'rate_overdue':0.0207147684133280,'scenario_weight':0.1}
-#scenarios['better'] = {'rate_default':0.125670160028433,'rate_prepay':0.279196605008946,'rate_overdue':0.0237375352578873,'scenario_weight':0.15}
-scenarios['benchmark'] = {'rate_default':0.133609445263434,'rate_prepay':0.265859267983313,'rate_overdue':0.0267603021024466,'scenario_weight':0.5}
-#scenarios['worse'] = {'rate_default':0.138386212762876,'rate_prepay':0.242968281634308,'rate_overdue':0.0326588031250574,'scenario_weight':0.15}
-#scenarios['worst'] = {'rate_default':0.143162980262317,'rate_prepay':0.220077295285304,'rate_overdue':0.0385573041476682,'scenario_weight':0.1}
+scenarios['best'] = {'rate_default':0.0,'rate_prepay':0.292533942034579,'rate_overdue':0.0207147684133280,'scenario_weight':0.1}
+scenarios['better'] = {'rate_default':0.01,'rate_prepay':0.279196605008946,'rate_overdue':0.0237375352578873,'scenario_weight':0.15}
+scenarios['benchmark'] = {'rate_default':0.03,'rate_prepay':0.265859267983313,'rate_overdue':0.0267603021024466,'scenario_weight':0.5}
+scenarios['worse'] = {'rate_default':0.05,'rate_prepay':0.242968281634308,'rate_overdue':0.0326588031250574,'scenario_weight':0.15}
+scenarios['worst'] = {'rate_default':0.07,'rate_prepay':0.220077295285304,'rate_overdue':0.0385573041476682,'scenario_weight':0.1}
 #    
 
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
