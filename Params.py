@@ -8,7 +8,7 @@ Created on Mon Jun 18 16:11:08 2018
 import os
 import datetime
 
-TrustEffectiveDate = datetime.date(2018,6,15)
+TrustEffectiveDate = datetime.date(2018,6,26)
 
 dates_pay = [datetime.date(2018,8,26),datetime.date(2018,9,26),datetime.date(2018,10,26),datetime.date(2018,11,26),datetime.date(2018,12,26),
              datetime.date(2019,1,26),datetime.date(2019,2,26),datetime.date(2019,3,26),datetime.date(2019,4,26),datetime.date(2019,5,26),datetime.date(2019,6,26),
@@ -54,11 +54,11 @@ Bonds['C'] = {'ptg':0.21,'amount':amount_total_issuance * 0.21,'rate':0.0}
 Bonds['EE'] = {'ptg':0,'amount':10000000000,'rate':0.0}
 
 scenarios = {}
-scenarios['best'] = {'rate_default':0.0,'rate_prepay':0.292533942034579,'rate_overdue':0.0207147684133280,'scenario_weight':0.1}
-scenarios['better'] = {'rate_default':0.01,'rate_prepay':0.279196605008946,'rate_overdue':0.0237375352578873,'scenario_weight':0.15}
-scenarios['benchmark'] = {'rate_default':0.03,'rate_prepay':0.265859267983313,'rate_overdue':0.0267603021024466,'scenario_weight':0.5}
-scenarios['worse'] = {'rate_default':0.05,'rate_prepay':0.242968281634308,'rate_overdue':0.0326588031250574,'scenario_weight':0.15}
-scenarios['worst'] = {'rate_default':0.07,'rate_prepay':0.220077295285304,'rate_overdue':0.0385573041476682,'scenario_weight':0.1}
+#scenarios['best'] = {'rate_default':0.1177308747934320,'rate_prepay':0.292533942034579,'rate_overdue':0.0207147684133280,'scenario_weight':0.1}
+#scenarios['better'] = {'rate_default':0.125670160028433,'rate_prepay':0.279196605008946,'rate_overdue':0.0237375352578873,'scenario_weight':0.15}
+scenarios['benchmark'] = {'rate_default':0.133609445263434,'rate_prepay':0.265859267983313,'rate_overdue':0.0267603021024466,'scenario_weight':0.5}
+#scenarios['worse'] = {'rate_default':0.138386212762876,'rate_prepay':0.242968281634308,'rate_overdue':0.0326588031250574,'scenario_weight':0.15}
+#scenarios['worst'] = {'rate_default':0.143162980262317,'rate_prepay':0.220077295285304,'rate_overdue':0.0385573041476682,'scenario_weight':0.1}
 #    
 
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
@@ -68,21 +68,20 @@ scenarios['worst'] = {'rate_default':0.07,'rate_prepay':0.220077295285304,'rate_
 MaxWAScore = 0.065    
  
 MinWARate = 0.18
-MaxWARate = 0.18*1.01
+MaxWARate = 0.18*1.1
 
 MaxWALoanRemainTerm = 390
 
-MaxIssueVolumn = 1300000000
-MinIssueVolumn = 1990000000
+MaxIssueVolumn = 400000000
+MinIssueVolumn = 390000000
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
 
-Targets = { 
-#           'SCp':{'object':'SC Proportion LessThan',
-#                   'object_value_h':MaxSCProp,
-#                   'object_value':_MaxSCProp,
-#                   'object_sign':-1},
+Targets_all = { 
+           'SCp':{'object':'SC Proportion LessThan',
+                   'object_value_h':MaxSCProp,
+                   'object_sign':-1},
         'Credit_Score':{'object':'Weighted Average LessThan',
                     'object_value':MaxWAScore,
                     'object_sign':-1},
@@ -97,9 +96,16 @@ Targets = {
                                  'object_sign':-1  },
             'Amount_Outstanding_max':{'object':'LessThan',
                                    'object_value':MaxIssueVolumn},
-#            'Amount_Outstanding_min':{'object':'GreaterThan',
-#                                   'object_value':MinIssueVolumn},
+            'Amount_Outstanding_min':{'object':'GreaterThan',
+                                   'object_value':MinIssueVolumn},
            }
+            
+Targets_keys = ['Credit_Score','LoanRemainTerm',
+                'Interest_Rate_min','Interest_Rate_max',
+                'Amount_Outstanding_max','Amount_Outstanding_min']
+
+Targets = {k:Targets_all[k] for k in Targets_keys}
+
 
 
 Distribution_By_Category = [#'Type_Loans',
@@ -122,12 +128,12 @@ overdue_times_bins = [-0.001,0,5,10,100]
 dpd_max_bins = [-0.01,0,5,10,15,20,25,30]
 dpd_bins = [-0.01,0,30,60,90,120,150,180,360,1000]
 #total_fee_rate_bins = [-0.01,0,0.2,0.24,0.36,0.5,0.6]
-credit_score_bins = [-0.01,0.05,0.1,0.15,0.2,0.3,0.4,0.5,0.9]
+credit_score_bins = [-0.01,0.05,0.1,0.15,0.2,0.3,0.4,0.5,0.9,1,1.2]
 
 Distribution_By_Bins = {
                         'Income':income_bins,
                         'Age_Project_Start':age_bins,
-                        '本金余额（元）':outstanding_principal_bins,
+                        'OutstandingPrincipal':outstanding_principal_bins,
                         'LoanTerm':duration_days_bins,
                         'LoanAge':past_days_bins,
                         'LoanRemainTerm':future_days_bins,
@@ -135,5 +141,5 @@ Distribution_By_Bins = {
                         'Days_Overdue_Current':dpd_bins,
                         #'Overdue_Times':overdue_times_bins,
                         #'综合费用率':total_fee_rate_bins,
-                        #'Credit_Score':credit_score_bins
+                        'Credit_Score':credit_score_bins
                         }
