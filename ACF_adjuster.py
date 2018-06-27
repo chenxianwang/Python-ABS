@@ -39,6 +39,6 @@ class ACF_adjuster():
         aACF['amount_recycle_principal'] = aACF['amount_principal']*(1-main_params['rate_default'])
         aACF['amount_recycle_interest'] = aACF['amount_interest']*(1-main_params['rate_default'])
         
-        aACF['amount_total_outstanding_principal'] = TOTAL_Principal - aACF['amount_recycle_principal'].cumsum()
+        aACF['amount_total_outstanding_principal'] = TOTAL_Principal - aACF['amount_principal'].cumsum()
         
         return aACF
