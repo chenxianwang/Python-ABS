@@ -7,6 +7,7 @@ Created on Mon Jun 18 16:48:57 2018
 
 import pandas as pd
 import numpy as np
+from copy import deepcopy
 import datetime
 from abs_util.util_general import *
 from abs_util.util_cf import *
@@ -21,7 +22,7 @@ logger = get_logger(__name__)
 
 class Waterfall():
     
-    def __init__(self,recylce_principal,recylce_interest,dt_param,fee_rate_param):
+    def __init__(self,recylce_principal,recylce_interest,dt_param,fee_rate_param,scenario_id):
 
         self.recylce_principal = recylce_principal
         self.recylce_interest = recylce_interest
@@ -29,11 +30,14 @@ class Waterfall():
         self.dt_param = dt_param
         self.fee_rate_param = fee_rate_param
         self.waterfall = pd.DataFrame()
+        self.scenario_id = scenario_id
 
-    def run_Accounts(self,tranches_ABC): # Initalizing BondsCashFlow
+    def run_Accounts(self,Bonds): # Initalizing BondsCashFlow
         
         recylce_principal = self.recylce_principal
         recylce_interest = self.recylce_interest
+        #TODO:When to use deepcopy
+        tranches_ABC = deepcopy(Bonds)
         
         #preissue_FAcc = FeesAccount('pre_issue',fees)
         tax_Acc = TaxAccount('tax',fees)
@@ -53,12 +57,11 @@ class Waterfall():
         #preissue_FAcc
         for date_pay_index,date_pay in enumerate(dates_pay):
             
-            #logger.info('dates_pay is {0}'.format(date_pay))
+            #logger.info('B_PAcc.iBalance(date_pay) is {0}'.format(B_PAcc.iBalance(date_pay)))
             pay_for_fee = tax_Acc.pay(date_pay,[recylce_interest[dates_recycle[date_pay_index]],0][B_PAcc.iBalance(date_pay) == 0])
             pay_for_fee += trustee_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
             pay_for_fee += trust_m_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
             pay_for_fee += service_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
-            
             pay_for_fee += A_IAcc.pay(date_pay,A_PAcc.iBalance(date_pay))
             pay_for_fee += B_IAcc.pay(date_pay,B_PAcc.iBalance(date_pay))
             pay_for_fee += C_IAcc.pay(date_pay,C_PAcc.iBalance(date_pay))
@@ -112,14 +115,14 @@ class Waterfall():
                   .merge(trust_m_wf,left_on='date_pay',right_on='date_pay',how='outer')\
                   .merge(A_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
                   .merge(B_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
-                  .merge(C_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')#\
-                  #.merge(EE_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')
+                  .merge(C_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
+                  .merge(EE_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')
                         
         
         logger.info('total principal payment is {0}'.format(sum(Bond_wf[['amount_pay_A_principal','amount_pay_B_principal','amount_pay_C_principal']].sum())))
         
         self.waterfall = Bond_wf
-        Bond_wf.to_csv('Bond_wf.csv')
+        save_to_excel(Bond_wf,'Bond_wf'+self.scenario_id,wb_name)       
     
     def BasicInfo_calculator(self,scenario_id,tranches_ABC):
         
@@ -129,7 +132,6 @@ class Waterfall():
     
         tranches_cf['years_interest_calc_this_period'] = (tranches_cf['date_pay'] - (tranches_cf['date_pay']+relativedelta(months= -1))).dt.days/days_in_a_year
         tranches_cf['years_interest_calc_cumulative'] = tranches_cf['years_interest_calc_this_period'].cumsum()
-
         #logger.info('scenario_id is ',scenario_id)
         name_tranche = ['A','B','C']
             
