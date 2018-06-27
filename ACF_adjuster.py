@@ -33,11 +33,12 @@ class ACF_adjuster():
     def adjust_ACF(self):
         
         aACF = self.cashflow_original
-        
+        main_params = self.main_params
+        print("main_params['rate_default'] is ",main_params['rate_default'])
         TOTAL_Principal = aACF['amount_principal'].sum()
-        aACF['amount_recycle_total_principal'] = aACF['amount_principal']
-        aACF['amount_recycle_total_interest'] = aACF['amount_interest']
+        aACF['amount_recycle_principal'] = aACF['amount_principal']*(1-main_params['rate_default'])
+        aACF['amount_recycle_interest'] = aACF['amount_interest']*(1-main_params['rate_default'])
         
-        aACF['amount_total_outstanding_principal'] = TOTAL_Principal - aACF['amount_recycle_total_principal'].cumsum()
+        aACF['amount_total_outstanding_principal'] = TOTAL_Principal - aACF['amount_recycle_principal'].cumsum()
         
-        return aACF  
+        return aACF
