@@ -33,8 +33,6 @@ def main():
 ##    
     #RD.get_OriginalAssetPool(['part_1','part_2']) 
     #RD.get_RevolvingAssetPool(['2ndRevolvingPool'])
-    #print("RD['SERVICE_FEE_RATE'].sum(): ",RD.asset_pool['SERVICE_FEE_RATE'].sum())
-    #RD.get_AssetPool(['assets_selected20180608']) 
     #RD.add_Columns_From(['check_p1','check_p2','check_p3'])
     #RD.exclude_or_focus_by_ContractNo('Focus','FinalRevolvingAssets')
     #assets = RD.exclude_or_focus_by_criteria('Focus','Dt_Maturity',datetime.date(2018,4,30))
