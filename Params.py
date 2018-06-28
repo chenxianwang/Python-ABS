@@ -72,17 +72,16 @@ MaxWARate = 0.18*1.01
 
 MaxWALoanRemainTerm = 390
 
-MaxIssueVolumn = 1300000000
-MinIssueVolumn = 1990000000
+MaxIssueVolumn = 400000000
+MinIssueVolumn = 390000000
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
 
-Targets = { 
-#           'SCp':{'object':'SC Proportion LessThan',
-#                   'object_value_h':MaxSCProp,
-#                   'object_value':_MaxSCProp,
-#                   'object_sign':-1},
+Targets_all = { 
+           'SCp':{'object':'SC Proportion LessThan',
+                   'object_value_h':MaxSCProp,
+                   'object_sign':-1},
         'Credit_Score':{'object':'Weighted Average LessThan',
                     'object_value':MaxWAScore,
                     'object_sign':-1},
@@ -97,9 +96,15 @@ Targets = {
                                  'object_sign':-1  },
             'Amount_Outstanding_max':{'object':'LessThan',
                                    'object_value':MaxIssueVolumn},
-#            'Amount_Outstanding_min':{'object':'GreaterThan',
-#                                   'object_value':MinIssueVolumn},
+            'Amount_Outstanding_min':{'object':'GreaterThan',
+                                   'object_value':MinIssueVolumn},
            }
+            
+Targets_keys = ['Credit_Score','LoanRemainTerm',
+                'Interest_Rate_min','Interest_Rate_max',
+                'Amount_Outstanding_max','Amount_Outstanding_min']
+
+Targets = {k:Targets_all[k] for k in Targets_keys}
 
 
 Distribution_By_Category = [#'Type_Loans',
