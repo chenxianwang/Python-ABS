@@ -30,7 +30,7 @@ class Statistics():
         
         logger.info('Statistics Dimension Setting.....')
         df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
-        df['本金余额（元）'] = df['Amount_Outstanding_yuan']
+        df['OutstandingPrincipal'] = df['Amount_Outstanding_yuan']
         df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']/10000
         
         df_unique_ID = df.groupby('ID')\
@@ -61,7 +61,7 @@ class Statistics():
                  '单笔贷款最高年利率（%）':df['Interest_Rate'].max() * 100,
                  '单笔贷款最低年利率（%）':df['Interest_Rate'].min() * 100,    
                  '加权平均贷款月度内部收益率（%）':(df['Interest_Rate']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() * 100 /12,
-                #'加权平均信用评分':(df['Credit_Score']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum()             
+                '加权平均信用评分':(df['Credit_Score']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum()             
                  
                  }
         
@@ -92,7 +92,7 @@ class Statistics():
         
         logger.info('Statistics Dimension Setting.....')
         df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
-        df['本金余额（元）'] = df['Amount_Outstanding_yuan']
+        df['OutstandingPrincipal'] = df['Amount_Outstanding_yuan']
         df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']/10000
         
         dimension_category_list = []
@@ -140,7 +140,7 @@ class Statistics():
                 
         logger.info('WA_Income2Debt_by_ID.....')
         df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
-        df['本金余额（元）'] = df['Amount_Outstanding_yuan']
+        df['OutstandingPrincipal'] = df['Amount_Outstanding_yuan']
         df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']/10000
         
         df['weight'] = df['Amount_Outstanding'] / df.groupby('ID')['Amount_Outstanding'].transform('sum')
