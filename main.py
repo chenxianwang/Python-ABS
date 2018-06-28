@@ -14,13 +14,12 @@ from Params import *
 from abs_util.util_general import *
 from Deal import Deal
 from RevolvingDeal import RevolvingDeal
+from AssetPool import AssetPool
+from RevolvingAssetPool import RevolvingAssetPool
 from Statistics import Statistics
 from ReverseSelection import ReverseSelection
 from AssetsCashFlow import AssetsCashFlow
 from ServiceReport import ServiceReport
-from RnR_calculator import *
-from Waterfall import *
-
 
 logger = get_logger(__name__)
 
@@ -28,62 +27,63 @@ def main():
     
     start_time = datetime.datetime.now()
 
-    RD = RevolvingDeal(ProjectName,datetime.date(2018,4,16),TrustEffectiveDate,supplement_assets_params,date_revolving_pools_cut)
-    RD.Preparation()
-##    
-    #RD.get_OriginalAssetPool(['part_1','part_2']) 
-    #RD.get_RevolvingAssetPool(['2ndRevolvingPool'])
-    #RD.add_Columns_From(['check_p1','check_p2','check_p3'])
-    #RD.exclude_or_focus_by_ContractNo('Focus','FinalRevolvingAssets')
-    #assets = RD.exclude_or_focus_by_criteria('Focus','Dt_Maturity',datetime.date(2018,4,30))
-    #RD.asset_pool = RD.asset_pool[RD.asset_pool['Interest_Rate'] > 0]
+    if os.path.isfile(wb_name):
+      os.remove(wb_name)
+
+    AP = AssetPool([dt_param['dt_pool_cut'],['OriginalPool_part1','OriginalPool_part2'],['']])
+
+    D = Deal(ProjectName,AP,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
+    D.get_AssetPool() #D.asset_pool is available
+    D.get_APCF() # D.apcf is available
+    D.adjust_APCF() #D.apcf_adjusted[scenario_id] is available
+    D.run_WaterFall() #D.waterfall[scenario_id] is available
+    for scenario_id in scenarios.keys():
+        save_to_excel(D.waterfall[scenario_id],scenario_id,wb_name)
+        save_to_excel(D.wf_BasicInfo[scenario_id],scenario_id,wb_name)
+        save_to_excel(D.wf_CoverRatio[scenario_id],scenario_id,wb_name)
+        save_to_excel(D.wf_NPVs[scenario_id],scenario_id,wb_name)
+    
+    RnR = D.cal_RnR()
+    logger.info('RnR is: %s' % RnR)
+    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
+
+
+    #RAP = RevolvingAssetPool([date_revolving_pools_cut,['2ndRevolvingPool']])
+    #RD = RevolvingDeal(ProjectName,AP,RAP,dt_param['dt_effective'],recycle_adjust_factor)
+    #RD.get_AssetPool() 
+    #RAP.add_Columns_From(['2ndRevolvingPool_CreditScore'])
+    #RAP.asset_pool = RD.asset_pool.rename(columns = DWH_header_REVERSE_rename) 
+    #RAP.asset_pool.to_csv('2ndRevolvingPool.csv')
+    #RAP.exclude_or_focus_by_ContractNo('Focus','FinalRevolvingAssets')
+    #assets = RAP.exclude_or_focus_by_criteria('Focus','Dt_Maturity',datetime.date(2018,4,30))
+    #RAP.asset_pool = RAP.asset_pool[RD.asset_pool['Interest_Rate'] > 0]
 #    S = Statistics(RD.name,RD.asset_pool)
 #    S.general_statistics_1()
 #    S.loop_Ds_ret_province_profession(Distribution_By_Category,Distribution_By_Bins)
 #    S.cal_income2debt_by_ID()
     
-#    ACF = AssetsCashFlow(RD.name,
-#                         RD.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain',]],
-#                         RD.date_pool_cut
-#                         )
-#
-#    acf_original = ACF.calc_OriginalPool_ACF(0)  #BackMonth  
-#    cf_original = acf_original
-
-    cf_original_path = path_root  + '/../CheckTheseProjects/' + ProjectName+'/' + 'ACF.csv'
-    try:
-            cf_original = pd.read_csv(cf_original_path,encoding = 'utf-8') 
-    except:
-            cf_original = pd.read_csv(cf_original_path,encoding = 'gbk') 
-#    
-    RR_c = RnR_calculator(cf_original,dt_param,fees,scenarios,Bonds)  #fees;fee_rate_param
-    RnR = RR_c.calculator()
-    logger.info('RnR is: %s' % RnR)
-    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
-    
 #    print(acf_original)
 #    AmtOverdue = ACF.calc_OverdueRecycle(92654196.57,2)
 #    print(AmtOverdue)
-#    acf_structure_revolving = ACF.calc_Rearrange_ACF_Structure()
-#    RD.forcast_Revolving_ACF(acf_original,acf_structure_revolving,6)
+#    acf_structure_revolving = ACF.rearrange_ACF_Structure()
+#    RAP.forcast_Revolving_ACF(acf_original,acf_structure_revolving,6)
 
     
-#    RS = ReverseSelection(RD.asset_pool[['No_Contract','Interest_Rate','Amount_Outstanding_yuan','LoanRemainTerm','LoanTerm'
-#                                         ,'Credit_Score'
-#                                         ]],
+#    RS = ReverseSelection(RAP.asset_pool[['No_Contract','Interest_Rate','Amount_Outstanding_yuan','LoanRemainTerm','LoanTerm','Credit_Score']],
 #                          Targets)
 #    RS.cal_OriginalStat()
 #    RS_results = RS.iLP_Solver_all()
 ##    
-#    assets = RD.asset_pool[RD.asset_pool['ReverseSelection_Flag'].isin(RS_results['ReverseSelection_Flag'])]
-#    S = Statistics(RD.name,assets)
+#    assets = RAP.asset_pool[RAP.asset_pool['ReverseSelection_Flag'].isin(RS_results['ReverseSelection_Flag'])]
+#    
+#    S = Statistics(RAP.name,assets)
 #    S.general_statistics_1()
 #    S.loop_Ds_ret_province_profession(Distribution_By_Category,Distribution_By_Bins)
 #    S.cal_income2debt_by_ID()
-##    
+#    
 #    assets = assets.rename(columns = DWH_header_REVERSE_rename) 
 #    assets = assets.drop('ReverseSelection_Flag',axis=1)
-#    assets.to_csv(path_root  + '/../CheckTheseProjects/' +'ABS9_R1/' +'assets_selected.csv')
+#    assets.to_csv(path_root  + '/../CheckTheseProjects/ABS9_R2/' +'assets_selected.csv')
     
 #    SR = ServiceReport(RD.name,TrustEffectiveDate,1)
 #    SR.get_ServiceReportAssetsList('SpecialReport1',

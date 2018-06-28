@@ -22,15 +22,13 @@ logger = get_logger(__name__)
 
 class Waterfall():
     
-    def __init__(self,recylce_principal,recylce_interest,dt_param,fee_rate_param,scenario_id):
+    def __init__(self,recylce_principal,recylce_interest,dt_param):
 
         self.recylce_principal = recylce_principal
         self.recylce_interest = recylce_interest
         self.total_recycle = sum(self.recylce_principal[k] for k in self.recylce_principal.keys()) + sum(self.recylce_interest[k] for k in self.recylce_interest.keys())
         self.dt_param = dt_param
-        self.fee_rate_param = fee_rate_param
         self.waterfall = pd.DataFrame()
-        self.scenario_id = scenario_id
 
     def run_Accounts(self,Bonds): # Initalizing BondsCashFlow
         
@@ -122,9 +120,8 @@ class Waterfall():
         logger.info('total principal payment is {0}'.format(sum(Bond_wf[['amount_pay_A_principal','amount_pay_B_principal','amount_pay_C_principal']].sum())))
         
         self.waterfall = Bond_wf
-        save_to_excel(Bond_wf,'Bond_wf'+self.scenario_id,wb_name)       
     
-    def BasicInfo_calculator(self,scenario_id,tranches_ABC):
+    def BasicInfo_calculator(self,tranches_ABC):
         
         logger.info('BasicInfo_calculator...')
         tranches_cf = self.waterfall
@@ -132,7 +129,6 @@ class Waterfall():
     
         tranches_cf['years_interest_calc_this_period'] = (tranches_cf['date_pay'] - (tranches_cf['date_pay']+relativedelta(months= -1))).dt.days/days_in_a_year
         tranches_cf['years_interest_calc_cumulative'] = tranches_cf['years_interest_calc_this_period'].cumsum()
-        #logger.info('scenario_id is ',scenario_id)
         name_tranche = ['A','B','C']
             
         WA_term = []
@@ -148,7 +144,6 @@ class Waterfall():
                                            'WA_term':WA_term,
                                            'date_maturity_predict':date_maturity_predict,
                                            'maturity_term':maturity_term,
-                                           'scenario_id': scenario_id
                                           })
     
         return tranche_basic_info
@@ -157,11 +152,15 @@ class Waterfall():
         tranches_cf = self.waterfall
         Cover_ratio_Senior = self.total_recycle / sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum())
         Cover_ratio_Mezz = (self.total_recycle - sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum()) ) / sum(tranches_cf[['amount_pay_B_principal','amount_pay_B_interest']].sum())
-        return Cover_ratio_Senior,Cover_ratio_Mezz
+        
+        CoverRation = pd.DataFrame({'Cover_ratio_Senior':[Cover_ratio_Senior],
+                                    'Cover_ratio_Mezz':[Cover_ratio_Mezz]
+                                    })
+                                   
+        return CoverRation                           
     
     def NPV_calculator(self):
         tranches_cf = self.waterfall
-        fee_rate_param = self.fee_rate_param
         total_recycle = [self.recylce_principal[k] for k in self.recylce_principal.keys()] + [self.recylce_interest[k] for k in self.recylce_interest.keys()]
 
         NPV_asset_pool = np.npv(rate_discount / 12,total_recycle) / (1 + rate_discount / 12 )
@@ -169,4 +168,8 @@ class Waterfall():
         total_pay_to_Originator = tranches_cf['amount_pay_C_principal'] + tranches_cf['amount_pay_C_interest'] + tranches_cf['amount_pay_EE_principal']+ tranches_cf['fee_service']
         NPV_originator = np.npv(rate_discount / 12,total_pay_to_Originator) / (1 + rate_discount / 12 )  #
         
-        return NPV_asset_pool,NPV_originator
+        NPVs = pd.DataFrame({'NPV_asset_pool':[NPV_asset_pool],
+                            'NPV_originator':[NPV_originator]
+                            })
+    
+        return NPVs
