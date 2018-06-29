@@ -17,10 +17,11 @@ logger = get_logger(__name__)
 
 class ReverseSelection():
     
-    def __init__(self,df,Targets):
+    def __init__(self,df,Targets,group_d):
         
         self.asset_pool = df
         self.targets = Targets
+        self.group_d = group_d
 
     def cal_OriginalStat(self):
         
@@ -30,15 +31,14 @@ class ReverseSelection():
         logger.info('Original WACredit_Score is: {0}'.format((self.asset_pool['Credit_Score']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
         logger.info('Original WARate is: {0}'.format((self.asset_pool['Interest_Rate']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
         logger.info('Original WALoanRemainTerm is: {0}'.format((self.asset_pool['LoanRemainTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
-        logger.info('Original WALoanTerm is: {0}'.format((self.asset_pool['LoanTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+        #logger.info('Original WALoanTerm is: {0}'.format((self.asset_pool['LoanTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
         
         for target in self.targets.keys():
             print('Target for ',target,' is ',self.targets[target]['object'],self.targets[target]['object_value'])
 
     def iLP_Solver_all(self):
 
-        Assets = self.asset_pool.groupby(['Interest_Rate','Credit_Score',#'LoanRemainTerm' 
-                                          ])\
+        Assets = self.asset_pool.groupby(self.group_d)\
                                .agg({'Amount_Outstanding':'sum'})\
                                .reset_index()
         
@@ -56,9 +56,9 @@ class ReverseSelection():
         #Data input
         Contracts = Assets['No_Contract']
         Credit_ScoreHelper = Assets['Credit_ScoreHelper']
-        #LoanRemainTermHelper = Assets['LoanRemainTermHelper']
         Interest_Rate_min_Helper = Assets['Interest_Rate_minHelper']
         Interest_Rate_max_Helper = Assets['Interest_Rate_maxHelper']
+        #LoanRemainTermHelper = Assets['LoanRemainTermHelper']
         
         P = range(len(Contracts))
         # Declare problem instance, maximization problem
@@ -71,15 +71,14 @@ class ReverseSelection():
         prob += sum(OutstandingPrincipal[p] * x[p] for p in P)    
         
         logger.info('Constraint definition')
-        #prob += sum(LoanRemainTermHelper[p] * x[p] for p in P) * self.targets['LoanRemainTerm']['object_sign'] >= 0
-        
         prob += sum(Credit_ScoreHelper[p] * x[p] for p in P) * self.targets['Credit_Score']['object_sign'] >= 0
-                   
         prob += sum(Interest_Rate_min_Helper[p] * x[p] for p in P) * self.targets['Interest_Rate_min']['object_sign'] >= 0 
         prob += sum(Interest_Rate_max_Helper[p] * x[p] for p in P) * self.targets['Interest_Rate_max']['object_sign'] >= 0 
                    
-        prob += sum(OutstandingPrincipal[p] * x[p] for p in P) <= self.targets['Amount_Outstanding_max']['object_value']
-        prob += sum(OutstandingPrincipal[p] * x[p] for p in P) >= self.targets['Amount_Outstanding_min']['object_value']
+        #prob += sum(OutstandingPrincipal[p] * x[p] for p in P) <= self.targets['Amount_Outstanding_max']['object_value']
+        #prob += sum(OutstandingPrincipal[p] * x[p] for p in P) >= self.targets['Amount_Outstanding_min']['object_value']
+        
+        #prob += sum(LoanRemainTermHelper[p] * x[p] for p in P) * self.targets['LoanRemainTerm']['object_sign'] >= 0
         
         logger.info('Start solving the problem instance')
         #prob.solve()
@@ -87,14 +86,5 @@ class ReverseSelection():
         logger.info('All Selection Done.')
         # Extract solution
         _AssetsSelected = Assets[Assets['No_Contract'].isin(Contracts[p] for p in P if x[p].varValue)]
-        _AssetsSelected['ReverseSelection_Flag'] = _AssetsSelected['Interest_Rate'].astype(str) + _AssetsSelected['Credit_Score'].astype(str) #+ _AssetsSelected['LoanRemainTerm'].astype(str)               
-        
-        _AssetsSelected.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/AssetsSelected_Final.csv',index=False)
-        
-        logger.info('Selected Outstanding Principal is {0}'.format(sum(_AssetsSelected['Amount_Outstanding'])))
-        logger.info('Selected Contracts Count is {0}'.format(len(_AssetsSelected.index)))
-        
-        for target_d in self.targets.keys():
-             Condition_Satisfied_or_Not(_AssetsSelected,target_d,self.targets)
-        
+
         return _AssetsSelected
