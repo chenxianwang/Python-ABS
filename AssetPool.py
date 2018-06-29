@@ -33,7 +33,7 @@ class AssetPool():
         self.rearranged_acf_structure = pd.DataFrame()
     
    
-    def get_AssetPool(self):
+    def get_AP(self):
         logger.info('get_OriginalAssetPool...')
         for Pool_index,Pool_name in enumerate(self.list_AssetPoolName):
             logger.info('Getting part ' + str(Pool_index+1) + '...')
@@ -47,9 +47,8 @@ class AssetPool():
         self.asset_pool = self.asset_pool[list(DWH_header_rename.keys())] 
         logger.info('Renaming header....')
         self.asset_pool = self.asset_pool.rename(columns = DWH_header_rename) 
-        self.asset_pool['Credit_Score'] = self.asset_pool['Credit_Score_4'].round(3)
-#        self.asset_pool['ReverseSelection_Flag'] = self.asset_pool['Interest_Rate'].astype(str) + self.asset_pool['Credit_Score'].astype(str) + self.asset_pool['LoanRemainTerm'].astype(str)
-#        
+#        self.asset_pool['LoanRemainTerm'] = pd.to_datetime(self.asset_pool['Dt_Maturity']).dt.date - datetime.date(2018,6,29)
+#        self.asset_pool['LoanRemainTerm'] = (self.asset_pool['LoanRemainTerm'] / np.timedelta64(1, 'D')).astype(int)
         logger.info('Original Asset Pool Gotten.')
         
         return self.asset_pool
@@ -58,7 +57,7 @@ class AssetPool():
         AssetPool = pd.DataFrame()
         for Pool_index,Pool_name in enumerate(self.list_NewColumns_Files):
             logger.info('Getting Adding part ' + str(Pool_index+1) + '...')
-            AssetPoolPath_this = self.path_project + '/AssetPoolList/' + Pool_name + '.csv'
+            AssetPoolPath_this = path_project + '/AssetPoolList/' + Pool_name + '.csv'
             try:
                 AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
             except:
@@ -67,10 +66,13 @@ class AssetPool():
         
         logger.info('Rename added header....')
         AssetPool = AssetPool.rename(columns = DWH_header_rename_AddColumns)    
+        AssetPool['TEXT_CONTRACT_NUMBER'] = '#' + AssetPool['TEXT_CONTRACT_NUMBER'].astype(str)
         logger.info('Inner Merging...')
         self.asset_pool = self.asset_pool.merge(AssetPool,left_on='No_Contract',right_on='TEXT_CONTRACT_NUMBER',how='inner')
 
         logger.info('Columns added....')
+        
+        return self.asset_pool
         
     def exclude_or_focus_by_ContractNo(self,exclude_or_focus,these_assets):
         logger.info('Reading Assets_to_' + exclude_or_focus + '....')

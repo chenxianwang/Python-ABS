@@ -63,7 +63,7 @@ scenarios['worst'] = {'rate_default':0.07,'rate_prepay':0.22,'rate_overdue':0.03
 
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
-MaxWAScore = 0.06498  
+MaxWAScore = 0.06 
  
 MinWARate = 0.18
 MaxWARate = 0.18*1.01
@@ -88,10 +88,13 @@ Targets_all = {
 
 Targets_keys = ['Credit_Score',#'LoanRemainTerm',
                 'Interest_Rate_min','Interest_Rate_max',
-                'Amount_Outstanding_max','Amount_Outstanding_min'
+                #'Amount_Outstanding_max','Amount_Outstanding_min'
                ]
 
 Targets = {k:Targets_all[k] for k in Targets_keys}
+
+RS_Group_d = ['Credit_Score','Interest_Rate','Province',#'Usage'#'LoanRemainTerm',
+              ]
 
 Distribution_By_Category = [#'Type_Loans',
                             'Interest_Rate',#'Marriagestate',
@@ -106,7 +109,7 @@ outstanding_principal_bins = [-0.001,2000,4000,6000,8000,10000,20000]
 duration_days_bins = [0,180,360,540,720,1080]
 past_days_bins = [-0.01,30,60,90,180,360,720,1080]
 future_days_bins = [-0.01,30,60,90,180,360,720,1080]
-overdue_times_bins = [-0.001,0,5,10,100]
+overdue_times_bins = [-0.001,0,1,2,3,4,5,10,100]
 dpd_max_bins = [-0.01,0,5,10,15,20,25,30]
 dpd_bins = [-0.01,0,30,60,90,120,150,180,360,1000]
 #total_fee_rate_bins = [-0.01,0,0.2,0.24,0.36,0.5,0.6]
@@ -121,7 +124,7 @@ Distribution_By_Bins = {
                         'LoanRemainTerm':future_days_bins,
                         'Days_Overdue_Max':dpd_max_bins,
                         'Days_Overdue_Current':dpd_bins,
-                        #'Overdue_Times':overdue_times_bins,
+                        'Overdue_Times':overdue_times_bins,
                         #'综合费用率':total_fee_rate_bins,
                         #'Credit_Score':credit_score_bins
                         }

@@ -32,6 +32,7 @@ class Waterfall():
 
     def run_Accounts(self,Bonds): # Initalizing BondsCashFlow
         
+        logger.info('run_Accounts...')
         recylce_principal = self.recylce_principal
         recylce_interest = self.recylce_interest
         #TODO:When to use deepcopy
@@ -51,11 +52,10 @@ class Waterfall():
         C_PAcc = BondPrinAccount('C',tranches_ABC)
         EE_Acc = BondPrinAccount('EE',tranches_ABC)
 
-        logger.info('run_term_by_term...')
         #preissue_FAcc
         for date_pay_index,date_pay in enumerate(dates_pay):
             
-            #logger.info('B_PAcc.iBalance(date_pay) is {0}'.format(B_PAcc.iBalance(date_pay)))
+            #logger.info('B_PAcc.iBalance({0}) is {1}'.format(date_pay,B_PAcc.iBalance(date_pay)))
             pay_for_fee = tax_Acc.pay(date_pay,[recylce_interest[dates_recycle[date_pay_index]],0][B_PAcc.iBalance(date_pay) == 0])
             pay_for_fee += trustee_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
             pay_for_fee += trust_m_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
@@ -65,13 +65,16 @@ class Waterfall():
             pay_for_fee += C_IAcc.pay(date_pay,C_PAcc.iBalance(date_pay))
             
             interest_transfer_to_prin = recylce_interest[dates_recycle[date_pay_index]] - pay_for_fee
-            #logger.info('interest_transfer_to_prin is {0}'.format(interest_transfer_to_prin))
-            amount_available_for_prin = recylce_principal[dates_recycle[date_pay_index]] + interest_transfer_to_prin
+            if interest_transfer_to_prin < 0 :
+                logger.info('interest_transfer_to_prin on {0} is less than 0: {1}'.format(date_pay,interest_transfer_to_prin))
+
+            recylce_principal[dates_recycle[date_pay_index]] += interest_transfer_to_prin
+            
+            amount_available_for_prin = recylce_principal[dates_recycle[date_pay_index]]
             #logger.info('amount_available_for_prin is {0}'.format(amount_available_for_prin))
             amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
             amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
             amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            
             amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
             
             #logger.info('Loop Done for {0}'.format(date_pay))

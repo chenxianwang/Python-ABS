@@ -22,19 +22,14 @@ class AssetsCashFlow():
         self.date_pool_cut = date_pool_cut
         
         self.wb_save_results = wb_name
-        
-        self.adjusted_APCF = pd.DataFrame()
-        
-        self.apcf_structure = pd.DataFrame()
+       
         self.dates_recycle_list = []
         self.apcf = pd.DataFrame()
         self.apcf_p = pd.DataFrame()
         self.apcf_i = pd.DataFrame()
         self.apcf_f = pd.DataFrame()
         
-        self.Have_Rearranged_APCF_Structure = False
-    
-    def calc_AssetPool_CF(self,BackMonth):
+    def calc_APCF(self,BackMonth):
         
         logger.info('calc_AssetPool_Structure....')
         self.asset_pool['first_due_period_O'] = (pd.to_datetime(self.asset_pool['first_due_date_after_pool_cut']).dt.year - self.date_pool_cut.year) * 12 + \
@@ -50,9 +45,10 @@ class AssetsCashFlow():
         logger.info('AssetPool_Structure save_to_excel....')                 
         #save_to_excel(self.apcf_structure_original,'Original_APCF_Structure',self.wb_save_results)
         logger.info('cash_flow_collection....')    
-        self.apcf,self.apcf_p,self.apcf_i,self.apcf_f = cash_flow_collection(self.apcf_structure,self.dates_recycle_list,'first_due_period_O','Original',self.wb_save_results)
+        #self.apcf,self.apcf_p,self.apcf_i,self.apcf_f
+        self.apcf = cash_flow_collection(self.apcf_structure,self.dates_recycle_list,'first_due_period_O','Original',self.wb_save_results)
         
-        return self.apcf
+        return self.apcf,self.apcf_structure
     
     def rearrange_APCF_Structure(self):
     
@@ -73,10 +69,7 @@ class AssetsCashFlow():
                                       )
         self.asset_pool['first_due_period_R'] = self.asset_pool['first_due_period_R'].astype(int)
         
-        save_to_excel(self.gen_APCF_Structure('first_due_period_R'),'Rearrange_APCF_Structure',self.wb_save_results)
-        
-        self.apcf_structure= self.gen_APCF_Structure('first_due_period_R')
-        return self.apcf_structure
+        return self.gen_APCF_Structure('first_due_period_R')
         
     def gen_APCF_Structure(self,first_due_period_value):
         self.asset_pool['SERVICE_FEE_RATE'] = self.asset_pool['SERVICE_FEE_RATE'].where(self.asset_pool['SERVICE_FEE_RATE'] > 0,0)        
