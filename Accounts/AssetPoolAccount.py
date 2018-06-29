@@ -22,11 +22,11 @@ class AssetPoolAccount():
     
     def __init__(self,ACFa):
         
-        self.recylce_principal = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_principal'].sum() for k in dates_recycle}
-        self.recylce_principal[dates_recycle[0]] = ACFa['amount_principal'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        self.recylce_principal = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_recycle_principal'].sum() for k in dates_recycle}
+        self.recylce_principal[dates_recycle[0]] = ACFa['amount_recycle_principal'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
         
-        self.recylce_interest = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_interest'].sum() for k in dates_recycle}
-        self.recylce_interest[dates_recycle[0]] = ACFa['amount_interest'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        self.recylce_interest = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_recycle_interest'].sum() for k in dates_recycle}
+        self.recylce_interest[dates_recycle[0]] = ACFa['amount_recycle_interest'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
     
     def available_to_pay_p(self,date_pay):
         
