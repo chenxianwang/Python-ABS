@@ -44,7 +44,7 @@ class Deal():
         
         self.recycle_adjust_factor = recycle_adjust_factor
         
-        self.apcf_adjusted = {}
+        self.apcf_original_adjusted = {}
         
         self.waterfall = {}
         self.wf_BasicInfo = {}
@@ -106,16 +106,16 @@ class Deal():
         return APCF.rearrange_APCF_Structure()
         
     def adjust_APCF(self):
-         
+         logger.info('adjust_APCF...')
          for scenario_id in self.scenarios.keys():
-            APCFa = APCF_adjuster(self.apcf,self.recycle_adjust_factor,self.scenarios,scenario_id)
-            self.apcf_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF())
+            APCFa = APCF_adjuster(self.apcf_original,self.recycle_adjust_factor,self.scenarios,scenario_id)
+            self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF())
             
     def run_WaterFall(self):
          
          for scenario_id in self.scenarios.keys():
              logger.info('scenario_id is {0}'.format(scenario_id))
-             AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id])
+             AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id])  # change to apcf_original_adjusted
              WF = Waterfall(AP_Acc.recylce_principal,AP_Acc.recylce_interest,dt_param)
              WF.run_Accounts(Bonds)
              self.waterfall[scenario_id] = deepcopy(WF.waterfall)
