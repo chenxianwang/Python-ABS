@@ -57,19 +57,18 @@ def main():
     #RD.run_Stat()
     RD.get_APCF()         # RD.apcf is available
     RD.get_revolving_APCF_structure()
-    RD.forcast_Revolving_ACF(6)
+    RD.forcast_Revolving_APCF()
+    RD.adjust_rAPCF()      # RD.apcf_adjusted[scenario_id] is available
+    RD.run_WaterFall()    # RD.waterfall[scenario_id] is available
+    for scenario_id in scenarios.keys():
+        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
     
-#    RD.adjust_APCF()      # D.apcf_adjusted[scenario_id] is available
-#    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
-#    for scenario_id in scenarios.keys():
-#        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
-#        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
-#        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
-#        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
-#    
-#    RnR = RD.cal_RnR()
-#    logger.info('RnR is: %s' % RnR)
-#    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
+    RnR = RD.cal_RnR()
+    logger.info('RnR is: %s' % RnR)
+    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
     
 #    SR = ServiceReport(ProjectName,TrustEffectiveDate,1)
 #    SR.get_ServiceReportAssetsList('TrustEffectiveDate',

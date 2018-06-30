@@ -31,20 +31,20 @@ class AssetsCashFlow():
         
     def calc_APCF(self,BackMonth):
         
-        logger.info('calc_AssetPool_Structure....')
+        #logger.info('calc_AssetPool_Structure....')
         self.asset_pool['first_due_period_O'] = (pd.to_datetime(self.asset_pool['first_due_date_after_pool_cut']).dt.year - self.date_pool_cut.year) * 12 + \
                                               pd.to_datetime(self.asset_pool['first_due_date_after_pool_cut']).dt.month- self.date_pool_cut.month - BackMonth
         last_term = int((self.asset_pool['Term_Remain'] + self.asset_pool['first_due_period_O']).max())
         self.dates_recycle_list= [get_next_eom(self.date_pool_cut,i) for i in range(last_term)]
-        logger.info('gen_APCF_Structure for APCF....')
+        #logger.info('gen_APCF_Structure for APCF....')
         
         self.apcf_structure = self.gen_APCF_Structure('first_due_period_O')
                 
         for d_r in self.dates_recycle_list:
             self.apcf_structure[d_r] = 0
-        logger.info('AssetPool_Structure save_to_excel....')                 
+        #logger.info('AssetPool_Structure save_to_excel....')                 
         #save_to_excel(self.apcf_structure_original,'Original_APCF_Structure',self.wb_save_results)
-        logger.info('cash_flow_collection....')    
+        #logger.info('cash_flow_collection....')    
         #self.apcf,self.apcf_p,self.apcf_i,self.apcf_f
         self.apcf = cash_flow_collection(self.apcf_structure,self.dates_recycle_list,'first_due_period_O','Original',self.wb_save_results)
         
@@ -52,7 +52,7 @@ class AssetsCashFlow():
     
     def rearrange_APCF_Structure(self):
     
-        logger.info('calc_Rearrange_APCF_Structure')
+        #logger.info('calc_Rearrange_APCF_Structure')
         self.max_first_due_date_after_poolcut = pd.to_datetime(self.asset_pool['first_due_date_after_pool_cut']).max().date() 
         poolcutdate_next_month = [self.date_pool_cut - datetime.timedelta(days=1)]
         month_increment = 1

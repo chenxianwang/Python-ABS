@@ -59,7 +59,7 @@ scenarios['better'] = {'rate_default':0.01,'rate_prepay':0.27,'rate_overdue':0.0
 scenarios['benchmark'] = {'rate_default':0.03,'rate_prepay':0.26,'rate_overdue':0.02,'scenario_weight':0.5}
 scenarios['worse'] = {'rate_default':0.05,'rate_prepay':0.24,'rate_overdue':0.03,'scenario_weight':0.15}
 scenarios['worst'] = {'rate_default':0.07,'rate_prepay':0.22,'rate_overdue':0.03,'scenario_weight':0.1}
-#    
+    
 
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 

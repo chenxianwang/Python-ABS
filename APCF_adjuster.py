@@ -31,11 +31,13 @@ class APCF_adjuster():
         main_params = self.main_params
         logger.info("main_params['rate_default'] is {0}".format(main_params['rate_default']))
         TOTAL_Principal = APCF_adjusted['amount_principal'].sum()
+        
         APCF_adjusted['amount_recycle_principal'] = APCF_adjusted['amount_principal']*(1-main_params['rate_default'])
-        logger.info("sum(APCF_adjusted['amount_recycle_principal']) is {0}".format(APCF_adjusted['amount_recycle_principal'].sum()))
+        
+        #logger.info("sum(APCF_adjusted['amount_recycle_principal']) is {0}".format(APCF_adjusted['amount_recycle_principal'].sum()))
         
         APCF_adjusted['amount_recycle_interest'] = APCF_adjusted['amount_interest']*(1-main_params['rate_default'])
         
         APCF_adjusted['amount_total_outstanding_principal'] = TOTAL_Principal - APCF_adjusted['amount_principal'].cumsum()
         
-        return APCF_adjusted
+        return APCF_adjusted[['date_recycle','amount_recycle_principal','amount_recycle_interest','amount_total_outstanding_principal']]
