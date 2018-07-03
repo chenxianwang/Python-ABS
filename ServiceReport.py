@@ -79,9 +79,9 @@ class ServiceReport():
         
         self.service_report_AllAssetList = self.service_report_AllAssetList.rename(columns = sr_distribution_rename)
         self.for_report = self.service_report_AllAssetList[#(~self.service_report_AllAssetList['No_Contract'].isin(self.service_report_RedemptionAssetList['订单号'])) &
-                                                           (self.service_report_AllAssetList['贷款是否已结清'] == 'Y') #&
+                                                           (self.service_report_AllAssetList['贷款是否已结清'] == 'N') &
                                                            #(self.service_report_AllAssetList['Type_Five_Category'] == 'XNA')
-                                                           #(self.service_report_AllAssetList['入池时间'] == '2018/6/14')
+                                                           (self.service_report_AllAssetList['入池时间'] == '2018/6/14')
                                                            #(pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.year == 2020) &
                                                            #(pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.month == 6)
                                                            ]
@@ -169,7 +169,7 @@ class ServiceReport():
     
     def service_report_cal(self):
         logger.info('service_report_cal...')
-        cal_table_4_1(self.for_report,self.wb_save_results)
+        cal_table_4_1(self.service_report_AllAssetList,self.wb_save_results)
         #cal_table_4_2(self.service_report_DefaultAssetList,self.wb_save_results)
         #cal_table_4_3(ServiceReportListPath_D,self.pool_cut_volumn,self.report_period,self.wb_to_save_results)
         
@@ -180,7 +180,7 @@ class ServiceReport():
         
         #cal_table_6(self.for_report,self.trust_effective_date,self.wb_save_results)
         
-        cal_table_7(self.for_report,self.wb_save_results)
+        cal_table_7(self.service_report_AllAssetList,self.wb_save_results)
         #cal_table_10(self.for_report,self.wb_save_results)    
         
         

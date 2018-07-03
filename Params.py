@@ -8,7 +8,7 @@ Created on Mon Jun 18 16:11:08 2018
 import os
 import datetime
 
-TrustEffectiveDate = datetime.date(2018,6,27)
+TrustEffectiveDate = datetime.date(2018,6,30)
 
 dates_pay = [datetime.date(2018,8,26),datetime.date(2018,9,26),datetime.date(2018,10,26),datetime.date(2018,11,26),datetime.date(2018,12,26),
              datetime.date(2019,1,26),datetime.date(2019,2,26),datetime.date(2019,3,26),datetime.date(2019,4,26),datetime.date(2019,5,26),datetime.date(2019,6,26),
@@ -25,7 +25,9 @@ dt_param = {'dt_pool_cut':datetime.date(2018,4,16),'dt_effective':datetime.date(
             }
 
 date_revolving_pools_cut = [datetime.date(2018,8,1),datetime.date(2018,9,1),datetime.date(2018,10,1),
-                            datetime.date(2018,11,1),datetime.date(2018,12,1),datetime.date(2019,1,1)
+                            datetime.date(2018,11,1),datetime.date(2018,12,1),datetime.date(2019,1,1),
+                            #datetime.date(2019,2,1),datetime.date(2019,3,1),datetime.date(2019,4,1),
+                            #datetime.date(2019,5,1),datetime.date(2019,6,1),datetime.date(2019,7,1)
                             ]
 
 fees = { 'tax':{'rate':0.0634},
@@ -51,7 +53,7 @@ Bonds = {}
 Bonds['A'] = {'ptg':0.67,'amount':amount_total_issuance * 0.67, 'rate':0.058}
 Bonds['B'] = {'ptg':0.12,'amount':amount_total_issuance * 0.12,'rate':0.068}
 Bonds['C'] = {'ptg':0.21,'amount':amount_total_issuance * 0.21,'rate':0.0}
-Bonds['EE'] = {'ptg':0,'amount':10000000000,'rate':0.0}
+Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
 
 scenarios = {}
 scenarios['best'] = {'rate_default':0.0,'rate_prepay':0.29,'rate_overdue':0.02,'scenario_weight':0.1}
@@ -63,7 +65,7 @@ scenarios['worst'] = {'rate_default':0.07,'rate_prepay':0.22,'rate_overdue':0.03
 
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
-MaxWAScore = 0.06 
+MaxWAScore = 0.065 
  
 MinWARate = 0.18
 MaxWARate = 0.18*1.01
@@ -91,10 +93,12 @@ Targets_keys = ['Credit_Score',#'LoanRemainTerm',
                 #'Amount_Outstanding_max','Amount_Outstanding_min'
                ]
 
+RS_Group_d = ['Credit_Score',
+              'Interest_Rate',#'Province',#'Usage'#'LoanRemainTerm',
+              ]
+
 Targets = {k:Targets_all[k] for k in Targets_keys}
 
-RS_Group_d = ['Credit_Score','Interest_Rate','Province',#'Usage'#'LoanRemainTerm',
-              ]
 
 Distribution_By_Category = [#'Type_Loans',
                             'Interest_Rate',#'Marriagestate',
@@ -124,7 +128,7 @@ Distribution_By_Bins = {
                         'LoanRemainTerm':future_days_bins,
                         'Days_Overdue_Max':dpd_max_bins,
                         'Days_Overdue_Current':dpd_bins,
-                        'Overdue_Times':overdue_times_bins,
+                        #'Overdue_Times':overdue_times_bins,
                         #'综合费用率':total_fee_rate_bins,
                         #'Credit_Score':credit_score_bins
                         }

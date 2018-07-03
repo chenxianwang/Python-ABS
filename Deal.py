@@ -32,6 +32,8 @@ class Deal():
     
     def __init__(self,name,AP,date_trust_effective,recycle_adjust_factor,scenarios):
         
+        self.RevolvingDeal = False
+        
         self.name = name
         self.date_pool_cut = AP.date_pool_cut
         self.date_trust_effective = date_trust_effective
@@ -51,27 +53,30 @@ class Deal():
         self.wf_CoverRatio = {}
         self.wf_NPVs = {}
         
-        self.RnR = 0
+        self.RnR = 0.0
      
     def get_AssetPool(self):
         self.asset_pool = self.AP.get_AP()
-        self.asset_pool['Credit_Score'] = self.asset_pool['Credit_Score_15'].round(3)
         
     def add_Columns(self):
         self.asset_pool = self.AP.add_Columns_From()
         
     def run_ReverseSelection(self,iTarget,group_d):
 
-        self.asset_pool['ReverseSelection_Flag'] = self.asset_pool[group_d[0]].astype(str) + self.asset_pool[group_d[1]].astype(str) + self.asset_pool[group_d[2]].astype(str) #+ self.asset_pool[group_d[3]].astype(str)
-#         
-        RS = ReverseSelection(self.asset_pool[['No_Contract','Interest_Rate','Credit_Score','Amount_Outstanding_yuan','LoanRemainTerm','Province','Usage',#'LoanTerm',
-                                            ]],
+        self.asset_pool['ReverseSelection_Flag'] = ''
+        for d in group_d:
+            self.asset_pool['ReverseSelection_Flag'] += self.asset_pool[d].astype(str)
+            
+        RS = ReverseSelection(self.asset_pool[['No_Contract','Amount_Outstanding_yuan','LoanRemainTerm','LoanTerm'#,'Province','Usage'
+                                               ] + group_d],
                               iTarget,group_d
                               )
         RS.cal_OriginalStat()
         RS_results = RS.iLP_Solver_all()
         
-        RS_results['ReverseSelection_Flag'] = RS_results[group_d[0]].astype(str) + RS_results[group_d[1]].astype(str) + RS_results[group_d[2]].astype(str) #+ self.asset_pool[group_d[3]].astype(str)               
+        RS_results['ReverseSelection_Flag'] = ''
+        for d in group_d:
+            RS_results['ReverseSelection_Flag'] += RS_results[d].astype(str)    
         
         RS_results.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/AssetsSelected_Final.csv',index=False)
         
@@ -85,7 +90,7 @@ class Deal():
 
     def run_Stat(self):
         
-        S = Statistics(self.name,self.asset_pool)
+        S = Statistics(self.asset_pool)
         S.general_statistics_1()
         S.loop_Ds_ret_province_profession(Distribution_By_Category,Distribution_By_Bins)
         S.cal_income2debt_by_ID()
@@ -115,7 +120,7 @@ class Deal():
          
          for scenario_id in self.scenarios.keys():
              logger.info('scenario_id is {0}'.format(scenario_id))
-             AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id])  # change to apcf_original_adjusted
+             AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id] if self.RevolvingDeal == True else self.apcf_original_adjusted[scenario_id] ) 
              WF = Waterfall(AP_Acc.recylce_principal,AP_Acc.recylce_interest,dt_param)
              WF.run_Accounts(Bonds)
              self.waterfall[scenario_id] = deepcopy(WF.waterfall)

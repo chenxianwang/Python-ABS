@@ -14,11 +14,8 @@ logger = get_logger(__name__)
 
 class Statistics():
     
-    def __init__(self,name,df):
+    def __init__(self,df):
 
-        self.path_project = path_root  + '/../CheckTheseProjects/' + name
-        self.wb_save_results = self.path_project + '/'+name+'.xlsx'
-        
         self.asset_pool = df
         self.max_maturity_date = datetime.date(3000,1,1)
         self.max_province_profession = {}
@@ -26,7 +23,6 @@ class Statistics():
     def general_statistics_1(self):
         logger.info('calculating basic tables')
         df = self.asset_pool
-        wb_name = self.wb_save_results
         
         logger.info('Statistics Dimension Setting.....')
         df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
@@ -57,13 +53,21 @@ class Statistics():
                 }
     
         #TODO: Complete b_s_3
-        b_s_3 = {'加权平均贷款年利率（%）':(df['Interest_Rate']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() * 100,
+        try:
+            b_s_3 = {'加权平均贷款年利率（%）':(df['Interest_Rate']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() * 100,
                  '单笔贷款最高年利率（%）':df['Interest_Rate'].max() * 100,
                  '单笔贷款最低年利率（%）':df['Interest_Rate'].min() * 100,    
                  '加权平均贷款月度内部收益率（%）':(df['Interest_Rate']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() * 100 /12,
-                '加权平均信用评分':(df['Credit_Score']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum()             
-                 
+                 '加权平均信用评分':(df['Credit_Score']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum()   
                  }
+        
+        except(KeyError):
+            b_s_3 = {'加权平均贷款年利率（%）':(df['Interest_Rate']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() * 100,
+                 '单笔贷款最高年利率（%）':df['Interest_Rate'].max() * 100,
+                 '单笔贷款最低年利率（%）':df['Interest_Rate'].min() * 100,    
+                 '加权平均贷款月度内部收益率（%）':(df['Interest_Rate']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() * 100 /12,
+                 }
+        
         
         b_s_4 = {
                 '借款人加权平均年龄':(df['Age_Project_Start']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum(),
@@ -88,7 +92,6 @@ class Statistics():
         logger.info('Calculating distribution tables' )
         
         df = self.asset_pool
-        wb_name = self.wb_save_results
         
         logger.info('Statistics Dimension Setting.....')
         df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
@@ -116,8 +119,7 @@ class Statistics():
         self.max_province_profession = max_province_profession
         
     def general_statistics_2(self):
-        
-        wb_name = self.wb_save_results
+
         b_s_5 = self.max_province_profession
         
         b_s_6 = {'逾期次数为0次的占比（%）':'',
@@ -136,7 +138,6 @@ class Statistics():
     def cal_income2debt_by_ID(self):
         
         df = self.asset_pool
-        wb_name = self.wb_save_results
                 
         logger.info('WA_Income2Debt_by_ID.....')
         df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
