@@ -30,6 +30,7 @@ class RevolvingDeal(Deal):
     def __init__(self,name,AP,date_revolving_pools_cut,date_trust_effective,recycle_adjust_factor,scenarios):
         super().__init__(name,AP,date_trust_effective,recycle_adjust_factor,scenarios)
         
+        self.RevolvingDeal = True
         self.apcf_adjusted = {}
         
         self.date_revolving_pools_cut = date_revolving_pools_cut
@@ -70,6 +71,7 @@ class RevolvingDeal(Deal):
         
             last_term = int((apcf_structure_revolving['Term_Remain'] + apcf_structure_revolving['first_due_period_R']).max())
             dates_recycle_list_revolving = [self.date_revolving_pools_cut[which_revolving_pool-1] + relativedelta(months=i) - datetime.timedelta(days=1) for i in range(1,last_term+1)]
+            
             #logger.info('self.dates_recycle_list_revolving[0] is {0}'.format(dates_recycle_list_revolving[0]))
             
             for d_r in dates_recycle_list_revolving:
@@ -78,6 +80,7 @@ class RevolvingDeal(Deal):
             #save_to_excel(apcf_structure_revolving,'Revolving_APCF_Structure_' + str(which_revolving_pool),wb_name)
         
             self.apcf_revolving[which_revolving_pool] = cash_flow_collection(apcf_structure_revolving,dates_recycle_list_revolving,'first_due_period_R','Revolving'+str(which_revolving_pool),wb_name)
+            
             #save_to_excel(self.apcf_revolving[which_revolving_pool],'Revolving_APCF_' + str(which_revolving_pool),wb_name)
             
             
@@ -97,10 +100,12 @@ class RevolvingDeal(Deal):
             amount_interest_previous_r = 0
             for previous_r in range(1,for_which_revolving_pool):
                 amount_principal_previous_r_this = self.apcf_revolving[previous_r][pd.to_datetime(self.apcf_revolving[previous_r]['date_recycle']) == self.date_revolving_pools_cut[for_which_revolving_pool-1] - datetime.timedelta(days=1) ]['amount_principal'].sum()
-                #print('amount_principal_previous_r of ',previous_r,' is ',amount_principal_previous_r_this )
+                
+                #logger.info('amount_principal_previous_r of {0} is {1}'.format(previous_r,amount_principal_previous_r_this ))
                 amount_principal_previous_r += amount_principal_previous_r_this
                 amount_interest_previous_r_this = self.apcf_revolving[previous_r][pd.to_datetime(self.apcf_revolving[previous_r]['date_recycle']) == self.date_revolving_pools_cut[for_which_revolving_pool-1] - datetime.timedelta(days=1) ]['amount_interest'].sum()
-                #print('amount_interest_previous_r_this of ',previous_r,' is ',amount_interest_previous_r_this )
+                
+                #logger.info('amount_interest_previous_r_this of {0} is {1}'.format(previous_r,amount_interest_previous_r_this ))
                 amount_interest_previous_r += amount_interest_previous_r_this
             
             return amount_principal_original + amount_interest_original + \

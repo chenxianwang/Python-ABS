@@ -14,12 +14,6 @@ ProjectName = 'ABS9'
 path_project = path_root  + '/../CheckTheseProjects/' + ProjectName
 wb_name = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectName+'.xlsx'
 
-#DWH_header_rename = {'#合同号':'No_Contract','信用评分':'Credit_Score_15',
-#                     '截至封包日剩余本金':'Amount_Outstanding_yuan',
-#                     '起始日':'Dt_Start','到期日':'Dt_Maturity','INTEREST_RATE':'Interest_Rate'
-#                     }
-
-
 DWH_header_rename = {'#合同号':'No_Contract','#证件号码':'ID',
                      '职业':'Profession','购买商品':'Usage','信用评分':'Credit_Score_15',
                      '年收入':'Income','省份':'Province','起始日':'Dt_Start','初始还款日':'Dt_First_Pay','到期日':'Dt_Maturity','合同期限':'Term_Contract',

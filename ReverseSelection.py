@@ -28,13 +28,16 @@ class ReverseSelection():
         self.asset_pool['Amount_Outstanding'] = self.asset_pool['Amount_Outstanding_yuan']
         logger.info('Original OutstandingPrincipal: {0}'.format(sum(self.asset_pool['Amount_Outstanding'])))
         logger.info('Original Contracts Count is: {0} '.format(len(self.asset_pool.index)))
-        logger.info('Original WACredit_Score is: {0}'.format((self.asset_pool['Credit_Score']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+        try:
+            logger.info('Original WACredit_Score is: {0}'.format((self.asset_pool['Credit_Score']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+        except(KeyError):
+            pass
         logger.info('Original WARate is: {0}'.format((self.asset_pool['Interest_Rate']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
         logger.info('Original WALoanRemainTerm is: {0}'.format((self.asset_pool['LoanRemainTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
-        #logger.info('Original WALoanTerm is: {0}'.format((self.asset_pool['LoanTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+        logger.info('Original WALoanTerm is: {0}'.format((self.asset_pool['LoanTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
         
         for target in self.targets.keys():
-            print('Target for ',target,' is ',self.targets[target]['object'],self.targets[target]['object_value'])
+            logger.info("Target for {0} is {1} {2}".format(target,self.targets[target]['object'],self.targets[target]['object_value']))
 
     def iLP_Solver_all(self):
 
@@ -55,10 +58,14 @@ class ReverseSelection():
                         
         #Data input
         Contracts = Assets['No_Contract']
-        Credit_ScoreHelper = Assets['Credit_ScoreHelper']
+        if 'Credit_Score' in self.group_d:
+            Credit_ScoreHelper = Assets['Credit_ScoreHelper']
+            
         Interest_Rate_min_Helper = Assets['Interest_Rate_minHelper']
         Interest_Rate_max_Helper = Assets['Interest_Rate_maxHelper']
-        #LoanRemainTermHelper = Assets['LoanRemainTermHelper']
+        
+        if 'LoanRemainTerm' in self.group_d:
+            LoanRemainTermHelper = Assets['LoanRemainTermHelper']
         
         P = range(len(Contracts))
         # Declare problem instance, maximization problem
@@ -71,14 +78,18 @@ class ReverseSelection():
         prob += sum(OutstandingPrincipal[p] * x[p] for p in P)    
         
         logger.info('Constraint definition')
-        prob += sum(Credit_ScoreHelper[p] * x[p] for p in P) * self.targets['Credit_Score']['object_sign'] >= 0
+        if 'Credit_Score' in self.targets.keys():
+            prob += sum(Credit_ScoreHelper[p] * x[p] for p in P) * self.targets['Credit_Score']['object_sign'] >= 0
+        
         prob += sum(Interest_Rate_min_Helper[p] * x[p] for p in P) * self.targets['Interest_Rate_min']['object_sign'] >= 0 
         prob += sum(Interest_Rate_max_Helper[p] * x[p] for p in P) * self.targets['Interest_Rate_max']['object_sign'] >= 0 
-                   
-        #prob += sum(OutstandingPrincipal[p] * x[p] for p in P) <= self.targets['Amount_Outstanding_max']['object_value']
-        #prob += sum(OutstandingPrincipal[p] * x[p] for p in P) >= self.targets['Amount_Outstanding_min']['object_value']
         
-        #prob += sum(LoanRemainTermHelper[p] * x[p] for p in P) * self.targets['LoanRemainTerm']['object_sign'] >= 0
+        if 'Amount_Outstanding_max' in self.targets.keys():           
+            prob += sum(OutstandingPrincipal[p] * x[p] for p in P) <= self.targets['Amount_Outstanding_max']['object_value']
+        if 'Amount_Outstanding_min' in self.targets.keys(): 
+            prob += sum(OutstandingPrincipal[p] * x[p] for p in P) >= self.targets['Amount_Outstanding_min']['object_value']
+        if 'LoanRemainTerm' in self.targets.keys(): 
+            prob += sum(LoanRemainTermHelper[p] * x[p] for p in P) * self.targets['LoanRemainTerm']['object_sign'] >= 0
         
         logger.info('Start solving the problem instance')
         #prob.solve()

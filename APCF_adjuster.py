@@ -29,7 +29,7 @@ class APCF_adjuster():
         
         APCF_adjusted = self.apcf
         main_params = self.main_params
-        logger.info("main_params['rate_default'] is {0}".format(main_params['rate_default']))
+        #logger.info("main_params['rate_default'] is {0}".format(main_params['rate_default']))
         TOTAL_Principal = APCF_adjusted['amount_principal'].sum()
         
         APCF_adjusted['amount_recycle_principal'] = APCF_adjusted['amount_principal']*(1-main_params['rate_default'])

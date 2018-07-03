@@ -27,11 +27,7 @@ class AssetPool():
         self.list_AssetPoolName = PoolCutDate_n_AssetPoolName[1]
         self.list_NewColumns_Files = PoolCutDate_n_AssetPoolName[2]
         
-        self.asset_pool = pd.DataFrame()
-        self.acf_structure = pd.DataFrame()
-        
-        self.rearranged_acf_structure = pd.DataFrame()
-    
+        self.asset_pool = pd.DataFrame()    
    
     def get_AP(self):
         logger.info('get_OriginalAssetPool...')
@@ -63,13 +59,12 @@ class AssetPool():
             except:
                 AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
             AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
-        
+        AssetPool = AssetPool[AssetPool['信用评分']>0]
         logger.info('Rename added header....')
-        AssetPool = AssetPool.rename(columns = DWH_header_rename_AddColumns)    
-        AssetPool['TEXT_CONTRACT_NUMBER'] = '#' + AssetPool['TEXT_CONTRACT_NUMBER'].astype(str)
+        #AssetPool['TEXT_CONTRACT_NUMBER'] = '#' + AssetPool['TEXT_CONTRACT_NUMBER'].astype(str)
         logger.info('Inner Merging...')
-        self.asset_pool = self.asset_pool.merge(AssetPool,left_on='No_Contract',right_on='TEXT_CONTRACT_NUMBER',how='inner')
-
+        self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号','信用评分']],left_on='No_Contract',right_on='#合同号',how='inner')
+        self.asset_pool = self.asset_pool.rename(columns = {'信用评分':'Credit_Score_15'}) 
         logger.info('Columns added....')
         
         return self.asset_pool
