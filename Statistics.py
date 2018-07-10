@@ -102,10 +102,13 @@ class Statistics():
         max_province_profession = {}
         for dimension_category in Distribution_By_Category:
             logger.info('Calculating for ' + dimension_category )
-            group_this_d = stastics_group_by_d(df,dimension_category,dimension_category)
-            dimension_category_list.append(group_this_d)
-            if dimension_category in ['Province','Profession']:
-                max_province_profession[dimension_category] = max(group_this_d['本金余额占比'])
+            try:
+                group_this_d = stastics_group_by_d(df,dimension_category,dimension_category)
+                dimension_category_list.append(group_this_d)
+                if dimension_category in ['Province','Profession']:
+                    max_province_profession[dimension_category] = max(group_this_d['本金余额占比'])
+            except(KeyError):
+                logger.info(dimension_category + ' Calculation failed.' )
         save_to_excel(dimension_category_list,'statistics',wb_name)
         
         dimension_bins_list = []
