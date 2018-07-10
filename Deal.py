@@ -58,8 +58,8 @@ class Deal():
     def get_AssetPool(self):
         self.asset_pool = self.AP.get_AP()
         
-    def add_Columns(self):
-        self.asset_pool = self.AP.add_Columns_From()
+    def add_Columns(self,list_NewColumns_Files):
+        self.asset_pool = self.AP.add_Columns_From(list_NewColumns_Files)
         
     def run_ReverseSelection(self,iTarget,group_d):
 

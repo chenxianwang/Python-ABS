@@ -25,7 +25,6 @@ class AssetPool():
 
         self.date_pool_cut = PoolCutDate_n_AssetPoolName[0]
         self.list_AssetPoolName = PoolCutDate_n_AssetPoolName[1]
-        self.list_NewColumns_Files = PoolCutDate_n_AssetPoolName[2]
         
         self.asset_pool = pd.DataFrame()    
    
@@ -49,23 +48,31 @@ class AssetPool():
         
         return self.asset_pool
     
-    def add_Columns_From(self):
-        AssetPool = pd.DataFrame()
-        for Pool_index,Pool_name in enumerate(self.list_NewColumns_Files):
-            logger.info('Getting Adding part ' + str(Pool_index+1) + '...')
-            AssetPoolPath_this = path_project + '/AssetPoolList/' + Pool_name + '.csv'
+    def add_Columns_From(self,file_names_left_right):
+        
+        for file_name_left_right in file_names_left_right:
+            list_NewColumns_Files = file_name_left_right[0]
+            left = file_name_left_right[1]
+            right = file_name_left_right[2]
+            
+            AssetPool = pd.DataFrame()
+            for Pool_index,Pool_name in enumerate(list_NewColumns_Files):
+                logger.info('Getting Adding part ' + str(Pool_index+1) + '...')
+                AssetPoolPath_this = path_project + '/AssetPoolList/' + Pool_name + '.csv'
+                try:
+                    AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
+                except:
+                    AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
+                AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
+    
             try:
-                AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
-            except:
-                AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
-            AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
-        AssetPool = AssetPool[AssetPool['信用评分']>0]
-        logger.info('Rename added header....')
-        #AssetPool['TEXT_CONTRACT_NUMBER'] = '#' + AssetPool['TEXT_CONTRACT_NUMBER'].astype(str)
-        logger.info('Inner Merging...')
-        self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号','信用评分']],left_on='No_Contract',right_on='#合同号',how='inner')
-        self.asset_pool = self.asset_pool.rename(columns = {'信用评分':'Credit_Score_15'}) 
-        logger.info('Columns added....')
+                AssetPool['#合同号'] = '#' + AssetPool['合同号'].astype(str)
+            except(KeyError):
+                pass
+           
+            logger.info('left Merging...')
+            self.asset_pool = self.asset_pool.merge(AssetPool,left_on= left,right_on = right,how='left')
+            logger.info('Columns added....')
         
         return self.asset_pool
         

@@ -8,7 +8,7 @@ Created on Mon Jun 18 16:11:08 2018
 import os
 import datetime
 
-TrustEffectiveDate = datetime.date(2018,6,30)
+TrustEffectiveDate = datetime.date(2018,7,2)
 
 dates_pay = [datetime.date(2018,8,26),datetime.date(2018,9,26),datetime.date(2018,10,26),datetime.date(2018,11,26),datetime.date(2018,12,26),
              datetime.date(2019,1,26),datetime.date(2019,2,26),datetime.date(2019,3,26),datetime.date(2019,4,26),datetime.date(2019,5,26),datetime.date(2019,6,26),
@@ -102,7 +102,7 @@ Targets = {k:Targets_all[k] for k in Targets_keys}
 
 Distribution_By_Category = [#'Type_Loans',
                             'Interest_Rate',#'Marriagestate',
-                            'Province',
+                            'Province','职业_信托',
                             'Profession','Type_Five_Category',
                             'Usage'#,'Gender'
                             ]
@@ -130,5 +130,5 @@ Distribution_By_Bins = {
                         'Days_Overdue_Current':dpd_bins,
                         #'Overdue_Times':overdue_times_bins,
                         #'综合费用率':total_fee_rate_bins,
-                        #'Credit_Score':credit_score_bins
+                        'Credit_Score':credit_score_bins
                         }
