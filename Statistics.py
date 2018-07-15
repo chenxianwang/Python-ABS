@@ -8,6 +8,7 @@ import pandas as pd
 from constant import *
 from abs_util.util_general import *
 import datetime
+from Params import *
 
 
 logger = get_logger(__name__)
@@ -81,7 +82,7 @@ class Statistics():
         for b_s_dict in [b_s_1,b_s_2,b_s_3,b_s_4]:   
             df_b_s = pd.DataFrame(list(b_s_dict.items()),columns=['项目','数值'])
             df_b_s_list.append(df_b_s)
-        save_to_excel(df_b_s_list,'statistics',wb_name)
+        save_to_excel(df_b_s_list,'statistics'+Batch_ID,wb_name)
 
         #print(df_unique_ID[:5])
         #df_ID_cnt_gt_1 = df_unique_ID[df_unique_ID['ID_Unique'] > 1]
@@ -109,7 +110,7 @@ class Statistics():
                     max_province_profession[dimension_category] = max(group_this_d['本金余额占比'])
             except(KeyError):
                 logger.info(dimension_category + ' Calculation failed.' )
-        save_to_excel(dimension_category_list,'statistics',wb_name)
+        save_to_excel(dimension_category_list,'statistics'+Batch_ID,wb_name)
         
         dimension_bins_list = []
         for dimension_bins in Distribution_By_Bins.keys():
@@ -117,7 +118,7 @@ class Statistics():
             group_this_d_bins = df_bins_result(df,dimension_bins,Distribution_By_Bins[dimension_bins])
             group_this_d_bins[dimension_bins] = group_this_d_bins[dimension_bins].astype(str)
             dimension_bins_list.append(group_this_d_bins)
-        save_to_excel(dimension_bins_list,'statistics',wb_name)
+        save_to_excel(dimension_bins_list,'statistics'+Batch_ID,wb_name)
         
         self.max_province_profession = max_province_profession
         
@@ -135,7 +136,7 @@ class Statistics():
         for b_s_dict in [b_s_5,b_s_6]:   
             df_b_s = pd.DataFrame(list(b_s_dict.items()),columns=['项目','数值'])
             df_b_s_list.append(df_b_s)
-        save_to_excel(df_b_s_list,'statistics',wb_name)
+        save_to_excel(df_b_s_list,'statistics'+Batch_ID,wb_name)
         
         
     def cal_income2debt_by_ID(self):
@@ -158,4 +159,4 @@ class Statistics():
         WA_Income2Debt = {'加权平均债务收入比':WA_Income2Debt_by_ID}
         df_WA_Income2Debt = pd.DataFrame(list(WA_Income2Debt.items()),columns=['项目','数值'])
     
-        save_to_excel(df_WA_Income2Debt,'statistics',wb_name)
+        save_to_excel(df_WA_Income2Debt,'statistics'+Batch_ID,wb_name)

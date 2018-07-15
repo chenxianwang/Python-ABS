@@ -8,7 +8,9 @@ Created on Mon Jun 18 16:11:08 2018
 import os
 import datetime
 
-TrustEffectiveDate = datetime.date(2018,7,2)
+Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute)+str(datetime.datetime.now().second)
+
+TrustEffectiveDate = datetime.date(2018,7,4)
 
 dates_pay = [datetime.date(2018,8,26),datetime.date(2018,9,26),datetime.date(2018,10,26),datetime.date(2018,11,26),datetime.date(2018,12,26),
              datetime.date(2019,1,26),datetime.date(2019,2,26),datetime.date(2019,3,26),datetime.date(2019,4,26),datetime.date(2019,5,26),datetime.date(2019,6,26),
@@ -45,7 +47,7 @@ recycle_adjust_factor = {'rate_recovery_normal':0.75,'rate_recovery_in_0_month':
                  'rate_early_repaid':0.0125}
 
 days_in_a_year = 365
-rate_discount = 0.40
+rate_discount = 0.20
 
 amount_total_issuance = 3015926877.69
 
@@ -117,7 +119,8 @@ overdue_times_bins = [-0.001,0,1,2,3,4,5,10,100]
 dpd_max_bins = [-0.01,0,5,10,15,20,25,30]
 dpd_bins = [-0.01,0,30,60,90,120,150,180,360,1000]
 #total_fee_rate_bins = [-0.01,0,0.2,0.24,0.36,0.5,0.6]
-credit_score_bins = [-0.01,0.05,0.1,0.15,0.2,0.3,0.4,0.5,0.9]
+credit_score_bins = [-0.01,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,
+                     0.11,0.12,0.13,0.14,0.15,0.2,0.25,1]
 
 Distribution_By_Bins = {
                         'Income':income_bins,

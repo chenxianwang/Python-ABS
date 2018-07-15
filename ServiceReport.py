@@ -94,12 +94,13 @@ class ServiceReport():
 
         self.for_report = self.service_report_AllAssetList[#(~self.service_report_AllAssetList['No_Contract'].isin(self.service_report_RedemptionAssetList['订单号'])) &
                                                            (self.service_report_AllAssetList['贷款是否已结清'] == 'N') &
+                                                           (self.service_report_AllAssetList['贷款状态'] == '拖欠1-30天贷款' ) &
                                                            #(self.service_report_AllAssetList['Type_Five_Category'] == 'XNA')
-                                                           (self.service_report_AllAssetList['入池时间'] == '2018/7/5')
-                                                           #(pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.year == 2020) &
-                                                           #(pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.month == 7)
+                                                           (self.service_report_AllAssetList['入池时间'] == '2018/4/16') &
+                                                           (pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.year == 2020) &
+                                                           (pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.month == 4)
                                                            ]
-        #self.for_report.to_csv(path_root  + '/../CheckTheseProjects/' +self.name+'/' + 'for_report_cf_check.csv')
+        self.for_report.to_csv(path_root  + '/../CheckTheseProjects/' +self.name+'/' + 'for_report_cf_check_o.csv')
         
     def add_SeviceRate_From(self,df):
         
@@ -183,7 +184,7 @@ class ServiceReport():
     
     def service_report_cal(self):
         logger.info('service_report_cal...')
-        #cal_table_4_1(self.for_report,wb_name)
+        #cal_table_4_1(self.for_report,wb_name_sr)
         #cal_table_4_2(self.service_report_DefaultAssetList,self.wb_save_results)
         #cal_table_4_3(ServiceReportListPath_D,self.pool_cut_volumn,self.report_period,self.wb_to_save_results)
         
@@ -192,9 +193,9 @@ class ServiceReport():
 #        _calcDate = self.trust_effective_date + relativedelta(months=self.report_period-1)
 #        calcDate = date(_calcDate.year,_calcDate.month,1)
         
-        cal_table_6(self.for_report,self.trust_effective_date,wb_name)
+        cal_table_6(self.for_report,self.trust_effective_date,wb_name_sr)
         
-        cal_table_7(self.service_report_AllAssetList,wb_name)
+        #cal_table_7(self.service_report_AllAssetList,wb_name_sr)
         #cal_table_10(self.for_report,self.wb_save_results)    
         
         
