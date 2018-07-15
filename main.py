@@ -27,33 +27,38 @@ def main():
     
     start_time = datetime.datetime.now()
 
-    if os.path.isfile(wb_name):
-      os.remove(wb_name)
+#    if os.path.isfile(wb_name):
+#      os.remove(wb_name)
 
-    AP = AssetPool([dt_param['dt_pool_cut'],['OriginalPool_part1','OriginalPool_part2']])
-    #AP = AssetPool([dt_param['dt_pool_cut'],['R2_selected']])
+    #AP = AssetPool([dt_param['dt_pool_cut'],['OriginalPool_part1','OriginalPool_part2']])
+    #AP = AssetPool([dt_param['dt_pool_cut'],['to_trust_1','to_trust_2']])
 #   AP = AssetPool([dt_param['dt_pool_cut'],['revolving pool r1 asset list_0','revolving pool r1 asset list_1']])
-    #AP = AssetPool([dt_param['dt_pool_cut'],['CRT_20180706']])
+    AP = AssetPool([dt_param['dt_pool_cut'],['jic swap out 20180713']]) #jic swap out 20180713
     D = Deal(ProjectName,AP,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
     D.get_AssetPool()    # D.asset_pool is available
     
-    D.add_Columns([
-                  [['ABS9 score-1','ABS9 score-2'],'No_Contract','#合同号'],
-                  [['ProfessionTypeValueTransform'],'Profession','Profession_HC']
-                  ]
-                  )
+#    D.add_Columns([
+#                  #[['ABS9 score-1','ABS9 score-2'],'No_Contract','#合同号'],
+#                  [['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
+#                  #[['ABS9 contract list_20180416_0','ABS9 contract list_20180416_1'],'No_Contract','#合同号']
+#                  ]
+#                  )
     
-    D.asset_pool = D.asset_pool[D.asset_pool['SCORE_FINAL_NEW']>0]
-    D.asset_pool = D.asset_pool.rename(columns = {'SCORE_FINAL_NEW':'Credit_Score_15'}) 
+    #D.asset_pool[D.asset_pool['LoanRemainTerm'] <= 230].rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/to_trust_1.csv',index=False)
+    #D.asset_pool[D.asset_pool['LoanRemainTerm'] > 230].rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/to_trust_2.csv',index=False)    
+    
+    #D.asset_pool = D.asset_pool[D.asset_pool['SCORE_FINAL_NEW']>0]
+    #D.asset_pool = D.asset_pool.rename(columns = {'SCORE_FINAL_NEW':'Credit_Score_15'}) 
     D.asset_pool['Credit_Score'] = D.asset_pool['Credit_Score_15']#.round(3)
+    #D.asset_pool['SERVICE_FEE_RATE'] = 0
     
-#    #D.run_ReverseSelection(Targets,RS_Group_d)
-#    #D.asset_pool.rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/ABS9_R2_Selected_add_CS.csv',index=False)
+    #D.run_ReverseSelection(Targets,RS_Group_d)
+    #D.asset_pool.rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/ABS9_R2_Selected_add_CS.csv',index=False)
     D.run_Stat()
 #    D.get_APCF()         # D.apcf is available
-#    ##D.get_rearranged_APCF_structure()
+#    #D.get_rearranged_APCF_structure()
 #    D.adjust_APCF()      # D.apcf_adjusted[scenario_id] is available
-##    D.run_WaterFall()    # D.waterfall[scenario_id] is available
+#    D.run_WaterFall()    # D.waterfall[scenario_id] is available
 #    for scenario_id in scenarios.keys():
 #        save_to_excel(D.waterfall[scenario_id],scenario_id,wb_name)
 #        save_to_excel(D.wf_BasicInfo[scenario_id],scenario_id,wb_name)
@@ -85,10 +90,10 @@ def main():
 #    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
 #    
 #    SR = ServiceReport(ProjectName,TrustEffectiveDate,2)
-#    SR.get_ServiceReportAssetsList('SpecialReport2',
+#    SR.get_ServiceReportAssetsList('SpecialReport1',
 #                                   #['20180705_funding_abs9_asset_726_0','20180705_funding_abs9_asset_726_1'],
 #                                   '',
-#                                   ['20180706_funding_abs9_asset_730_0','20180706_funding_abs9_asset_730_1'],
+#                                   ['20180705_funding_abs9_asset_726_0','20180705_funding_abs9_asset_726_1'],
 #                                   '',              #'DefaultAssetList',
 #                                   '',              #'WaivedAssetListq',
 #                                   ''
