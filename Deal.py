@@ -95,7 +95,7 @@ class Deal():
         S.loop_Ds_ret_province_profession(Distribution_By_Category,Distribution_By_Bins)
         S.cal_income2debt_by_ID()
     
-    def get_APCF(self):
+    def get_oAPCF(self):
         
         APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain',]],
                              self.date_pool_cut
@@ -110,19 +110,21 @@ class Deal():
                              )
         return APCF.rearrange_APCF_Structure()
         
-    def adjust_APCF(self):
+    def adjust_oAPCF(self):
          logger.info('adjust_APCF...')
          for scenario_id in self.scenarios.keys():
             APCFa = APCF_adjuster(self.apcf_original,self.recycle_adjust_factor,self.scenarios,scenario_id)
             self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF())
+            #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
+
             
     def run_WaterFall(self):
          
          for scenario_id in self.scenarios.keys():
              logger.info('scenario_id is {0}'.format(scenario_id))
              AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id] if self.RevolvingDeal == True else self.apcf_original_adjusted[scenario_id] ) 
-             WF = Waterfall(AP_Acc.recylce_principal,AP_Acc.recylce_interest,dt_param)
-             WF.run_Accounts(Bonds)
+             WF = Waterfall(AP_Acc.principal_to_pay,AP_Acc.interest_to_pay,dt_param)
+             WF.run_Accounts(Bonds,self.RevolvingDeal)
              self.waterfall[scenario_id] = deepcopy(WF.waterfall)
              self.wf_BasicInfo[scenario_id] = deepcopy(WF.BasicInfo_calculator(Bonds))
              self.wf_CoverRatio[scenario_id] = deepcopy(WF.CR_calculator())

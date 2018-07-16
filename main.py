@@ -27,13 +27,13 @@ def main():
     
     start_time = datetime.datetime.now()
 
-#    if os.path.isfile(wb_name):
-#      os.remove(wb_name)
+    if os.path.isfile(wb_name):
+      os.remove(wb_name)
 
-    #AP = AssetPool([dt_param['dt_pool_cut'],['OriginalPool_part1','OriginalPool_part2']])
+    AP = AssetPool([dt_param['dt_pool_cut'],['OriginalPool_part1','OriginalPool_part2']])
     #AP = AssetPool([dt_param['dt_pool_cut'],['to_trust_1','to_trust_2']])
 #   AP = AssetPool([dt_param['dt_pool_cut'],['revolving pool r1 asset list_0','revolving pool r1 asset list_1']])
-    AP = AssetPool([dt_param['dt_pool_cut'],['jic swap out 20180713']]) #jic swap out 20180713
+    #AP = AssetPool([dt_param['dt_pool_cut'],['jic swap out 20180713']]) #jic swap out 20180713
     D = Deal(ProjectName,AP,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
     D.get_AssetPool()    # D.asset_pool is available
     
@@ -50,34 +50,37 @@ def main():
     #D.asset_pool = D.asset_pool[D.asset_pool['SCORE_FINAL_NEW']>0]
     #D.asset_pool = D.asset_pool.rename(columns = {'SCORE_FINAL_NEW':'Credit_Score_15'}) 
     D.asset_pool['Credit_Score'] = D.asset_pool['Credit_Score_15']#.round(3)
-    #D.asset_pool['SERVICE_FEE_RATE'] = 0
     
     #D.run_ReverseSelection(Targets,RS_Group_d)
     #D.asset_pool.rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/ABS9_R2_Selected_add_CS.csv',index=False)
-    D.run_Stat()
-#    D.get_APCF()         # D.apcf is available
-#    #D.get_rearranged_APCF_structure()
-#    D.adjust_APCF()      # D.apcf_adjusted[scenario_id] is available
-#    D.run_WaterFall()    # D.waterfall[scenario_id] is available
-#    for scenario_id in scenarios.keys():
-#        save_to_excel(D.waterfall[scenario_id],scenario_id,wb_name)
-#        save_to_excel(D.wf_BasicInfo[scenario_id],scenario_id,wb_name)
-#        save_to_excel(D.wf_CoverRatio[scenario_id],scenario_id,wb_name)
-#        save_to_excel(D.wf_NPVs[scenario_id],scenario_id,wb_name)
-#    
-#    RnR = D.cal_RnR()
-#    logger.info('RnR is: %s' % RnR)
-#    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
+    #D.run_Stat()
+    D.get_oAPCF()         # D.apcf is available
+    D.adjust_oAPCF()      # D.apcf_adjusted[scenario_id] is available
+    D.run_WaterFall()    # D.waterfall[scenario_id] is available
+    for scenario_id in scenarios.keys():
+        save_to_excel(D.waterfall[scenario_id],scenario_id,wb_name)
+        save_to_excel(D.wf_BasicInfo[scenario_id],scenario_id,wb_name)
+        save_to_excel(D.wf_CoverRatio[scenario_id],scenario_id,wb_name)
+        save_to_excel(D.wf_NPVs[scenario_id],scenario_id,wb_name)
+    
+    RnR = D.cal_RnR()
+    logger.info('RnR is: %s' % RnR)
+    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
 
 
 #    RD = RevolvingDeal(ProjectName,AP,date_revolving_pools_cut,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
 #    RD.get_rAssetPool() 
 #    #RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15'].round(3)
 #    #RD.run_Stat()
-#    RD.get_APCF()         # RD.apcf is available
-#    RD.get_revolving_APCF_structure()
+#    RD.get_oAPCF()         # RD.apcf is available
+#    RD.adjust_oAPCF()
+#    
+#    RD.get_rAPCF_structure()
+#    
 #    RD.forcast_Revolving_APCF()
-#    RD.adjust_rAPCF()      # RD.apcf_adjusted[scenario_id] is available
+#    
+#    RD.combine_APCF()
+#    
 #    RD.run_WaterFall()    # RD.waterfall[scenario_id] is available
 #    for scenario_id in scenarios.keys():
 #        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
