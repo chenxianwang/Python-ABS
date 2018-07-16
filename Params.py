@@ -16,10 +16,15 @@ dates_pay = [datetime.date(2018,8,26),datetime.date(2018,9,26),datetime.date(201
              datetime.date(2019,1,26),datetime.date(2019,2,26),datetime.date(2019,3,26),datetime.date(2019,4,26),datetime.date(2019,5,26),datetime.date(2019,6,26),
              datetime.date(2019,7,26),datetime.date(2019,8,26),datetime.date(2019,9,26),datetime.date(2019,10,26),datetime.date(2019,11,26),datetime.date(2019,12,26),
              datetime.date(2020,1,26),datetime.date(2020,2,26),datetime.date(2020,3,26),datetime.date(2020,4,26),datetime.date(2020,5,26),datetime.date(2020,6,26),
+             datetime.date(2020,7,26),datetime.date(2020,8,26),datetime.date(2020,9,26),datetime.date(2020,10,26),datetime.date(2020,11,26),datetime.date(2020,12,26),
+             datetime.date(2021,1,26),datetime.date(2021,2,26),
              ]
 dates_recycle = [datetime.date(2018,7,31),datetime.date(2018,8,31),datetime.date(2018,9,30),datetime.date(2018,10,31),datetime.date(2018,11,30),datetime.date(2018,12,31),
-        datetime.date(2019,1,31),datetime.date(2019,2,28),datetime.date(2019,3,31),datetime.date(2019,4,30),datetime.date(2019,5,31),datetime.date(2019,6,30),datetime.date(2019,7,31),datetime.date(2019,8,31),datetime.date(2019,9,30),datetime.date(2019,10,31),datetime.date(2019,11,30),datetime.date(2019,12,31),
-        datetime.date(2020,1,31),datetime.date(2020,2,29),datetime.date(2020,3,31),datetime.date(2020,4,30),datetime.date(2020,5,31)
+        datetime.date(2019,1,31),datetime.date(2019,2,28),datetime.date(2019,3,31),datetime.date(2019,4,30),datetime.date(2019,5,31),datetime.date(2019,6,30),
+        datetime.date(2019,7,31),datetime.date(2019,8,31),datetime.date(2019,9,30),datetime.date(2019,10,31),datetime.date(2019,11,30),datetime.date(2019,12,31),
+        datetime.date(2020,1,31),datetime.date(2020,2,29),datetime.date(2020,3,31),datetime.date(2020,4,30),datetime.date(2020,5,31),datetime.date(2020,6,30),
+        datetime.date(2020,7,31),datetime.date(2020,8,31),datetime.date(2020,9,30),datetime.date(2020,10,31),datetime.date(2020,11,30),datetime.date(2020,12,31),
+        datetime.date(2021,1,31),
         ]
 
 dt_param = {'dt_pool_cut':datetime.date(2018,4,16),'dt_effective':datetime.date(2018,7,20),
@@ -47,14 +52,14 @@ recycle_adjust_factor = {'rate_recovery_normal':0.75,'rate_recovery_in_0_month':
                  'rate_early_repaid':0.0125}
 
 days_in_a_year = 365
-rate_discount = 0.20
+rate_discount = 0.40
 
 amount_total_issuance = 3015926877.69
 
 Bonds = {}
-Bonds['A'] = {'ptg':0.67,'amount':amount_total_issuance * 0.67, 'rate':0.058}
-Bonds['B'] = {'ptg':0.12,'amount':amount_total_issuance * 0.12,'rate':0.068}
-Bonds['C'] = {'ptg':0.21,'amount':amount_total_issuance * 0.21,'rate':0.0}
+Bonds['A'] = {'ptg':0.6714,'amount':2025000000, 'rate':0.058}
+Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.068}
+Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
 Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
 
 scenarios = {}

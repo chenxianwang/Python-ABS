@@ -22,19 +22,19 @@ logger = get_logger(__name__)
 
 class Waterfall():
     
-    def __init__(self,recylce_principal,recylce_interest,dt_param):
+    def __init__(self,principal_to_pay,interest_to_pay,dt_param):
 
-        self.recylce_principal = recylce_principal
-        self.recylce_interest = recylce_interest
-        self.total_recycle = sum(self.recylce_principal[k] for k in self.recylce_principal.keys()) + sum(self.recylce_interest[k] for k in self.recylce_interest.keys())
+        self.principal_to_pay = principal_to_pay
+        self.interest_to_pay = interest_to_pay
+        self.total_to_pay = sum(self.principal_to_pay[k] for k in self.principal_to_pay.keys()) + sum(self.interest_to_pay[k] for k in self.interest_to_pay.keys())
         self.dt_param = dt_param
         self.waterfall = pd.DataFrame()
 
-    def run_Accounts(self,Bonds): # Initalizing BondsCashFlow
+    def run_Accounts(self,Bonds,RevolvingDeal): # Initalizing BondsCashFlow
         
         logger.info('run_Accounts...')
-        recylce_principal = self.recylce_principal
-        recylce_interest = self.recylce_interest
+        principal_to_pay = self.principal_to_pay
+        interest_to_pay = self.interest_to_pay
         #TODO:When to use deepcopy
         tranches_ABC = deepcopy(Bonds)
         
@@ -56,7 +56,7 @@ class Waterfall():
         for date_pay_index,date_pay in enumerate(dates_pay):
             
             #logger.info('B_PAcc.iBalance({0}) is {1}'.format(date_pay,B_PAcc.iBalance(date_pay)))
-            pay_for_fee = tax_Acc.pay(date_pay,[recylce_interest[dates_recycle[date_pay_index]],0][B_PAcc.iBalance(date_pay) == 0])
+            pay_for_fee = tax_Acc.pay(date_pay,[interest_to_pay[dates_recycle[date_pay_index]],0][B_PAcc.iBalance(date_pay) == 0])
             pay_for_fee += trustee_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
             pay_for_fee += trust_m_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
             pay_for_fee += service_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
@@ -64,23 +64,33 @@ class Waterfall():
             pay_for_fee += B_IAcc.pay(date_pay,B_PAcc.iBalance(date_pay))
             pay_for_fee += C_IAcc.pay(date_pay,C_PAcc.iBalance(date_pay))
             
-            interest_transfer_to_prin = recylce_interest[dates_recycle[date_pay_index]] - pay_for_fee
+            interest_transfer_to_prin = interest_to_pay[dates_recycle[date_pay_index]] - pay_for_fee
             if interest_transfer_to_prin < 0 :
                 logger.info('interest_transfer_to_prin on {0} is less than 0: {1}'.format(date_pay,interest_transfer_to_prin))
 
-            recylce_principal[dates_recycle[date_pay_index]] += interest_transfer_to_prin
+            principal_to_pay[dates_recycle[date_pay_index]] += interest_transfer_to_prin
             
-            amount_available_for_prin = recylce_principal[dates_recycle[date_pay_index]]
             #logger.info('amount_available_for_prin is {0}'.format(amount_available_for_prin))
-            amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
+            if RevolvingDeal == True:
+                if date_pay >= date_revolving_pools_cut[-1] + relativedelta(months=1):
+                    amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
+                else: amount_available_for_prin = 0
+                amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+                amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+                amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+                amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
+            else:
+                amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
+                amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+                amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+                amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+                amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
             
-            #logger.info('Loop Done for {0}'.format(date_pay))
+            #logger.info('Loop Done for {0}'.format(date_pay))        
+            
         
-        AP_PAcc_wf = pd.DataFrame(list(recylce_principal.items()), columns=['date_recycle', 'amount_recycle_principal'])
-        AP_IAcc_wf = pd.DataFrame(list(recylce_interest.items()), columns=['date_recycle', 'amount_recycle_interest'])
+        AP_PAcc_wf = pd.DataFrame(list(principal_to_pay.items()), columns=['date_recycle', 'amount_recycle_principal'])
+        AP_IAcc_wf = pd.DataFrame(list(principal_to_pay.items()), columns=['date_recycle', 'amount_recycle_interest'])
         
         A_Principal_wf = pd.DataFrame(list(A_PAcc.receive.items()), columns=['date_pay', 'amount_pay_A_principal'])
         B_Principal_wf = pd.DataFrame(list(B_PAcc.receive.items()), columns=['date_pay', 'amount_pay_B_principal'])
@@ -153,8 +163,8 @@ class Waterfall():
     
     def CR_calculator(self):
         tranches_cf = self.waterfall
-        Cover_ratio_Senior = self.total_recycle / sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum())
-        Cover_ratio_Mezz = (self.total_recycle - sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum()) ) / sum(tranches_cf[['amount_pay_B_principal','amount_pay_B_interest']].sum())
+        Cover_ratio_Senior = self.total_to_pay / sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum())
+        Cover_ratio_Mezz = (self.total_to_pay - sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum()) ) / sum(tranches_cf[['amount_pay_B_principal','amount_pay_B_interest']].sum())
         
         CoverRation = pd.DataFrame({'Cover_ratio_Senior':[Cover_ratio_Senior],
                                     'Cover_ratio_Mezz':[Cover_ratio_Mezz]
@@ -164,7 +174,7 @@ class Waterfall():
     
     def NPV_calculator(self):
         tranches_cf = self.waterfall
-        total_recycle = [self.recylce_principal[k] for k in self.recylce_principal.keys()] + [self.recylce_interest[k] for k in self.recylce_interest.keys()]
+        total_recycle = [self.principal_to_pay[k] for k in self.principal_to_pay.keys()] + [self.interest_to_pay[k] for k in self.interest_to_pay.keys()]
 
         NPV_asset_pool = np.npv(rate_discount / 12,total_recycle) / (1 + rate_discount / 12 )
         
