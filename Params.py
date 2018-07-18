@@ -73,21 +73,23 @@ scenarios['worst'] = {'rate_default':0.07,'rate_prepay':0.22,'rate_overdue':0.03
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065 
+MinWAScore = MaxWAScore * 0.995
  
-MinWARate = 0.18
-MaxWARate = 0.18*1.01
+MinWARate = 0.20
+MaxWARate = MinWARate * 1.0001
 
 MaxWALoanRemainTerm = 390
 
-MaxIssueVolumn = 400000000
-MinIssueVolumn = 390000000
+MaxIssueVolumn = 1800000000
+MinIssueVolumn = 1790000000
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
 
 Targets_all = { 
            'SCp':{'object':'SC Proportion LessThan','object_value_h':MaxSCProp,'object_sign':-1},
-           'Credit_Score':{'object':'Weighted Average LessThan','object_value':MaxWAScore,'object_sign':-1},
+           'Credit_Score_max':{'object':'Weighted Average LessThan','object_value':MaxWAScore,'object_sign':-1},
+           'Credit_Score_min':{'object':'Weighted Average GreaterThan','object_value':MinWAScore,'object_sign':1},
            'LoanRemainTerm':{'object':'Weighted Average LessThan','object_value':MaxWALoanRemainTerm,'object_sign':-1},
            'Interest_Rate_min':{'object':'Weighted Average GreaterThan','object_value':MinWARate,'object_sign':1},
            'Interest_Rate_max':{'object':'Weighted Average LessThan','object_value':MaxWARate,'object_sign':-1},
@@ -95,13 +97,15 @@ Targets_all = {
            'Amount_Outstanding_min':{'object':'GreaterThan','object_value':MinIssueVolumn},
            }
 
-Targets_keys = ['Credit_Score',#'LoanRemainTerm',
+Targets_keys = ['Credit_Score_max',#'Credit_Score_min',
                 'Interest_Rate_min','Interest_Rate_max',
-                #'Amount_Outstanding_max','Amount_Outstanding_min'
+                #'Amount_Outstanding_max','Amount_Outstanding_min',
+                #'LoanRemainTerm',
                ]
 
 RS_Group_d = ['Credit_Score',
-              'Interest_Rate',#'Province',#'Usage'#'LoanRemainTerm',
+              'Interest_Rate',#'Province',#'Usage'
+              #'LoanRemainTerm',
               ]
 
 Targets = {k:Targets_all[k] for k in Targets_keys}
@@ -109,9 +113,9 @@ Targets = {k:Targets_all[k] for k in Targets_keys}
 
 Distribution_By_Category = [#'Type_Loans',
                             'Interest_Rate',#'Marriagestate',
-                            'Province','职业_信托',
-                            'Profession','Type_Five_Category',
-                            'Usage'#,'Gender'
+                            #'Province','职业_信托',
+                            #'Profession','Type_Five_Category',
+                            #'Usage'#,'Gender'
                             ]
 
 income_bins = [0,50000,100000,150000,200000,2000000,100000000]
@@ -128,14 +132,14 @@ credit_score_bins = [-0.01,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,
                      0.11,0.12,0.13,0.14,0.15,0.2,0.25,1]
 
 Distribution_By_Bins = {
-                        'Income':income_bins,
-                        'Age_Project_Start':age_bins,
+                        #'Income':income_bins,
+                        #'Age_Project_Start':age_bins,
                         'OutstandingPrincipal':outstanding_principal_bins,
                         'LoanTerm':duration_days_bins,
                         'LoanAge':past_days_bins,
                         'LoanRemainTerm':future_days_bins,
-                        'Days_Overdue_Max':dpd_max_bins,
-                        'Days_Overdue_Current':dpd_bins,
+                        #'Days_Overdue_Max':dpd_max_bins,
+                        #'Days_Overdue_Current':dpd_bins,
                         #'Overdue_Times':overdue_times_bins,
                         #'综合费用率':total_fee_rate_bins,
                         'Credit_Score':credit_score_bins

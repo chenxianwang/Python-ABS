@@ -17,6 +17,10 @@ wb_name = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectName
 
 wb_name_sr = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectName+'_ServiceReport.xlsx'
 
+#DWH_header_rename = {'合同号':'No_Contract','NUM_CREDIT_SCORE':'Credit_Score_15',
+#                     '起始日':'Dt_Start','到期日':'Dt_Maturity','剩余期数':'Term_Remain',
+#                     '剩余本金':'Amount_Outstanding_yuan','INTEREST_RATE':'Interest_Rate'
+#                          }
 
 
 DWH_header_rename = {'#合同号':'No_Contract','#证件号码':'ID', #SKP_CLIENT #证件号码

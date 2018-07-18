@@ -32,9 +32,15 @@ class ReverseSelection():
             logger.info('Original WACredit_Score is: {0}'.format((self.asset_pool['Credit_Score']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
         except(KeyError):
             pass
-        logger.info('Original WARate is: {0}'.format((self.asset_pool['Interest_Rate']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
-        logger.info('Original WALoanRemainTerm is: {0}'.format((self.asset_pool['LoanRemainTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
-        logger.info('Original WALoanTerm is: {0}'.format((self.asset_pool['LoanTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+        try:
+            logger.info('Original WARate is: {0}'.format((self.asset_pool['Interest_Rate']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+        except(KeyError):
+            pass
+        try:
+            logger.info('Original WALoanRemainTerm is: {0}'.format((self.asset_pool['LoanRemainTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+            logger.info('Original WALoanTerm is: {0}'.format((self.asset_pool['LoanTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+        except(KeyError):
+            pass
         
         for target in self.targets.keys():
             logger.info("Target for {0} is {1} {2}".format(target,self.targets[target]['object'],self.targets[target]['object_value']))
@@ -50,6 +56,9 @@ class ReverseSelection():
         Assets['Interest_Rate_min'] = Assets['Interest_Rate']
         Assets['Interest_Rate_max'] = Assets['Interest_Rate']
         
+        Assets['Credit_Score_min'] = Assets['Credit_Score']
+        Assets['Credit_Score_max'] = Assets['Credit_Score']
+        
         for target_d in self.targets.keys() :
             if 'Amount_Outstanding' not in target_d:
                 Assets[target_d +'Helper'] = Assets['Amount_Outstanding'] * (Assets[target_d] - self.targets[target_d]['object_value'])
@@ -59,7 +68,10 @@ class ReverseSelection():
         #Data input
         Contracts = Assets['No_Contract']
         if 'Credit_Score' in self.group_d:
-            Credit_ScoreHelper = Assets['Credit_ScoreHelper']
+            if 'Credit_Score_min' in self.targets.keys():
+                Credit_Score_min_Helper = Assets['Credit_Score_minHelper']
+            if 'Credit_Score_max' in self.targets.keys():
+                Credit_Score_max_Helper = Assets['Credit_Score_maxHelper']
             
         Interest_Rate_min_Helper = Assets['Interest_Rate_minHelper']
         Interest_Rate_max_Helper = Assets['Interest_Rate_maxHelper']
@@ -78,8 +90,10 @@ class ReverseSelection():
         prob += sum(OutstandingPrincipal[p] * x[p] for p in P)    
         
         logger.info('Constraint definition')
-        if 'Credit_Score' in self.targets.keys():
-            prob += sum(Credit_ScoreHelper[p] * x[p] for p in P) * self.targets['Credit_Score']['object_sign'] >= 0
+        if 'Credit_Score_min' in self.targets.keys():
+            prob += sum(Credit_Score_min_Helper[p] * x[p] for p in P) * self.targets['Credit_Score_min']['object_sign'] >= 0
+        if 'Credit_Score_max' in self.targets.keys():            
+            prob += sum(Credit_Score_max_Helper[p] * x[p] for p in P) * self.targets['Credit_Score_max']['object_sign'] >= 0
         
         prob += sum(Interest_Rate_min_Helper[p] * x[p] for p in P) * self.targets['Interest_Rate_min']['object_sign'] >= 0 
         prob += sum(Interest_Rate_max_Helper[p] * x[p] for p in P) * self.targets['Interest_Rate_max']['object_sign'] >= 0 
