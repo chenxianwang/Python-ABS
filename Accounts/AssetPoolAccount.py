@@ -24,17 +24,26 @@ class AssetPoolAccount():
         
         self.recylce_principal = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_recycle_principal'].sum() for k in dates_recycle}
         self.recylce_principal[dates_recycle[0]] = ACFa['amount_recycle_principal'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
-        
+
         self.recylce_interest = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_recycle_interest'].sum() for k in dates_recycle}
         self.recylce_interest[dates_recycle[0]] = ACFa['amount_recycle_interest'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+
         
-        self.principal_to_pay = self.recylce_principal #{}
-        self.interest_to_pay = self.recylce_interest #{}
-    
-    def available_to_pay_p(self,date_pay):
+        self.principal_to_pay = {}
+        self.principal_to_buy = {}
         
-        return self.recylce_principal[dates_pay.index(date_pay)]
+        self.interest_to_pay = {}
     
+    def available_principal_to_pay(self):
+        
+        self.principal_to_pay = self.recylce_principal
+        self.principal_to_buy = {}
+        return self.principal_to_pay,self.principal_to_buy
+
+    def available_interest_to_pay(self):
+        
+        self.interest_to_pay = self.recylce_interest
+        return self.interest_to_pay
     
     def get_PrincipalBalance(self,date_check):
         return self.recylce_principal[date_check]
