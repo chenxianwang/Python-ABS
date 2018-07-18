@@ -20,6 +20,7 @@ from Deal import Deal
 from AssetPool import AssetPool
 from AssetsCashFlow import AssetsCashFlow
 from APCF_adjuster import APCF_adjuster
+from Accounts.AssetPoolAccount import AssetPoolAccount
 
 low_memory=False
 
@@ -60,7 +61,7 @@ class RevolvingDeal(Deal):
     
     def forcast_Revolving_APCF(self):
         for scenario_id in self.scenarios.keys():
-            logger.info('forcast_Revolving_APCF for scenario_id {0}...'.format(scenario_id))  
+            #logger.info('forcast_Revolving_APCF for scenario_id {0}...'.format(scenario_id))  
             for which_revolving_pool in range(1,len(self.date_revolving_pools_cut) + 1):
                 
                 apcf_structure_revolving = deepcopy(self.apcf_structure_revolving)
@@ -68,7 +69,7 @@ class RevolvingDeal(Deal):
                 purchase_amount = self.prepare_PurchaseAmount(which_revolving_pool,scenario_id)
                 self.RevolvingPool_PurchaseAmount[which_revolving_pool] = purchase_amount
                 self.total_purchase_amount += purchase_amount
-                #logger.info('purchase_amount for {0} is :{1}'.format(purchase_amount,which_revolving_pool))
+                logger.info('purchase_amount for scenario_id {0} and Revolving pool {1} is :{2}'.format(scenario_id,which_revolving_pool,purchase_amount))
                 #logger.info('Total purchase_amount is {0}'.format(self.total_purchase_amount))
                 apcf_structure_revolving['OutstandingPrincipal'] = purchase_amount * apcf_structure_revolving['OutstandingPrincipal_Proportion']
                 last_term = int((apcf_structure_revolving['Term_Remain'] + apcf_structure_revolving['first_due_period_R']).max())
@@ -78,8 +79,22 @@ class RevolvingDeal(Deal):
                     apcf_structure_revolving[d_r] = 0
                 #save_to_excel(apcf_structure_revolving,'Revolving_APCF_Structure_' + str(which_revolving_pool),wb_name)
                 self.apcf_revolving[which_revolving_pool] = cash_flow_collection(apcf_structure_revolving,dates_recycle_list_revolving,'first_due_period_R','Revolving'+str(which_revolving_pool),wb_name)
-                #save_to_excel(self.apcf_revolving[which_revolving_pool],'Revolving_APCF_' + str(which_revolving_pool),wb_name)
+                #save_to_excel(self.apcf_revolving[which_revolving_pool],'rAPCF_' + scenario_id + str(which_revolving_pool),wb_name)
                 self.adjust_rAPCF(which_revolving_pool,scenario_id)
+                #save_to_excel(self.apcf_revolving_adjusted[scenario_id][which_revolving_pool],'rAPCFa_' + scenario_id + str(which_revolving_pool),wb_name)
+                
+                _AP_Acc = AssetPoolAccount(self.apcf_revolving_adjusted[scenario_id][which_revolving_pool])
+                _principal_available = _AP_Acc.available_principal_to_pay()
+                _AP_PAcc_pay = {}
+                _AP_PAcc_buy = {}
+                _AP_IAcc_pay = {}
+                _AP_PAcc_pay[scenario_id] = _principal_available[0]
+                _AP_PAcc_buy[scenario_id] = _principal_available[1]
+                _AP_IAcc_pay[scenario_id] = _AP_Acc.available_interest_to_pay()
+                
+                for k in dates_recycle:
+                    self.AP_PAcc_pay[scenario_id][k] += _AP_PAcc_pay[scenario_id][k]
+                    self.AP_IAcc_pay[scenario_id][k] += _AP_IAcc_pay[scenario_id][k]
                 
                 if self.apcf_revolving_adjusted_all[scenario_id].empty :
                     self.apcf_revolving_adjusted_all[scenario_id] = self.apcf_revolving_adjusted[scenario_id][which_revolving_pool]
@@ -88,88 +103,18 @@ class RevolvingDeal(Deal):
         
 
     def prepare_PurchaseAmount(self,for_which_revolving_pool,scenario_id):
+        amount_principal = self.AP_PAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
+        amount_interest = self.AP_IAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
         
-        if for_which_revolving_pool == 1:
-            amount_principal = self.apcf_original_adjusted[scenario_id][pd.to_datetime(self.apcf_original_adjusted[scenario_id]['date_recycle']) <= get_next_eom(self.date_trust_effective,0)]['amount_recycle_principal'].sum()
-            amount_interest = self.apcf_original_adjusted[scenario_id][pd.to_datetime(self.apcf_original_adjusted[scenario_id]['date_recycle']) <= get_next_eom(self.date_trust_effective,0)]['amount_recycle_interest'].sum()
-            return amount_principal + amount_interest
+        self.AP_PAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]] -= amount_principal
+        self.AP_PAcc_buy[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_principal
         
-        else:
-            amount_principal_original = self.apcf_original_adjusted[scenario_id][pd.to_datetime(self.apcf_original_adjusted[scenario_id]['date_recycle']) == self.date_revolving_pools_cut[for_which_revolving_pool-1] - datetime.timedelta(days=1) ]['amount_recycle_principal'].sum()
-            amount_interest_original = self.apcf_original_adjusted[scenario_id][pd.to_datetime(self.apcf_original_adjusted[scenario_id]['date_recycle']) == self.date_revolving_pools_cut[for_which_revolving_pool-1] - datetime.timedelta(days=1) ]['amount_recycle_interest'].sum()
-            
-            amount_principal_previous_r = 0
-            amount_interest_previous_r = 0
-            for previous_r in range(1,for_which_revolving_pool):
-                amount_principal_previous_r_this = self.apcf_revolving[previous_r][pd.to_datetime(self.apcf_revolving[previous_r]['date_recycle']) == self.date_revolving_pools_cut[for_which_revolving_pool-1] - datetime.timedelta(days=1) ]['amount_recycle_principal'].sum()
-                #logger.info('amount_principal_previous_r of {0} is {1}'.format(previous_r,amount_principal_previous_r_this ))
-                amount_principal_previous_r += amount_principal_previous_r_this
-                
-                amount_interest_previous_r_this = self.apcf_revolving[previous_r][pd.to_datetime(self.apcf_revolving[previous_r]['date_recycle']) == self.date_revolving_pools_cut[for_which_revolving_pool-1] - datetime.timedelta(days=1) ]['amount_recycle_interest'].sum()
-                #logger.info('amount_interest_previous_r_this of {0} is {1}'.format(previous_r,amount_interest_previous_r_this ))
-                amount_interest_previous_r += amount_interest_previous_r_this
-            
-            return amount_principal_original + amount_interest_original + \
-                   amount_principal_previous_r + amount_interest_previous_r
+        return amount_principal + amount_interest
         
         
     def adjust_rAPCF(self,which_revolving_pool,scenario_id):
         #logger.info('adjust_rAPCF for scenario_id {0} & revolving pool {1}...'.format(scenario_id,which_revolving_pool))  
-        #for scenario_id in self.scenarios.keys():
         APCFa = APCF_adjuster(self.apcf_revolving[which_revolving_pool],self.recycle_adjust_factor,self.scenarios,scenario_id)
         this_adjusted = deepcopy(APCFa.adjust_APCF())
-        this_adjusted = this_adjusted.rename(columns = {'amount_recycle_principal':'amount_recycle_principal'+'_R' + str(which_revolving_pool),
-                                                        'amount_recycle_interest':'amount_recycle_interest'+'_R' + str(which_revolving_pool),
-                                                        'amount_total_outstanding_principal':'amount_total_outstanding_principal'+'_R' + str(which_revolving_pool)
-                                                        })
         self.apcf_revolving_adjusted[scenario_id][which_revolving_pool] = this_adjusted
         #save_to_excel(self.apcf_revolving_adjusted[scenario_id][which_revolving_pool],scenario_id+'_r'+str(which_revolving_pool)+'_a',wb_name)
-
-
-    def combine_APCF(self):    
-        logger.info('adjust_rAPCF...')  
-        for scenario_id in self.scenarios.keys():
-            self.apcf_revolving_adjusted_all[scenario_id]['amount_recycle_principal_R'] = 0
-            self.apcf_revolving_adjusted_all[scenario_id]['amount_recycle_interest_R'] = 0
-            self.apcf_revolving_adjusted_all[scenario_id]['amount_total_outstanding_principal_R'] = 0
-            
-            for fee_name in list(self.apcf_revolving_adjusted_all[scenario_id]):
-                if ('amount_recycle_principal_R' in fee_name) & ('amount_recycle_principal_R' != fee_name) :
-                    self.apcf_revolving_adjusted_all[scenario_id][fee_name] = self.apcf_revolving_adjusted_all[scenario_id][fee_name].where(self.apcf_revolving_adjusted_all[scenario_id][fee_name]>0,0)
-                    self.apcf_revolving_adjusted_all[scenario_id]['amount_recycle_principal_R'] += self.apcf_revolving_adjusted_all[scenario_id][fee_name]
-                elif ('amount_recycle_interest_R' in fee_name) & ('amount_recycle_interest_R' != fee_name) :
-                    self.apcf_revolving_adjusted_all[scenario_id][fee_name] = self.apcf_revolving_adjusted_all[scenario_id][fee_name].where(self.apcf_revolving_adjusted_all[scenario_id][fee_name]>0,0)
-                    self.apcf_revolving_adjusted_all[scenario_id]['amount_recycle_interest_R'] += self.apcf_revolving_adjusted_all[scenario_id][fee_name]
-                elif ('amount_total_outstanding_principal_R' in fee_name) & ('amount_total_outstanding_principal_R' != fee_name):
-                    self.apcf_revolving_adjusted_all[scenario_id][fee_name] = self.apcf_revolving_adjusted_all[scenario_id][fee_name].where(self.apcf_revolving_adjusted_all[scenario_id][fee_name]>0,0)
-                    self.apcf_revolving_adjusted_all[scenario_id]['amount_total_outstanding_principal_R'] +=  self.apcf_revolving_adjusted_all[scenario_id][fee_name]
-            
-            self.apcf_revolving_adjusted_all[scenario_id] = self.apcf_revolving_adjusted_all[scenario_id][['date_recycle','amount_recycle_principal_R','amount_recycle_interest_R','amount_total_outstanding_principal_R']]
-            
-            self.apcf_original_adjusted[scenario_id] = self.apcf_original_adjusted[scenario_id].rename(columns = {'amount_recycle_principal':'amount_recycle_principal'+'_O',
-                                                                                                                   'amount_recycle_interest':'amount_recycle_interest'+'_O',
-                                                                                                                   'amount_total_outstanding_principal':'amount_total_outstanding_principal'+'_O'
-                                                                                                                   })
-            
-            self.apcf_adjusted[scenario_id] = self.apcf_original_adjusted[scenario_id].merge(self.apcf_revolving_adjusted_all[scenario_id],left_on = 'date_recycle',right_on = 'date_recycle', how = 'outer')
-            
-            self.apcf_adjusted[scenario_id]['amount_recycle_principal'] = 0
-            self.apcf_adjusted[scenario_id]['amount_recycle_interest'] = 0
-            self.apcf_adjusted[scenario_id]['amount_total_outstanding_principal'] = 0
-            for fee_name in list(self.apcf_adjusted[scenario_id]):
-                if 'amount_recycle_principal_' in fee_name :
-                    self.apcf_adjusted[scenario_id][fee_name] = self.apcf_adjusted[scenario_id][fee_name].where(self.apcf_adjusted[scenario_id][fee_name]>0,0)
-                    self.apcf_adjusted[scenario_id]['amount_recycle_principal'] += self.apcf_adjusted[scenario_id][fee_name]
-                elif 'amount_recycle_interest_' in fee_name :
-                    self.apcf_adjusted[scenario_id][fee_name] = self.apcf_adjusted[scenario_id][fee_name].where(self.apcf_adjusted[scenario_id][fee_name]>0,0)
-                    self.apcf_adjusted[scenario_id]['amount_recycle_interest'] += self.apcf_adjusted[scenario_id][fee_name]
-                elif 'amount_total_outstanding_principal_' in fee_name:
-                    self.apcf_adjusted[scenario_id][fee_name] = self.apcf_adjusted[scenario_id][fee_name].where(self.apcf_adjusted[scenario_id][fee_name]>0,0)
-                    self.apcf_adjusted[scenario_id]['amount_total_outstanding_principal'] +=  self.apcf_adjusted[scenario_id][fee_name]
-#            save_to_excel(self.apcf_revolving_adjusted_all[scenario_id],'r_adjusted' + scenario_id,wb_name)      
-#            save_to_excel(self.apcf_original_adjusted[scenario_id],'o_adjusted' + scenario_id,wb_name) 
-            save_to_excel(self.apcf_adjusted[scenario_id],'cf_adjusted' + scenario_id,wb_name)
-                 
-            
-            
-            

@@ -98,7 +98,8 @@ class ServiceReport():
                                                            #(self.service_report_AllAssetList['Type_Five_Category'] == 'XNA')
                                                            (self.service_report_AllAssetList['入池时间'] == '2018/4/16') &
                                                            (pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.year == 2020) &
-                                                           (pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.month == 4)
+                                                           (pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.month == 4) &
+                                                           (pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.day == 25)
                                                            ]
         self.for_report.to_csv(path_root  + '/../CheckTheseProjects/' +self.name+'/' + 'for_report_cf_check_o.csv')
         

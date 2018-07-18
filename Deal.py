@@ -40,6 +40,10 @@ class Deal():
         self.scenarios = scenarios
         
         self.AP = AP
+        self.AP_PAcc_pay = {}
+        self.AP_PAcc_buy = {}
+        self.AP_IAcc_pay = {}
+        
         self.asset_pool = pd.DataFrame()
         self.apcf_original = pd.DataFrame()
         self.apcf_structure = pd.DataFrame()
@@ -60,6 +64,11 @@ class Deal():
         
     def add_Columns(self,list_NewColumns_Files):
         self.asset_pool = self.AP.add_Columns_From(list_NewColumns_Files)
+        
+    def select_by_ContractNO(self,exclude_or_focus,these_assets):
+        
+        self.asset_pool = self.AP.exclude_or_focus_by_ContractNo(exclude_or_focus,these_assets)
+        
         
     def run_ReverseSelection(self,iTarget,group_d):
 
@@ -93,7 +102,7 @@ class Deal():
         S = Statistics(self.asset_pool)
         S.general_statistics_1()
         S.loop_Ds_ret_province_profession(Distribution_By_Category,Distribution_By_Bins)
-        S.cal_income2debt_by_ID()
+        #S.cal_income2debt_by_ID()
     
     def get_oAPCF(self):
         
@@ -111,19 +120,32 @@ class Deal():
         return APCF.rearrange_APCF_Structure()
         
     def adjust_oAPCF(self):
-         logger.info('adjust_APCF...')
+         logger.info('adjust_oAPCF...')
          for scenario_id in self.scenarios.keys():
             APCFa = APCF_adjuster(self.apcf_original,self.recycle_adjust_factor,self.scenarios,scenario_id)
             self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF())
             #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
 
+    def init_oAP_Acc(self):
+        
+        for scenario_id in self.scenarios.keys():
+             logger.info('scenario_id is {0}'.format(scenario_id))
+             #AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id] if self.RevolvingDeal == True else self.apcf_original_adjusted[scenario_id])
+             AP_Acc = AssetPoolAccount(self.apcf_original_adjusted[scenario_id])
+             principal_available = AP_Acc.available_principal_to_pay()
+             self.AP_PAcc_pay[scenario_id] = principal_available[0]
+             self.AP_PAcc_buy[scenario_id] = principal_available[1]
+             self.AP_IAcc_pay[scenario_id] = AP_Acc.available_interest_to_pay()
+#             for pay_date in dates_pay[:5]:
+#                 logger.info('self.AP_PAcc_pay[{0}][{1}] is {2}'.format(scenario_id,dates_recycle[dates_pay.index(pay_date)],self.AP_PAcc_pay[scenario_id][dates_recycle[dates_pay.index(pay_date)]]))
+#                 logger.info('self.AP_IAcc_pay[{0}][{1}] is {2}'.format(scenario_id,dates_recycle[dates_pay.index(pay_date)],self.AP_IAcc_pay[scenario_id][dates_recycle[dates_pay.index(pay_date)]]))
+#            
             
     def run_WaterFall(self):
          
          for scenario_id in self.scenarios.keys():
              logger.info('scenario_id is {0}'.format(scenario_id))
-             AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id] if self.RevolvingDeal == True else self.apcf_original_adjusted[scenario_id] ) 
-             WF = Waterfall(AP_Acc.principal_to_pay,AP_Acc.interest_to_pay,dt_param)
+             WF = Waterfall(self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],self.AP_IAcc_pay[scenario_id],dt_param)
              WF.run_Accounts(Bonds,self.RevolvingDeal)
              self.waterfall[scenario_id] = deepcopy(WF.waterfall)
              self.wf_BasicInfo[scenario_id] = deepcopy(WF.BasicInfo_calculator(Bonds))

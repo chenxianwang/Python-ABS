@@ -22,9 +22,13 @@ logger = get_logger(__name__)
 
 class Waterfall():
     
-    def __init__(self,principal_to_pay,interest_to_pay,dt_param):
+    def __init__(self,principal_to_pay,principal_to_buy,interest_to_pay,dt_param):
 
+        self.principal_acc_original = deepcopy(principal_to_pay)
+        self.interest_acc_original = deepcopy(interest_to_pay)
+        
         self.principal_to_pay = principal_to_pay
+        self.principal_to_buy = principal_to_buy
         self.interest_to_pay = interest_to_pay
         self.total_to_pay = sum(self.principal_to_pay[k] for k in self.principal_to_pay.keys()) + sum(self.interest_to_pay[k] for k in self.interest_to_pay.keys())
         self.dt_param = dt_param
@@ -33,7 +37,12 @@ class Waterfall():
     def run_Accounts(self,Bonds,RevolvingDeal): # Initalizing BondsCashFlow
         
         logger.info('run_Accounts...')
+        
+        principal_acc_original = self.principal_acc_original
+        interest_acc_original = self.interest_acc_original
+        
         principal_to_pay = self.principal_to_pay
+        principal_to_buy = self.principal_to_buy
         interest_to_pay = self.interest_to_pay
         #TODO:When to use deepcopy
         tranches_ABC = deepcopy(Bonds)
@@ -67,10 +76,9 @@ class Waterfall():
             interest_transfer_to_prin = interest_to_pay[dates_recycle[date_pay_index]] - pay_for_fee
             if interest_transfer_to_prin < 0 :
                 logger.info('interest_transfer_to_prin on {0} is less than 0: {1}'.format(date_pay,interest_transfer_to_prin))
-
+            
             principal_to_pay[dates_recycle[date_pay_index]] += interest_transfer_to_prin
             
-            #logger.info('amount_available_for_prin is {0}'.format(amount_available_for_prin))
             if RevolvingDeal == True:
                 if date_pay >= date_revolving_pools_cut[-1] + relativedelta(months=1):
                     amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
@@ -86,11 +94,22 @@ class Waterfall():
                 amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
                 amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
             
+#            amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
+#            logger.info('amount_available_for_prin is {0}'.format(amount_available_for_prin))
+#            
+#            amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+#            amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+#            amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+#            amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
+
             #logger.info('Loop Done for {0}'.format(date_pay))        
             
+            #interest_acc_original[dates_recycle[date_pay_index]] -= pay_for_fee
+            
         
-        AP_PAcc_wf = pd.DataFrame(list(principal_to_pay.items()), columns=['date_recycle', 'amount_recycle_principal'])
-        AP_IAcc_wf = pd.DataFrame(list(principal_to_pay.items()), columns=['date_recycle', 'amount_recycle_interest'])
+        AP_PAcc_pay_wf = pd.DataFrame(list(principal_acc_original.items()), columns=['date_recycle', 'principal_prepared_to_pay'])
+        AP_PAcc_buy_wf = pd.DataFrame(list(principal_to_buy.items()), columns=['date_recycle', 'principal_prepared_to_buy'])
+        AP_IAcc_pay_wf = pd.DataFrame(list(interest_acc_original.items()), columns=['date_recycle', 'interest_prepared_to_pay'])
         
         A_Principal_wf = pd.DataFrame(list(A_PAcc.receive.items()), columns=['date_pay', 'amount_pay_A_principal'])
         B_Principal_wf = pd.DataFrame(list(B_PAcc.receive.items()), columns=['date_pay', 'amount_pay_B_principal'])
@@ -110,8 +129,11 @@ class Waterfall():
         C_Balance_wf = pd.DataFrame(list(C_PAcc.balance.items()), columns=['date_pay', 'amount_outstanding_C_principal'])
         EE_Balance_wf = pd.DataFrame(list(EE_Acc.balance.items()), columns=['date_pay', 'amount_outstanding_EE_principal'])
         
-        AssetPool_wf = AP_PAcc_wf.merge(AP_IAcc_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
-        #AP_wf['pay_date'] = dates_pay[dates_recycle.index[AP_wf['date_recycle']]]
+        AssetPool_wf = AP_PAcc_pay_wf\
+                        .merge(AP_PAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
+                        .merge(AP_IAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
+                        
+        AssetPool_wf['date_pay'] = dates_pay
         
         Bond_wf = A_Principal_wf\
                   .merge(B_Principal_wf,left_on='date_pay',right_on='date_pay',how='outer')\
@@ -127,7 +149,8 @@ class Waterfall():
                   .merge(A_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
                   .merge(B_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
                   .merge(C_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
-                  .merge(EE_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')
+                  .merge(EE_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
+                  .merge(AssetPool_wf,left_on='date_pay',right_on='date_pay',how='outer')\
                         
         
         logger.info('total principal payment is {0}'.format(sum(Bond_wf[['amount_pay_A_principal','amount_pay_B_principal','amount_pay_C_principal']].sum())))

@@ -71,15 +71,15 @@ class Statistics():
         
         
         b_s_4 = {
-                '借款人加权平均年龄':(df['Age_Project_Start']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum(),
-                 '30-40岁借款人贷款余额占比（%）':df[(df['Age_Project_Start']>30) & (df['Age_Project_Start']<=40)]\
-                                                  ['Amount_Outstanding'].sum() / df['Amount_Outstanding'].sum() * 100,                
-                 
-                 '借款人加权平均年收入（万元）':(df['Income']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() / 10000 ,
+#                '借款人加权平均年龄':(df['Age_Project_Start']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum(),
+#                 '30-40岁借款人贷款余额占比（%）':df[(df['Age_Project_Start']>30) & (df['Age_Project_Start']<=40)]\
+#                                                  ['Amount_Outstanding'].sum() / df['Amount_Outstanding'].sum() * 100,                
+#                 
+#                 '借款人加权平均年收入（万元）':(df['Income']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() / 10000 ,
                 }
-    
+#    
         df_b_s_list = []
-        for b_s_dict in [b_s_1,b_s_2,b_s_3,b_s_4]:   
+        for b_s_dict in [b_s_1,b_s_2,b_s_3,b_s_4]:
             df_b_s = pd.DataFrame(list(b_s_dict.items()),columns=['项目','数值'])
             df_b_s_list.append(df_b_s)
         save_to_excel(df_b_s_list,'statistics'+Batch_ID,wb_name)
