@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+## -*- coding: utf-8 -*-
 '''
 Created on Mon Jun  5 20:59:42 2017
 
@@ -15,7 +15,7 @@ pd.options.mode.chained_assignment = None
 
 def cash_flow_collection(df_cash_flow,dates_recycle,first_due_period,revolving_pool_name,wb_name):
     
-    logger.info('Calculating PMT for ' + revolving_pool_name + '.....')
+    #logger.info('Calculating PMT for ' + revolving_pool_name + '.....')
     unique_due_month = pd.unique(df_cash_flow[first_due_period].ravel())
     
     #logger.info('Calculating PPMT for ' + revolving_pool_name + '.....')
@@ -45,7 +45,7 @@ def cash_flow_collection(df_cash_flow,dates_recycle,first_due_period,revolving_p
                                          })
     #save_to_excel(df_pmt_total_by_date,'acf_pmt_'+revolving_pool_name,wb_name)
     
-    logger.info('Cash Flow Calculation Done for ' + revolving_pool_name + '.....')
+    #logger.info('Cash Flow Calculation Done for ' + revolving_pool_name + '.....')
     
     return df_pmt_total_by_date#,df_ppmt_total_by_date,df_ipmt_total_by_date,df_fee_total_by_date
     
