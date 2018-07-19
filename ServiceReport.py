@@ -45,7 +45,11 @@ class ServiceReport():
                     AssetPool_all_pre = pd.read_csv(AssetPoolPath_all_pre,encoding = 'utf-8') 
                 except:
                     AssetPool_all_pre = pd.read_csv(AssetPoolPath_all_pre,encoding = 'gbk') 
-                AssetPool_all_pre['订单号'] = '#' + AssetPool_all_pre['订单号'].astype(str)
+                try:
+                    AssetPool_all_pre['订单号'] = '#' + AssetPool_all_pre['订单号'].astype(str)
+                except(KeyError):
+                    AssetPool_all_pre['订单号'] = AssetPool_all_pre['#合同号']
+                
                 self.service_report_AllAssetList_pre = self.service_report_AllAssetList_pre.append(AssetPool_all_pre,ignore_index=True)
             self.service_report_AllAssetList_pre = self.service_report_AllAssetList_pre.rename(columns = sr_distribution_rename)
             
@@ -93,15 +97,16 @@ class ServiceReport():
         self.service_report_AllAssetList = self.service_report_AllAssetList.rename(columns = sr_distribution_rename)
 
         self.for_report = self.service_report_AllAssetList[#(~self.service_report_AllAssetList['No_Contract'].isin(self.service_report_RedemptionAssetList['订单号'])) &
-                                                           (self.service_report_AllAssetList['贷款是否已结清'] == 'N') &
-                                                           (self.service_report_AllAssetList['贷款状态'] == '拖欠1-30天贷款' ) &
+                                                           (self.service_report_AllAssetList['贷款是否已结清'] == 'N') #&
+                                                           #(self.service_report_AllAssetList['Credit_Score'] == 0) #&
+                                                           #(self.service_report_AllAssetList['贷款状态'] == '拖欠1-30天贷款' ) &
                                                            #(self.service_report_AllAssetList['Type_Five_Category'] == 'XNA')
-                                                           (self.service_report_AllAssetList['入池时间'] == '2018/4/16') &
-                                                           (pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.year == 2020) &
-                                                           (pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.month == 4) &
-                                                           (pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.day == 25)
+                                                          # (self.service_report_AllAssetList['入池时间'] == '2018/4/16') &
+                                                           #(pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.year == 2020) &
+                                                           #(pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.month == 4) &
+                                                           #(pd.to_datetime(self.service_report_AllAssetList['Dt_Maturity']).dt.day == 25)
                                                            ]
-        self.for_report.to_csv(path_root  + '/../CheckTheseProjects/' +self.name+'/' + 'for_report_cf_check_o.csv')
+        #self.for_report.to_csv(path_root  + '/../CheckTheseProjects/' +self.name+'/' + 'for_report_check_cs.csv')
         
     def add_SeviceRate_From(self,df):
         
@@ -180,7 +185,7 @@ class ServiceReport():
                                                        (self.service_report_AllAssetList['Type_Five_Category']=='XNA')
                                                         ]
         DetailList.to_csv(path_root  + '/../CheckTheseProjects/' +self.name+'/' + 'check_五级分类_Jonah.csv')
-        save_to_excel(group_by_d(self.service_report_AllAssetList,['贷款是否已结清','Type_Five_Category'],'Amount_Outstanding_yuan'),'service_report',self.wb_save_results)
+        save_to_excel(group_by_d(self.service_report_AllAssetList,['贷款是否已结清','Type_Five_Category'],'Amount_Outstanding_yuan'),'service_report',wb_name_sr)
     
     
     def service_report_cal(self):

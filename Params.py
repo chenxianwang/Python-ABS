@@ -72,16 +72,16 @@ scenarios['worst'] = {'rate_default':0.07,'rate_prepay':0.22,'rate_overdue':0.03
 
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
-MaxWAScore = 0.065 
+MaxWAScore = 0.065
 MinWAScore = MaxWAScore * 0.995
  
-MinWARate = 0.20
-MaxWARate = MinWARate * 1.0001
+MinWARate = 0.18
+MaxWARate = MinWARate * 1.0024
 
 MaxWALoanRemainTerm = 390
 
-MaxIssueVolumn = 1800000000
-MinIssueVolumn = 1790000000
+MaxIssueVolumn = 2000000000
+MinIssueVolumn = 1950000000
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
@@ -97,9 +97,9 @@ Targets_all = {
            'Amount_Outstanding_min':{'object':'GreaterThan','object_value':MinIssueVolumn},
            }
 
-Targets_keys = ['Credit_Score_max',#'Credit_Score_min',
+Targets_keys = ['Credit_Score_max','Credit_Score_min',
                 'Interest_Rate_min','Interest_Rate_max',
-                #'Amount_Outstanding_max','Amount_Outstanding_min',
+                'Amount_Outstanding_max','Amount_Outstanding_min',
                 #'LoanRemainTerm',
                ]
 
@@ -113,9 +113,9 @@ Targets = {k:Targets_all[k] for k in Targets_keys}
 
 Distribution_By_Category = [#'Type_Loans',
                             'Interest_Rate',#'Marriagestate',
-                            #'Province','职业_信托',
-                            #'Profession','Type_Five_Category',
-                            #'Usage'#,'Gender'
+                            'Province',
+                            'Profession','职业_信托',
+                            #'Type_Five_Category','Usage'#,'Gender'
                             ]
 
 income_bins = [0,50000,100000,150000,200000,2000000,100000000]

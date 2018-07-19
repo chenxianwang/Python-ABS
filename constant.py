@@ -23,7 +23,7 @@ wb_name_sr = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectN
 #                          }
 
 
-DWH_header_rename = {'#合同号':'No_Contract','#证件号码':'ID', #SKP_CLIENT #证件号码
+DWH_header_rename = {'#合同号':'No_Contract','#证件号码':'ID',#'SKP_CLIENT':'ID', #SKP_CLIENT 
                      '职业':'Profession','购买商品':'Usage','信用评分':'Credit_Score_15',
                      '年收入':'Income','省份':'Province','起始日':'Dt_Start','初始还款日':'Dt_First_Pay','到期日':'Dt_Maturity','合同期限':'Term_Contract',
                       '剩余期数':'Term_Remain','合同本金':'Amount_Contract_yuan','截至封包日剩余本金':'Amount_Outstanding_yuan',
@@ -61,7 +61,8 @@ sr_distribution_rename = {'订单号':'No_Contract','账户号':'ID','借款人�
                      '初始还款日':'Dt_First_Pay','出生日期':'Dt_Birthday',
                      '借款人年龄':'Age_Project_Start',
                      '借款人年收入':'Income','G3：省份':'Province','贷款发放日':'Dt_Start','贷款到期日':'Dt_Maturity','合同期数':'Term_Contract',
-                      '剩余期数':'Term_Remain','合同金额':'Amount_Contract_yuan','剩余本金':'Amount_Outstanding_yuan',
+                      '剩余期数':'Term_Remain','合同金额':'Amount_Contract_yuan',
+                      '剩余本金':'Amount_Outstanding_yuan','截至封包日剩余本金':'Amount_Outstanding_yuan',
                           '合同贷款利率':'Interest_Rate','五级分类':'Type_Five_Category',
                           '历史最大逾期天数':'Days_Overdue_Max','当前逾期天数':'Days_Overdue_Current',
                           '下一个交易日':'first_due_date_after_pool_cut',

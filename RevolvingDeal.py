@@ -17,7 +17,6 @@ from abs_util.util_sr import *
 from dateutil.relativedelta import relativedelta
 import datetime
 from Deal import Deal
-from AssetPool import AssetPool
 from AssetsCashFlow import AssetsCashFlow
 from APCF_adjuster import APCF_adjuster
 from Accounts.AssetPoolAccount import AssetPoolAccount
@@ -28,8 +27,8 @@ logger = get_logger(__name__)
 
 class RevolvingDeal(Deal):
     
-    def __init__(self,name,AP,date_revolving_pools_cut,date_trust_effective,recycle_adjust_factor,scenarios):
-        super().__init__(name,AP,date_trust_effective,recycle_adjust_factor,scenarios)
+    def __init__(self,name,PoolCutDate,AssetPoolName,date_revolving_pools_cut,date_trust_effective,recycle_adjust_factor,scenarios):
+        super().__init__(name,PoolCutDate,AssetPoolName,date_trust_effective,recycle_adjust_factor,scenarios)
         
         self.RevolvingDeal = True
         self.apcf_adjusted = {}  # Original_adjusted + Revolving_adjusted
@@ -69,7 +68,7 @@ class RevolvingDeal(Deal):
                 purchase_amount = self.prepare_PurchaseAmount(which_revolving_pool,scenario_id)
                 self.RevolvingPool_PurchaseAmount[which_revolving_pool] = purchase_amount
                 self.total_purchase_amount += purchase_amount
-                logger.info('purchase_amount for scenario_id {0} and Revolving pool {1} is :{2}'.format(scenario_id,which_revolving_pool,purchase_amount))
+                #logger.info('purchase_amount for scenario_id {0} and Revolving pool {1} is :{2}'.format(scenario_id,which_revolving_pool,purchase_amount))
                 #logger.info('Total purchase_amount is {0}'.format(self.total_purchase_amount))
                 apcf_structure_revolving['OutstandingPrincipal'] = purchase_amount * apcf_structure_revolving['OutstandingPrincipal_Proportion']
                 last_term = int((apcf_structure_revolving['Term_Remain'] + apcf_structure_revolving['first_due_period_R']).max())
@@ -107,7 +106,9 @@ class RevolvingDeal(Deal):
         amount_interest = self.AP_IAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
         
         self.AP_PAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]] -= amount_principal
-        self.AP_PAcc_buy[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_principal
+        self.AP_IAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]] -= amount_interest
+        
+        self.AP_PAcc_buy[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_principal + amount_interest
         
         return amount_principal + amount_interest
         
