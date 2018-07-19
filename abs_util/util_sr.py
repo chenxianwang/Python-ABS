@@ -8,6 +8,7 @@ import pandas as pd
 from abs_util.util_general import *
 from abs_util.util_cf import *
 import datetime
+from Params import *
 from dateutil.relativedelta import relativedelta
 from AssetsCashFlow import AssetsCashFlow
 
@@ -51,11 +52,12 @@ def cal_table_6(DetailList,calcDate,wb_name):
                                                         DetailList['first_due_date_after_pool_cut'] != '3000/1/1',
                                                         calcDate
                                                         )
-    #DetailList['SERVICE_FEE_RATE'] = 0
+    DetailList['SERVICE_FEE_RATE'] = 0
     asset_status_calcDate_BackMonth = {'正常贷款':{'calcDate':calcDate,'BackMonth':0},
                     '拖欠1-30天贷款':{'calcDate':calcDate + relativedelta(months=-1),'BackMonth':1},
                     '拖欠31-60天贷款':{'calcDate':calcDate + relativedelta(months=-2),'BackMonth':2},
-                    '拖欠61-90天贷款': {'calcDate':calcDate + relativedelta(months=-3),'BackMonth':3}
+                    '拖欠61-90天贷款': {'calcDate':calcDate + relativedelta(months=-3),'BackMonth':3},
+                    '拖欠90天以上贷款': {'calcDate':calcDate + relativedelta(months=-4),'BackMonth':4}
                     }
 
     for asset_status in asset_status_calcDate_BackMonth.keys():
@@ -65,12 +67,11 @@ def cal_table_6(DetailList,calcDate,wb_name):
         DetailList_a_s = DetailList[DetailList['贷款状态'] == asset_status]
         if len(DetailList_a_s) >0:
             
-            ACF = AssetsCashFlow(ProjectName,
-                             DetailList_a_s[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain',]],
+            ACF = AssetsCashFlow(DetailList_a_s[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain',]],
                              asset_status_calcDate_BackMonth[asset_status]['calcDate']
                              )
     
-            acf_original = ACF.calc_OriginalPool_ACF(asset_status_calcDate_BackMonth[asset_status]['BackMonth'])            
+            acf_original,acf_structure = ACF.calc_APCF(asset_status_calcDate_BackMonth[asset_status]['BackMonth'])            
             
 #            cf_c_a_s_1 = _cf_c_a_s[_cf_c_a_s['date_recycle'] <= get_next_eom(calcDate,0)]
 #            cf_c_a_s_1 = pd.DataFrame(cf_c_a_s_1[['amount_interest','amount_principal','amount_total']].sum()).transpose()
@@ -80,7 +81,7 @@ def cal_table_6(DetailList,calcDate,wb_name):
 #            #save_to_excel(cf_c_a_s_2,asset_status+'_2',wb_name)        
 #            cf_c_a_s = cf_c_a_s_1.append(cf_c_a_s_2,ignore_index=True)
             
-            save_to_excel(acf_original,asset_status + '_cf_ServiceReport',wb_name)
+            save_to_excel(acf_original,asset_status + '_cf'+Batch_ID,wb_name)
         
         
     

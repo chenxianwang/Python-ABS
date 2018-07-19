@@ -19,7 +19,7 @@ pd.options.mode.chained_assignment = None
     
 def get_logger(logger_name):
     
-    logging.basicConfig(#filename='asset_pool_analysis.txt',\
+    logging.basicConfig(#filename=path_root + '/asset_pool_analysis.txt',\
                         level = logging.DEBUG,\
                         #format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
                         )
@@ -119,7 +119,8 @@ def df_bins_result(df,d,bins_this):
 
 def stastics_group_by_d(df,d_cut,d):
     df_this = df.groupby([d_cut])\
-               .agg({'Amount_Contract':'sum','Amount_Outstanding':'sum','No_Contract':'count'})\
+               .agg({'Amount_Contract':'sum',
+                     'Amount_Outstanding':'sum','No_Contract':'count'})\
                .reset_index()\
                .rename(columns = {'Amount_Contract':'合同本金（万元）',
                                   'Amount_Outstanding':'本金余额（万元）',
@@ -147,7 +148,7 @@ def percentage_cal(df,d):
     return df
 
 def Condition_Satisfied_or_Not(Assets,target_d,Targets):
-        if target_d in ['Score','LoanRemainTerm','Interest_Rate_max']:
+        if target_d in ['Credit_Score_max','LoanRemainTerm','Interest_Rate_max']:
             value_d = sum(Assets[target_d] * Assets['Amount_Outstanding']) / sum(Assets['Amount_Outstanding'])
             if  value_d <= Targets[target_d]['object_value'] :
                 print(target_d + ' Condition Completed. Weighted Average of ' + target_d + ' update:',value_d)
@@ -164,7 +165,7 @@ def Condition_Satisfied_or_Not(Assets,target_d,Targets):
                 print(target_d + ' Condition NOT Completed. ' + target_d + ' update:',value_d)
                 print('Target is...',Targets[target_d]['object'],Targets[target_d]['object_value'])
                 
-        elif target_d in ['Interest_Rate_min']:
+        elif target_d in ['Credit_Score_min','Interest_Rate_min']:
             value_d = sum(Assets[target_d] * Assets['Amount_Outstanding']) / sum(Assets['Amount_Outstanding'])
             if  value_d >= Targets[target_d]['object_value'] :
                 print(target_d + ' Condition Completed. ' + target_d + ' update:',value_d)
