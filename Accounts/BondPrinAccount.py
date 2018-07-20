@@ -34,7 +34,7 @@ class BondPrinAccount():
             self.receive[date_pay] = 0
             return amount_available
         
-        elif amount_available < 0:
+        elif amount_available < -0.000001:
             logger.info('amount_available for {0} on {1} is {2}: '.format(self.name_bond,date_pay,amount_available) )
             sys.exit("!!!!!!!!!    Can not cover payment      !!!!!!!")
             

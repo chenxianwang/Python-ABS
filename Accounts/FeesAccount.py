@@ -28,7 +28,13 @@ class FeesAccount():
     
     def pay(self,date_pay,basis):
         
-        previous_date_pay = date_pay + relativedelta(months= -1)
+        if (self.name_fee == 'service') & (date_pay == dates_pay[0]):
+            previous_date_pay = dt_param['dt_pool_cut']
+        else:
+            previous_date_pay = date_pay + relativedelta(months= -1)
+        
         period_range = (date_pay - previous_date_pay).days
+        
+        
         self.receive[date_pay] = basis * self.feeinfo['rate'] * period_range / days_in_a_year
         return  self.receive[date_pay]        
