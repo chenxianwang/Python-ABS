@@ -42,18 +42,17 @@ class Deal():
         self.list_AssetPoolName = AssetPoolName
         
         self.asset_pool = pd.DataFrame()  
-        
-        self.AP_PAcc_pay = {}
-        self.AP_PAcc_buy = {}
-        self.AP_IAcc_pay = {}
-        
-        self.asset_pool = pd.DataFrame()
         self.apcf_original = pd.DataFrame()
         self.apcf_structure = pd.DataFrame()
-        
         self.recycle_adjust_factor = recycle_adjust_factor
-        
         self.apcf_original_adjusted = {}
+        
+        self.AP_PAcc_total = {}
+        self.AP_PAcc_pay = {}
+        self.AP_PAcc_buy = {}
+        self.AP_IAcc_total = {}
+        self.AP_IAcc_pay = {}
+        self.AP_IAcc_buy = {}
         
         self.waterfall = {}
         self.wf_BasicInfo = {}
@@ -189,10 +188,17 @@ class Deal():
              logger.info('scenario_id is {0}'.format(scenario_id))
              #AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id] if self.RevolvingDeal == True else self.apcf_original_adjusted[scenario_id])
              AP_Acc = AssetPoolAccount(self.apcf_original_adjusted[scenario_id])
-             principal_available = AP_Acc.available_principal_to_pay()
-             self.AP_PAcc_pay[scenario_id] = principal_available[0]
-             self.AP_PAcc_buy[scenario_id] = principal_available[1]
-             self.AP_IAcc_pay[scenario_id] = AP_Acc.available_interest_to_pay()
+             
+             principal_available = AP_Acc.available_principal()
+             self.AP_PAcc_total[scenario_id] = principal_available[0]
+             self.AP_PAcc_pay[scenario_id] = principal_available[1]
+             self.AP_PAcc_buy[scenario_id] = principal_available[2]
+             
+             interest_available = AP_Acc.available_interest()
+             self.AP_IAcc_total[scenario_id] = interest_available[0]
+             self.AP_IAcc_pay[scenario_id] = interest_available[1]
+             self.AP_IAcc_buy[scenario_id] = interest_available[2]
+             
 #             for pay_date in dates_pay[:5]:
 #                 logger.info('self.AP_PAcc_pay[{0}][{1}] is {2}'.format(scenario_id,dates_recycle[dates_pay.index(pay_date)],self.AP_PAcc_pay[scenario_id][dates_recycle[dates_pay.index(pay_date)]]))
 #                 logger.info('self.AP_IAcc_pay[{0}][{1}] is {2}'.format(scenario_id,dates_recycle[dates_pay.index(pay_date)],self.AP_IAcc_pay[scenario_id][dates_recycle[dates_pay.index(pay_date)]]))
@@ -203,7 +209,9 @@ class Deal():
          for scenario_id in self.scenarios.keys():
              logger.info('scenario_id is {0}'.format(scenario_id))
              #WF = Waterfall(self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],self.AP_IAcc_pay[scenario_id],dt_param)
-             waterfall = run_Accounts(self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],self.AP_IAcc_pay[scenario_id],Bonds,self.RevolvingDeal)
+             waterfall = run_Accounts(self.AP_PAcc_total[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],
+                                      self.AP_IAcc_total[scenario_id],self.AP_IAcc_pay[scenario_id],self.AP_IAcc_buy[scenario_id],
+                                      Bonds,self.RevolvingDeal)
              
              self.waterfall[scenario_id] = deepcopy(waterfall)
              self.wf_BasicInfo[scenario_id] = deepcopy(BasicInfo_calculator(waterfall,dt_param,Bonds))

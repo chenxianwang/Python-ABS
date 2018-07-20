@@ -39,13 +39,13 @@ def main():
 #    #D.asset_pool = D.asset_pool[D.asset_pool['Credit_Score_15'] == 0]
 #    #D.asset_pool = D.asset_pool[pd.to_datetime(D.asset_pool['Dt_Start']).dt.date >= datetime.date(2018,7,1)]
 #    #D.asset_pool = D.asset_pool[pd.to_datetime(D.asset_pool['Dt_Maturity']).dt.date >= datetime.datetime.now().date()]
-    
-#    D.add_Columns([
-#                  #[['AssetsFromCFIT'],'No_Contract','#合同号'],
-#                  [['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
-#                  #[['ABS9 contract list_20180416_0','ABS9 contract list_20180416_1'],'No_Contract','#合同号']
-#                  ]
-#                  )
+#    
+##    D.add_Columns([
+##                  #[['AssetsFromCFIT'],'No_Contract','#合同号'],
+##                  [['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
+##                  #[['ABS9 contract list_20180416_0','ABS9 contract list_20180416_1'],'No_Contract','#合同号']
+##                  ]
+##                  )
 ## 
 #    #D.asset_pool[D.asset_pool['LoanRemainTerm'] <= 230].rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/remain_to_ABS10_1.csv',index=False)
 #    #D.asset_pool[D.asset_pool['LoanRemainTerm'] > 230].rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/remain_to_ABS10_2.csv',index=False)    
@@ -54,7 +54,7 @@ def main():
 #    
 #    #D.run_ReverseSelection(Targets,RS_Group_d)
 #    #D.asset_pool.rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/ABS9_R1_selected.csv',index=False)
-#    D.run_Stat()
+#    #D.run_Stat()
 #    D.get_oAPCF()         # D.apcf is available
 #    ##save_to_excel(D.apcf_original,'apcf_original',wb_name)
 #    D.adjust_oAPCF()      # D.apcf_adjusted[scenario_id] is available
@@ -74,7 +74,7 @@ def main():
     RD = RevolvingDeal(ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
     RD.get_rAssetPool() 
     RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15'].round(3)
-    RD.run_Stat()
+    #RD.run_Stat()
     RD.get_oAPCF()         # RD.apcf is available
     RD.get_rAPCF_structure()
     
