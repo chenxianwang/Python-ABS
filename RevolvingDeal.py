@@ -80,20 +80,39 @@ class RevolvingDeal(Deal):
                 self.apcf_revolving[which_revolving_pool] = cash_flow_collection(apcf_structure_revolving,dates_recycle_list_revolving,'first_due_period_R','Revolving'+str(which_revolving_pool),wb_name)
                 #save_to_excel(self.apcf_revolving[which_revolving_pool],'rAPCF_' + scenario_id + str(which_revolving_pool),wb_name)
                 self.adjust_rAPCF(which_revolving_pool,scenario_id)
+                
                 #save_to_excel(self.apcf_revolving_adjusted[scenario_id][which_revolving_pool],'rAPCFa_' + scenario_id + str(which_revolving_pool),wb_name)
                 
                 _AP_Acc = AssetPoolAccount(self.apcf_revolving_adjusted[scenario_id][which_revolving_pool])
-                _principal_available = _AP_Acc.available_principal_to_pay()
+                _principal_available = _AP_Acc.available_principal()
+                _AP_PAcc_total = {}
                 _AP_PAcc_pay = {}
                 _AP_PAcc_buy = {}
-                _AP_IAcc_pay = {}
-                _AP_PAcc_pay[scenario_id] = _principal_available[0]
-                _AP_PAcc_buy[scenario_id] = _principal_available[1]
-                _AP_IAcc_pay[scenario_id] = _AP_Acc.available_interest_to_pay()
+                _AP_PAcc_total[scenario_id] = _principal_available[0]                
+                _AP_PAcc_pay[scenario_id] = _principal_available[1]
+                _AP_PAcc_buy[scenario_id] = _principal_available[2]
                 
+                _interest_available = _AP_Acc.available_interest()
+                _AP_IAcc_total = {}
+                _AP_IAcc_pay = {}
+                _AP_IAcc_buy = {}
+                _AP_IAcc_total[scenario_id] = _interest_available[0]                
+                _AP_IAcc_pay[scenario_id] = _interest_available[1]
+                _AP_IAcc_buy[scenario_id] = _interest_available[2]
+                
+                #logger.info('_AP_PAcc_total[scenario_id][k] for date {0} is {1}'.format(datetime.date(2018,8,31),_AP_PAcc_total[scenario_id][datetime.date(2018,8,31)]))
+                
+                #TODO: Check why AP_PAcc_pay has all keys
                 for k in dates_recycle:
+                    self.AP_PAcc_total[scenario_id][k] += _AP_PAcc_total[scenario_id][k]
                     self.AP_PAcc_pay[scenario_id][k] += _AP_PAcc_pay[scenario_id][k]
+                    self.AP_PAcc_buy[scenario_id][k] += _AP_PAcc_buy[scenario_id][k]
+                    
+                    self.AP_IAcc_total[scenario_id][k] += _AP_IAcc_total[scenario_id][k]
                     self.AP_IAcc_pay[scenario_id][k] += _AP_IAcc_pay[scenario_id][k]
+                    self.AP_IAcc_buy[scenario_id][k] += _AP_IAcc_buy[scenario_id][k]
+
+                #logger.info('self.AP_PAcc_total[scenario_id][k] for date {0} is {1}'.format(datetime.date(2018,8,31),self.AP_PAcc_total[scenario_id][datetime.date(2018,8,31)]))
                 
                 if self.apcf_revolving_adjusted_all[scenario_id].empty :
                     self.apcf_revolving_adjusted_all[scenario_id] = self.apcf_revolving_adjusted[scenario_id][which_revolving_pool]
@@ -102,20 +121,40 @@ class RevolvingDeal(Deal):
         
 
     def prepare_PurchaseAmount(self,for_which_revolving_pool,scenario_id):
-        amount_principal = self.AP_PAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
-        amount_interest = self.AP_IAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
+        amount_principal = self.AP_PAcc_total[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
+        amount_interest = self.AP_IAcc_total[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
+        #logger.info('amount_interest for Revolving Pool {0} is {1}'.format(for_which_revolving_pool,amount_interest))
         
-        self.AP_PAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]] -= amount_principal
-        self.AP_IAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]] -= amount_interest
+        amount_principal_reserve = 0
+        amount_interest_reserve = 0  
+        amount_interest_reserve += amount_interest * fees['tax']['rate']
+        #logger.info('amount_interest_reserved for tax of Revolving Pool {0} is {1}'.format(for_which_revolving_pool,amount_interest_reserved))
+        for fee_name in ['trustee','trust_management','service']:
+            amount_interest_reserve += self.reserve_for_fee(dates_pay[for_which_revolving_pool - 1],fee_name,Bonds['A']['amount'] + Bonds['B']['amount'])
+        for fee_name in ['A','B']:
+            amount_interest_reserve += self.reserve_for_fee(dates_pay[for_which_revolving_pool - 1],fee_name,Bonds[fee_name]['amount'])
         
-        self.AP_PAcc_buy[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_principal + amount_interest
+        #logger.info('amount_interest_reserved for Revolving Pool {0} is {1}'.format(for_which_revolving_pool,amount_interest_reserved))
         
-        return amount_principal + amount_interest
+        self.AP_PAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_principal_reserve
+        self.AP_PAcc_buy[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_principal - amount_principal_reserve
+        
+        self.AP_IAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_interest_reserve
+        self.AP_IAcc_buy[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_interest - amount_interest_reserve
+        
+        return (amount_principal - amount_principal_reserve) + (amount_interest - amount_interest_reserve)
         
         
     def adjust_rAPCF(self,which_revolving_pool,scenario_id):
         #logger.info('adjust_rAPCF for scenario_id {0} & revolving pool {1}...'.format(scenario_id,which_revolving_pool))  
         APCFa = APCF_adjuster(self.apcf_revolving[which_revolving_pool],self.recycle_adjust_factor,self.scenarios,scenario_id)
         this_adjusted = deepcopy(APCFa.adjust_APCF())
-        self.apcf_revolving_adjusted[scenario_id][which_revolving_pool] = this_adjusted
+        self.apcf_revolving_adjusted[scenario_id][which_revolving_pool] = deepcopy(this_adjusted)
         #save_to_excel(self.apcf_revolving_adjusted[scenario_id][which_revolving_pool],scenario_id+'_r'+str(which_revolving_pool)+'_a',wb_name)
+
+    def reserve_for_fee(self,date_pay,fee_name,basis):
+        
+        previous_date_pay = date_pay + relativedelta(months= -1)
+        period_range = (date_pay - previous_date_pay).days
+        amt_reserve = basis * fees[fee_name]['rate'] * period_range / days_in_a_year
+        return  amt_reserve   

@@ -37,9 +37,9 @@ date_revolving_pools_cut = [datetime.date(2018,8,1),datetime.date(2018,9,1),date
                             #datetime.date(2019,5,1),datetime.date(2019,6,1),datetime.date(2019,7,1)
                             ]
 
-fees = { 'tax':{'rate':0.0634},
-        'trustee':{'rate':0.00006},
-        'trust_management':{'rate':0.0005},
+fees = { 'tax':{'rate':0.0326},
+        'trustee':{'rate':0.0005},
+        'trust_management':{'rate':0.000055},
         'service':{'rate':0.001},
          'pre_issue':{'amount':643692.18},
          'A':{'rate':0.058},
@@ -57,8 +57,8 @@ rate_discount = 0.40
 amount_total_issuance = 3015926877.69
 
 Bonds = {}
-Bonds['A'] = {'ptg':0.6714,'amount':2025000000, 'rate':0.058}
-Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.068}
+Bonds['A'] = {'ptg':0.6714,'amount':2025000000, 'rate':0.0575}
+Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.0719}
 Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
 Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
 
