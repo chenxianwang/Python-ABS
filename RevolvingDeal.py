@@ -40,14 +40,14 @@ class RevolvingDeal(Deal):
         
         self.apcf_revolving_adjusted = {}
         self.apcf_revolving_adjusted_all = {}
+        self.RevolvingPool_PurchaseAmount = {}
         
         self.total_purchase_amount = 0
-        
-        self.RevolvingPool_PurchaseAmount = {}
         
         for scenario_id in self.scenarios.keys():
             self.apcf_revolving_adjusted[scenario_id] = {}
             self.apcf_revolving_adjusted_all[scenario_id] = pd.DataFrame()
+            self.RevolvingPool_PurchaseAmount[scenario_id] = {}
         
     def get_rAssetPool(self):
         
@@ -60,13 +60,13 @@ class RevolvingDeal(Deal):
     
     def forcast_Revolving_APCF(self):
         for scenario_id in self.scenarios.keys():
-            #logger.info('forcast_Revolving_APCF for scenario_id {0}...'.format(scenario_id))  
+            logger.info('forcast_Revolving_APCF for scenario_id {0}...'.format(scenario_id))  
             for which_revolving_pool in range(1,len(self.date_revolving_pools_cut) + 1):
                 
                 apcf_structure_revolving = deepcopy(self.apcf_structure_revolving)
                 
                 purchase_amount = self.prepare_PurchaseAmount(which_revolving_pool,scenario_id)
-                self.RevolvingPool_PurchaseAmount[which_revolving_pool] = purchase_amount
+                self.RevolvingPool_PurchaseAmount[scenario_id][which_revolving_pool] = purchase_amount
                 self.total_purchase_amount += purchase_amount
                 #logger.info('purchase_amount for scenario_id {0} and Revolving pool {1} is :{2}'.format(scenario_id,which_revolving_pool,purchase_amount))
                 #logger.info('Total purchase_amount is {0}'.format(self.total_purchase_amount))
@@ -128,13 +128,20 @@ class RevolvingDeal(Deal):
         amount_principal_reserve = 0
         amount_interest_reserve = 0  
         amount_interest_reserve += amount_interest * fees['tax']['rate']
-        #logger.info('amount_interest_reserved for tax of Revolving Pool {0} is {1}'.format(for_which_revolving_pool,amount_interest_reserved))
+        #logger.info('amount_interest_reserve for tax of Revolving Pool {0} is {1}'.format(for_which_revolving_pool,amount_interest_reserve))
+        #logger.info('calc basis for Revolving Pool {0} is {1}'.format(for_which_revolving_pool,sum([self.AP_PAcc_total[scenario_id][k] for k in dates_recycle if dates_recycle.index(k) >= for_which_revolving_pool - 1])))
         for fee_name in ['trustee','trust_management','service']:
-            amount_interest_reserve += self.reserve_for_fee(dates_pay[for_which_revolving_pool - 1],fee_name,Bonds['A']['amount'] + Bonds['B']['amount'])
+            amount_interest_reserve += self.reserve_for_fee(dates_pay[for_which_revolving_pool - 1],fee_name,
+                                                            sum([self.AP_PAcc_total[scenario_id][k] for k in dates_recycle if dates_recycle.index(k) >= for_which_revolving_pool - 1])
+                                                            )
+        #logger.info('amount_interest_reserve for tax of Revolving Pool {0} is {1}'.format(for_which_revolving_pool,amount_interest_reserve))
+        
         for fee_name in ['A','B']:
             amount_interest_reserve += self.reserve_for_fee(dates_pay[for_which_revolving_pool - 1],fee_name,Bonds[fee_name]['amount'])
         
-        #logger.info('amount_interest_reserved for Revolving Pool {0} is {1}'.format(for_which_revolving_pool,amount_interest_reserved))
+        #logger.info('amount_interest_reserve for tax of Revolving Pool {0} is {1}'.format(for_which_revolving_pool,amount_interest_reserve))
+        
+        #logger.info('calc basis for Revolving Pool {0} is {1}'.format(for_which_revolving_pool,sum([self.AP_PAcc_total[scenario_id][k] for k in dates_recycle if dates_recycle.index(k) >= for_which_revolving_pool - 1])))
         
         self.AP_PAcc_pay[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_principal_reserve
         self.AP_PAcc_buy[scenario_id][dates_recycle[for_which_revolving_pool - 1]] = amount_principal - amount_principal_reserve
@@ -154,7 +161,11 @@ class RevolvingDeal(Deal):
 
     def reserve_for_fee(self,date_pay,fee_name,basis):
         
-        previous_date_pay = date_pay + relativedelta(months= -1)
+        if (fee_name == 'service') & (date_pay == dates_pay[0]):
+            previous_date_pay = dt_param['dt_pool_cut']
+        else:
+            previous_date_pay = date_pay + relativedelta(months= -1)
+
         period_range = (date_pay - previous_date_pay).days
         amt_reserve = basis * fees[fee_name]['rate'] * period_range / days_in_a_year
         return  amt_reserve   

@@ -33,8 +33,7 @@ class FeesAccount():
         else:
             previous_date_pay = date_pay + relativedelta(months= -1)
         
-        period_range = (date_pay - previous_date_pay).days
-        
+        period_range = (date_pay - previous_date_pay).days        
         
         self.receive[date_pay] = basis * self.feeinfo['rate'] * period_range / days_in_a_year
         return  self.receive[date_pay]        

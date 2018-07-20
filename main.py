@@ -26,8 +26,8 @@ def main():
     
     start_time = datetime.datetime.now()
 
-#    if os.path.isfile(wb_name):
-#      os.remove(wb_name)
+    if os.path.isfile(wb_name):
+      os.remove(wb_name)
 
     asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']
     #asset_pool_name_list = ['ABS10 contract list_20180719_0','ABS10 contract list_20180719_1','ABS10 contract list_20180719_2']

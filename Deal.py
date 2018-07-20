@@ -183,9 +183,9 @@ class Deal():
             #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
 
     def init_oAP_Acc(self):
-        
+        logger.info('init_oAP_Acc...')
         for scenario_id in self.scenarios.keys():
-             logger.info('scenario_id is {0}'.format(scenario_id))
+             #logger.info('scenario_id is {0}'.format(scenario_id))
              #AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id] if self.RevolvingDeal == True else self.apcf_original_adjusted[scenario_id])
              AP_Acc = AssetPoolAccount(self.apcf_original_adjusted[scenario_id])
              
@@ -211,7 +211,7 @@ class Deal():
              #WF = Waterfall(self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],self.AP_IAcc_pay[scenario_id],dt_param)
              waterfall = run_Accounts(self.AP_PAcc_total[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],
                                       self.AP_IAcc_total[scenario_id],self.AP_IAcc_pay[scenario_id],self.AP_IAcc_buy[scenario_id],
-                                      Bonds,self.RevolvingDeal)
+                                      scenario_id,Bonds,self.RevolvingDeal,self.RevolvingPool_PurchaseAmount[scenario_id])
              
              self.waterfall[scenario_id] = deepcopy(waterfall)
              self.wf_BasicInfo[scenario_id] = deepcopy(BasicInfo_calculator(waterfall,dt_param,Bonds))
