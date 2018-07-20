@@ -20,16 +20,19 @@ from Accounts.TaxAccount import TaxAccount
 
 logger = get_logger(__name__)
 
-def run_Accounts(princ_pay,princ_buy,interest_pay,Bonds,RevolvingDeal): # Initalizing BondsCashFlow
+def run_Accounts(princ_total,princ_pay,princ_buy,
+                 int_total,int_pay,int_buy,
+                 Bonds,RevolvingDeal): # Initalizing BondsCashFlow
     
     logger.info('run_Accounts...')
     
-    principal_acc_original = deepcopy(princ_pay)
-    interest_acc_original = deepcopy(interest_pay)
-    
+    principal_total = deepcopy(princ_total)
     principal_to_pay = deepcopy(princ_pay)
-    interest_to_pay = (interest_pay)
     principal_to_buy = deepcopy(princ_buy)
+    
+    interest_total = deepcopy(int_total)
+    interest_to_pay = deepcopy(int_pay)
+    interest_to_buy = deepcopy(int_buy)
     
     #TODO:When to use deepcopy
     tranches_ABC = deepcopy(Bonds)
@@ -52,55 +55,37 @@ def run_Accounts(princ_pay,princ_buy,interest_pay,Bonds,RevolvingDeal): # Inital
     for date_pay_index,date_pay in enumerate(dates_pay):
         
         #logger.info('B_PAcc.iBalance({0}) is {1}'.format(date_pay,B_PAcc.iBalance(date_pay)))
-        pay_for_fee = tax_Acc.pay(date_pay,[interest_to_pay[dates_recycle[date_pay_index]],0][B_PAcc.iBalance(date_pay) == 0])
-        pay_for_fee += trustee_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
-        pay_for_fee += trust_m_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
-        pay_for_fee += service_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay))
+        pay_for_fee = tax_Acc.pay(date_pay,[interest_total[dates_recycle[date_pay_index]],0][B_PAcc.iBalance(date_pay) == 0])
+        
+        #TODO: change calculation basis to asset pool outstanding principal; not Bonds
+        pay_for_fee += trustee_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay) + C_PAcc.iBalance(date_pay))
+        pay_for_fee += trust_m_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay) + C_PAcc.iBalance(date_pay))
+        pay_for_fee += service_FAcc.pay(date_pay,A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay) + C_PAcc.iBalance(date_pay))
         pay_for_fee += A_IAcc.pay(date_pay,A_PAcc.iBalance(date_pay))
         pay_for_fee += B_IAcc.pay(date_pay,B_PAcc.iBalance(date_pay))
         pay_for_fee += C_IAcc.pay(date_pay,C_PAcc.iBalance(date_pay))
         
         interest_transfer_to_prin = interest_to_pay[dates_recycle[date_pay_index]] - pay_for_fee
-        if interest_transfer_to_prin < 0 :
+        if interest_transfer_to_prin < -0.00001 :
             logger.info('interest_transfer_to_prin on {0} is less than 0: {1}'.format(date_pay,interest_transfer_to_prin))
         
         principal_to_pay[dates_recycle[date_pay_index]] += interest_transfer_to_prin
         
-        if RevolvingDeal == True:
-            
-            #TODO: ############### RD.forcast_Revolving_APCF() start from here ##############################
-            
-            
-            if date_pay >= date_revolving_pools_cut[-1] + relativedelta(months=1):
-                amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
-            else: amount_available_for_prin = 0
-            amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
-        else:
-            amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
-            amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
-        
-#            amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
-#            logger.info('amount_available_for_prin is {0}'.format(amount_available_for_prin))
-#            
-#            amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-#            amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-#            amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-#            amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
+        amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
+        amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+        amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+        amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
+        amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
 
         #logger.info('Loop Done for {0}'.format(date_pay))        
-        
-        #interest_acc_original[dates_recycle[date_pay_index]] -= pay_for_fee
-        
     
-    AP_PAcc_pay_wf = pd.DataFrame(list(principal_acc_original.items()), columns=['date_recycle', 'principal_prepared_to_pay'])
-    AP_PAcc_buy_wf = pd.DataFrame(list(principal_to_buy.items()), columns=['date_recycle', 'principal_prepared_to_buy'])
-    AP_IAcc_pay_wf = pd.DataFrame(list(interest_acc_original.items()), columns=['date_recycle', 'interest_prepared_to_pay'])
+    AP_PAcc_total_wf = pd.DataFrame(list(princ_total.items()), columns=['date_recycle', 'principal_recycle_total'])
+    AP_PAcc_pay_wf = pd.DataFrame(list(princ_pay.items()), columns=['date_recycle', 'principal_recycle_to_pay'])
+    AP_PAcc_buy_wf = pd.DataFrame(list(princ_buy.items()), columns=['date_recycle', 'principal_recycle_to_buy'])
+    
+    AP_IAcc_total_wf = pd.DataFrame(list(int_total.items()), columns=['date_recycle', 'interest_recycle_total'])
+    AP_IAcc_pay_wf = pd.DataFrame(list(int_pay.items()), columns=['date_recycle', 'interest_recycle_to_pay'])
+    AP_IAcc_buy_wf = pd.DataFrame(list(int_buy.items()), columns=['date_recycle', 'interest_recycle_to_buy'])
     
     A_Principal_wf = pd.DataFrame(list(A_PAcc.receive.items()), columns=['date_pay', 'amount_pay_A_principal'])
     B_Principal_wf = pd.DataFrame(list(B_PAcc.receive.items()), columns=['date_pay', 'amount_pay_B_principal'])
@@ -120,9 +105,12 @@ def run_Accounts(princ_pay,princ_buy,interest_pay,Bonds,RevolvingDeal): # Inital
     C_Balance_wf = pd.DataFrame(list(C_PAcc.balance.items()), columns=['date_pay', 'amount_outstanding_C_principal'])
     EE_Balance_wf = pd.DataFrame(list(EE_Acc.balance.items()), columns=['date_pay', 'amount_outstanding_EE_principal'])
     
-    AssetPool_wf = AP_PAcc_pay_wf\
+    AssetPool_wf = AP_PAcc_total_wf\
+                    .merge(AP_PAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
                     .merge(AP_PAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
-                    .merge(AP_IAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
+                    .merge(AP_IAcc_total_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
+                    .merge(AP_IAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
+                    .merge(AP_IAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
                     
     AssetPool_wf['date_pay'] = dates_pay
     
@@ -190,12 +178,12 @@ def CR_calculator(waterfall,princ_pay,interest_pay):
                                
     return CoverRation                           
 
-def NPV_calculator(waterfall,princ_pay,interest_pay):
+def NPV_calculator(waterfall,princ_list,interest_list):
     tranches_cf = deepcopy(waterfall)
-    principal_to_pay = deepcopy(princ_pay)
-    interest_to_pay = deepcopy(interest_pay)
+    principal = deepcopy(princ_list)
+    interest = deepcopy(interest_list)
     
-    total_recycle = [principal_to_pay[k] + interest_to_pay[k] for k in dates_recycle]
+    total_recycle = [principal[k] + interest[k] for k in dates_recycle]
     NPV_asset_pool = np.npv(rate_discount / 12,total_recycle) / (1 + rate_discount / 12 )
     
     total_pay_to_Originator = tranches_cf['amount_pay_C_principal'] + tranches_cf['amount_pay_C_interest'] + tranches_cf['amount_pay_EE_principal']+ tranches_cf['fee_service']
