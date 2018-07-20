@@ -34,8 +34,6 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
     interest_to_pay = deepcopy(int_pay)
     interest_to_buy = deepcopy(int_buy)
     
-    purchase_RevolvingPool = deepcopy(RevolvingPool_PurchaseAmount)
-    
     #TODO:When to use deepcopy
     tranches_ABC = deepcopy(Bonds)
     
@@ -58,16 +56,19 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
         
         #logger.info('calc bais for {0} is {1}'.format(date_pay,sum([principal_total[k] for k in principal_total.keys() if k > date_pay + relativedelta(months= -1)]) - RevolvingPool_PurchaseAmount[date_pay_index+1]))
         #logger.info('calc tax bais for {0} is {1}'.format(date_pay,interest_total[dates_recycle[date_pay_index]]))
-        pay_for_fee = tax_Acc.pay(date_pay,[interest_total[dates_recycle[date_pay_index]],0][B_PAcc.iBalance(date_pay) == 0])
+        pay_for_fee = tax_Acc.pay(date_pay,interest_total[dates_recycle[date_pay_index]])#,0][B_PAcc.iBalance(date_pay) == 0])
         #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
-        #TODO: change calculation basis to asset pool outstanding principal; not Bonds
         #logger.info('principal_total is {0}'.format(sum([principal_total[k] for k in principal_total.keys()])))
         calc_basis_for_fee = sum([principal_total[k] for k in principal_total.keys() if k > date_pay + relativedelta(months= -1)]) 
         #logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
         #logger.info('purchase_RevolvingPool[date_pay_index+1] for {0} is {1}'.format(date_pay,purchase_RevolvingPool[date_pay_index+1]))
-        if date_pay_index+1 <= max(purchase_RevolvingPool.keys()):
-            calc_basis_for_fee -= sum([purchase_RevolvingPool[k] for k in range(date_pay_index+1,max(purchase_RevolvingPool.keys())+1)]) * (1-scenarios[scenario_id]['rate_default'])
-        else: pass
+        
+        #TODO: Add AP_Acc for every asset pool to simplify this block        
+        if RevolvingPool_PurchaseAmount is not None:
+            purchase_RevolvingPool = deepcopy(RevolvingPool_PurchaseAmount[scenario_id])
+            if date_pay_index+1 <= max(purchase_RevolvingPool.keys()):
+                calc_basis_for_fee -= sum([purchase_RevolvingPool[k] for k in range(date_pay_index+1,max(purchase_RevolvingPool.keys())+1)]) * (1-scenarios[scenario_id]['rate_default'])
+            else: pass
     
         #logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
         
