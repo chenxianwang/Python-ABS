@@ -50,7 +50,9 @@ class Statistics():
                  '加权平均贷款账龄（天）':(df['LoanAge']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum(),
                  '加权平均贷款剩余期限（天）':(df['LoanRemainTerm']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum(),
                  '单笔贷款最长剩余期限（天）':df['LoanRemainTerm'].max(),
-                 '单笔贷款最短剩余期限（天）':df['LoanRemainTerm'].min()             
+                 '单笔贷款最短剩余期限（天）':df['LoanRemainTerm'].min(),
+                 '单笔贷款最长期限（天）':df['LoanTerm'].max(),
+                 '单笔贷款最短期限（天）':df['LoanTerm'].min()
                 }
     
         #TODO: Complete b_s_3
@@ -71,11 +73,11 @@ class Statistics():
         
         
         b_s_4 = {
-#                '借款人加权平均年龄':(df['Age_Project_Start']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum(),
-#                 '30-40岁借款人贷款余额占比（%）':df[(df['Age_Project_Start']>30) & (df['Age_Project_Start']<=40)]\
-#                                                  ['Amount_Outstanding'].sum() / df['Amount_Outstanding'].sum() * 100,                
-#                 
-#                 '借款人加权平均年收入（万元）':(df['Income']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() / 10000 ,
+                '借款人加权平均年龄':(df['Age_Project_Start']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum(),
+                 '30-40岁借款人贷款余额占比（%）':df[(df['Age_Project_Start']>30) & (df['Age_Project_Start']<=40)]\
+                                                  ['Amount_Outstanding'].sum() / df['Amount_Outstanding'].sum() * 100,                
+                 
+                 '借款人加权平均年收入（万元）':(df['Income']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() / 10000 ,
                 }
 #    
         df_b_s_list = []

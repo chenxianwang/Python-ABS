@@ -31,6 +31,8 @@ class RevolvingDeal(Deal):
         super().__init__(name,PoolCutDate,AssetPoolName,date_trust_effective,recycle_adjust_factor,scenarios)
         
         self.RevolvingDeal = True
+        self.RevolvingPool_PurchaseAmount = {}
+        
         self.apcf_adjusted = {}  # Original_adjusted + Revolving_adjusted
         
         self.date_revolving_pools_cut = date_revolving_pools_cut

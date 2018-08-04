@@ -33,6 +33,7 @@ class Deal():
     def __init__(self,name,PoolCutDate,AssetPoolName,date_trust_effective,recycle_adjust_factor,scenarios):
         
         self.RevolvingDeal = False
+        self.RevolvingPool_PurchaseAmount = None
         
         self.name = name
         self.date_pool_cut = PoolCutDate
@@ -73,7 +74,7 @@ class Deal():
                 AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
 
-        self.asset_pool = self.asset_pool[list(DWH_header_rename.keys())] 
+        #self.asset_pool = self.asset_pool[list(DWH_header_rename.keys())] 
         logger.info('Renaming header....')
         self.asset_pool = self.asset_pool.rename(columns = DWH_header_rename) 
         logger.info('Original Asset Pool Gotten.')
@@ -97,8 +98,9 @@ class Deal():
                     AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
                 AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
             #AssetPool['#合同号'] = '#' + AssetPool['合同号'].astype(str)
+            AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_old'})
             logger.info('left Merging...')
-            self.asset_pool = self.asset_pool.merge(AssetPool,left_on= left,right_on = right,how='inner')
+            self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号','信用评分_old']],left_on= left,right_on = right,how='left')
             logger.info('Columns added....')
         
         return self.asset_pool
@@ -180,7 +182,7 @@ class Deal():
          for scenario_id in self.scenarios.keys():
             APCFa = APCF_adjuster(self.apcf_original,self.recycle_adjust_factor,self.scenarios,scenario_id)
             self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF())
-            #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
+            save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
 
     def init_oAP_Acc(self):
         logger.info('init_oAP_Acc...')
@@ -211,7 +213,7 @@ class Deal():
              #WF = Waterfall(self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],self.AP_IAcc_pay[scenario_id],dt_param)
              waterfall = run_Accounts(self.AP_PAcc_total[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],
                                       self.AP_IAcc_total[scenario_id],self.AP_IAcc_pay[scenario_id],self.AP_IAcc_buy[scenario_id],
-                                      scenario_id,Bonds,self.RevolvingDeal,self.RevolvingPool_PurchaseAmount[scenario_id])
+                                      scenario_id,Bonds,self.RevolvingDeal,self.RevolvingPool_PurchaseAmount)
              
              self.waterfall[scenario_id] = deepcopy(waterfall)
              self.wf_BasicInfo[scenario_id] = deepcopy(BasicInfo_calculator(waterfall,dt_param,Bonds))
