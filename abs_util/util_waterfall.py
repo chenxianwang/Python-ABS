@@ -75,9 +75,7 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
         pay_for_fee += trustee_FAcc.pay(date_pay,calc_basis_for_fee)
         pay_for_fee += trust_m_FAcc.pay(date_pay,calc_basis_for_fee)
         pay_for_fee += service_FAcc.pay(date_pay,calc_basis_for_fee)
-        
         #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
-        
         pay_for_fee += A_IAcc.pay(date_pay,A_PAcc.iBalance(date_pay))
         pay_for_fee += B_IAcc.pay(date_pay,B_PAcc.iBalance(date_pay))
         pay_for_fee += C_IAcc.pay(date_pay,C_PAcc.iBalance(date_pay))
@@ -91,15 +89,12 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
             logger.info('interest_transfer_to_prin on {0} is less than 0: {1}'.format(date_pay,interest_transfer_to_prin))
         
         principal_to_pay[dates_recycle[date_pay_index]] += interest_transfer_to_prin
-        
         #logger.info('principal_to_pay[dates_recycle[date_pay_index]] on {0} is {1}'.format(date_pay,principal_to_pay[dates_recycle[date_pay_index]]))
-        
         amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
         amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
         amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
         amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
         amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
-
         #logger.info('Loop Done for {0}'.format(date_pay))        
     
     AP_PAcc_total_wf = pd.DataFrame(list(princ_total.items()), columns=['date_recycle', 'principal_recycle_total'])

@@ -18,7 +18,7 @@ def cal_table_4_1(DetailList,wb_name):
     
     #DetailList = DetailList[(DetailList['贷款是否已结清']=='N')]
     logger.info('cal_table_4_1...')
-    save_to_excel(group_by_d(DetailList,['贷款状态'],'Amount_Outstanding_yuan'),'service_report',wb_name)
+    save_to_excel(group_by_d(DetailList,['贷款状态'],'Amount_Outstanding_yuan'),'service_report'+Batch_ID,wb_name)
     
 #    DetailList['贷款状态_Jonah'] = '正常'
 #    DetailList['贷款状态_Jonah'][(DetailList['Days_Overdue_Current']>=1)&(DetailList['Days_Overdue_Current']<=30)] = '拖欠1-30天'
@@ -43,7 +43,7 @@ def cal_table_4_3(DetailList,pool_cut_volumn,report_period,wb_name):
 
 def cal_table_5(SourcePath,wb_name):
     DetailList = pd.read_csv(SourcePath,encoding = 'gbk')
-    save_to_excel(group_by_d(DetailList,'处置状态：','违约时点未偿本金余额'),'service_report',wb_name)
+    save_to_excel(group_by_d(DetailList,'处置状态：','违约时点未偿本金余额'),'service_report'+Batch_ID,wb_name)
 
 def cal_table_6(DetailList,calcDate,wb_name):
     logger.info('cal_table_6...')
@@ -87,22 +87,24 @@ def cal_table_6(DetailList,calcDate,wb_name):
     
 def cal_table_7(DetailList,wb_name):
     
-    #DetailList = DetailList.columns.values.strip()
+    header_name_dict = {k:k.replace(":","：") for k in list(DetailList.columns.values) }    
+    DetailList = DetailList.rename(columns = {k:v for k,v in header_name_dict.items()})
     
     table_7 = pd.DataFrame()
-    fee_type_dict = {'B':'principal','C':'interest','E':'penalty','F':'acc'
-                     }
+    #fee_type_dict = {'B':'principal','C':'interest','E':'penalty','F':'acc'}
+    fee_type_dict = {'本金':'principal','利息':'interest','违约金':'penalty','其他':'acc'}
     for recycle_type,recycle_type_en in fee_type_dict.items():
         this_recycle_type = []
         
         this_recycle_sub_type = recycle_type_en + '_sub_type'
-        for  this_recycle_sub_type in [recycle_type+'1：正常回收',recycle_type+'2：提前还款',recycle_type+'3：拖欠回收',recycle_type+'4：违约回收',recycle_type+'5：账务处理']:
+        #for  this_recycle_sub_type in [recycle_type+'1：正常回收',recycle_type+'2：提前还款',recycle_type+'3：拖欠回收',recycle_type+'4：违约回收',recycle_type+'5：账务处理']:
+        for  this_recycle_sub_type in [recycle_type+'：正常回收',recycle_type+'：提前还款',recycle_type+'：拖欠回收',recycle_type+'：违约回收',recycle_type+'：账务处理']:
             this_recycle_type.append(DetailList[this_recycle_sub_type].sum())
 
         table_7[recycle_type] = this_recycle_type
                         
     print(table_7)
-    save_to_excel(table_7,'service_report',wb_name)
+    save_to_excel(table_7,'service_report'+Batch_ID,wb_name)
 
 def cal_table_11_13(ServiceReportListPath_A):    
     DetailList = pd.read_csv(SourcePath,encoding = 'gbk')
@@ -126,7 +128,7 @@ def cal_table_11_13(ServiceReportListPath_A):
     for dimension_bins in Distribution_By_Bins.keys():
         logger.info('Calculating for ' + dimension_bins )
         dimension_bins_list.append(df_bins_result(DetailList,dimension_bins,Distribution_By_Bins[dimension_bins]))
-    save_to_excel(dimension_bins_list,'sr_table_11')
+    save_to_excel(dimension_bins_list,'sr_table_11'+Batch_ID,wb_name)
 
     logger.info('Statistics Calculation Done.')
 
