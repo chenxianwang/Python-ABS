@@ -18,6 +18,8 @@ def cal_table_4_1(DetailList,wb_name):
     
     #DetailList = DetailList[(DetailList['贷款是否已结清']=='N')]
     logger.info('cal_table_4_1...')
+    DetailList['贷款状态'] = DetailList['贷款状态'].where(DetailList['贷款是否已结清'] == '未结清','已结清')
+    DetailList['Amount_Outstanding_yuan'] = DetailList['Amount_Outstanding_yuan'].where(DetailList['Days_Overdue_Current']<=180,0)
     save_to_excel(group_by_d(DetailList,['贷款状态'],'Amount_Outstanding_yuan'),'service_report'+Batch_ID,wb_name)
     
 #    DetailList['贷款状态_Jonah'] = '正常'
