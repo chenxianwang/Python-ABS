@@ -76,7 +76,7 @@ class Deal():
 
         #self.asset_pool = self.asset_pool[list(DWH_header_rename.keys())] 
         logger.info('Renaming header....')
-        self.asset_pool = self.asset_pool.rename(columns = DWH_header_rename) 
+        self.asset_pool = self.asset_pool.rename(columns = Header_Rename) 
         logger.info('Original Asset Pool Gotten.')
         
         return self.asset_pool
@@ -182,7 +182,21 @@ class Deal():
          for scenario_id in self.scenarios.keys():
             APCFa = APCF_adjuster(self.apcf_original,self.recycle_adjust_factor,self.scenarios,scenario_id)
             self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF())
-            save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
+            #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
+
+    def get_adjust_oAPCF(self):
+        
+        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Maturity']],
+                             self.date_pool_cut
+                             )
+
+        self.apcf_original,self.apcf_structure = APCF.calc_APCF_PayDay(0)  #BackMonth  
+        logger.info('adjust_oAPCF...')
+        for scenario_id in self.scenarios.keys():
+            APCFa = APCF_adjuster(self.apcf_structure,self.recycle_adjust_factor,self.scenarios,scenario_id)
+            self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF_simulation())
+            #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
+        
 
     def init_oAP_Acc(self):
         logger.info('init_oAP_Acc...')
