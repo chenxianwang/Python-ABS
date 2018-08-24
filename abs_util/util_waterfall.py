@@ -20,19 +20,23 @@ from Accounts.TaxAccount import TaxAccount
 
 logger = get_logger(__name__)
 
-def run_Accounts(princ_total,princ_pay,princ_buy,
-                 int_total,int_pay,int_buy,
+def run_Accounts(princ_actual,princ_pay,princ_buy,prin_loss,prin_original,
+                 int_actual,int_pay,int_buy,int_loss,int_original,
                  scenario_id,Bonds,RevolvingDeal,RevolvingPool_PurchaseAmount = None): # Initalizing BondsCashFlow
     
     logger.info('run_Accounts...')
     
-    principal_total = deepcopy(princ_total)
+    principal_actual = deepcopy(princ_actual)
     principal_to_pay = deepcopy(princ_pay)
-    principal_to_buy = deepcopy(princ_buy)
+#    principal_to_buy = deepcopy(princ_buy)
+#    principal_to_loss = deepcopy(princ_loss)
+    principal_original = deepcopy(prin_original)
     
-    interest_total = deepcopy(int_total)
+    interest_actual = deepcopy(int_actual)
     interest_to_pay = deepcopy(int_pay)
-    interest_to_buy = deepcopy(int_buy)
+#    interest_to_buy = deepcopy(int_buy)
+#    interest_to_loss = deepcopy(int_loss)
+#    interest_to_original = deepcopy(int_original)
     
     #TODO:When to use deepcopy
     tranches_ABC = deepcopy(Bonds)
@@ -54,12 +58,12 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
     #preissue_FAcc
     for date_pay_index,date_pay in enumerate(dates_pay):
         
-        #logger.info('calc bais for {0} is {1}'.format(date_pay,sum([principal_total[k] for k in principal_total.keys() if k > date_pay + relativedelta(months= -1)]) - RevolvingPool_PurchaseAmount[date_pay_index+1]))
-        #logger.info('calc tax bais for {0} is {1}'.format(date_pay,interest_total[dates_recycle[date_pay_index]]))
-        pay_for_fee = tax_Acc.pay(date_pay,interest_total[dates_recycle[date_pay_index]])#,0][B_PAcc.iBalance(date_pay) == 0])
+        #logger.info('calc bais for {0} is {1}'.format(date_pay,sum([principal_actual[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) - RevolvingPool_PurchaseAmount[date_pay_index+1]))
+        #logger.info('calc tax bais for {0} is {1}'.format(date_pay,interest_actual[dates_recycle[date_pay_index]]))
+        pay_for_fee = tax_Acc.pay(date_pay,interest_actual[dates_recycle[date_pay_index]])#,0][B_PAcc.iBalance(date_pay) == 0])
         #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
-        #logger.info('principal_total is {0}'.format(sum([principal_total[k] for k in principal_total.keys()])))
-        calc_basis_for_fee = sum([principal_total[k] for k in principal_total.keys() if k > date_pay + relativedelta(months= -1)]) 
+        #logger.info('principal_actual is {0}'.format(sum([principal_actual[k] for k in principal_actual.keys()])))
+        calc_basis_for_fee = sum([principal_original[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) 
         #logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
         #logger.info('purchase_RevolvingPool[date_pay_index+1] for {0} is {1}'.format(date_pay,purchase_RevolvingPool[date_pay_index+1]))
         
@@ -67,7 +71,7 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
         if RevolvingPool_PurchaseAmount is not None:
             purchase_RevolvingPool = deepcopy(RevolvingPool_PurchaseAmount[scenario_id])
             if date_pay_index+1 <= max(purchase_RevolvingPool.keys()):
-                calc_basis_for_fee -= sum([purchase_RevolvingPool[k] for k in range(date_pay_index+1,max(purchase_RevolvingPool.keys())+1)]) * (1-scenarios[scenario_id]['rate_default'])
+                calc_basis_for_fee -= sum([purchase_RevolvingPool[k] for k in range(date_pay_index+1,max(purchase_RevolvingPool.keys())+1)])# * (1-scenarios[scenario_id]['rate_default'])
             else: pass
     
         #logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
@@ -81,7 +85,7 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
         pay_for_fee += C_IAcc.pay(date_pay,C_PAcc.iBalance(date_pay))
         
         #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
-        #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,interest_total[dates_recycle[date_pay_index]]))
+        #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,interest_actual[dates_recycle[date_pay_index]]))
         
         interest_transfer_to_prin = interest_to_pay[dates_recycle[date_pay_index]] - pay_for_fee
         #logger.info('interest_transfer_to_prin on {0} is {1}'.format(date_pay,interest_transfer_to_prin))
@@ -97,11 +101,11 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
         amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
         #logger.info('Loop Done for {0}'.format(date_pay))        
     
-    AP_PAcc_total_wf = pd.DataFrame(list(princ_total.items()), columns=['date_recycle', 'principal_recycle_total'])
+    AP_PAcc_actual_wf = pd.DataFrame(list(princ_actual.items()), columns=['date_recycle', 'principal_recycle_total'])
     AP_PAcc_pay_wf = pd.DataFrame(list(princ_pay.items()), columns=['date_recycle', 'principal_recycle_to_pay'])
     AP_PAcc_buy_wf = pd.DataFrame(list(princ_buy.items()), columns=['date_recycle', 'principal_recycle_to_buy'])
     
-    AP_IAcc_total_wf = pd.DataFrame(list(int_total.items()), columns=['date_recycle', 'interest_recycle_total'])
+    AP_IAcc_actual_wf = pd.DataFrame(list(int_actual.items()), columns=['date_recycle', 'interest_recycle_total'])
     AP_IAcc_pay_wf = pd.DataFrame(list(int_pay.items()), columns=['date_recycle', 'interest_recycle_to_pay'])
     AP_IAcc_buy_wf = pd.DataFrame(list(int_buy.items()), columns=['date_recycle', 'interest_recycle_to_buy'])
     
@@ -123,10 +127,10 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
     C_Balance_wf = pd.DataFrame(list(C_PAcc.balance.items()), columns=['date_pay', 'amount_outstanding_C_principal'])
     EE_Balance_wf = pd.DataFrame(list(EE_Acc.balance.items()), columns=['date_pay', 'amount_outstanding_EE_principal'])
     
-    AssetPool_wf = AP_PAcc_total_wf\
+    AssetPool_wf = AP_PAcc_actual_wf\
                     .merge(AP_PAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
                     .merge(AP_PAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
-                    .merge(AP_IAcc_total_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
+                    .merge(AP_IAcc_actual_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
                     .merge(AP_IAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
                     .merge(AP_IAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
                     
@@ -150,7 +154,7 @@ def run_Accounts(princ_total,princ_pay,princ_buy,
               .merge(AssetPool_wf,left_on='date_pay',right_on='date_pay',how='outer')\
                     
     
-    #logger.info('total principal payment is {0}'.format(sum(wf[['amount_pay_A_principal','amount_pay_B_principal','amount_pay_C_principal']].sum())))
+    #logger.info('actual principal payment is {0}'.format(sum(wf[['amount_pay_A_principal','amount_pay_B_principal','amount_pay_C_principal']].sum())))
     
     return wf
 
@@ -186,9 +190,9 @@ def CR_calculator(waterfall,princ_pay,interest_pay):
     principal_to_pay = deepcopy(princ_pay)
     interest_to_pay = deepcopy(interest_pay)
     
-    total_to_pay = sum(principal_to_pay[k] for k in principal_to_pay.keys()) + sum(interest_to_pay[k] for k in interest_to_pay.keys())
-    Cover_ratio_Senior = total_to_pay / sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum())
-    Cover_ratio_Mezz = (total_to_pay - sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum()) ) / sum(tranches_cf[['amount_pay_B_principal','amount_pay_B_interest']].sum())
+    actual_to_pay = sum(principal_to_pay[k] for k in principal_to_pay.keys()) + sum(interest_to_pay[k] for k in interest_to_pay.keys())
+    Cover_ratio_Senior = actual_to_pay / sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum())
+    Cover_ratio_Mezz = (actual_to_pay - sum(tranches_cf[['amount_pay_A_principal','amount_pay_A_interest']].sum()) ) / sum(tranches_cf[['amount_pay_B_principal','amount_pay_B_interest']].sum())
     
     CoverRation = pd.DataFrame({'Cover_ratio_Senior':[Cover_ratio_Senior],
                                 'Cover_ratio_Mezz':[Cover_ratio_Mezz]
@@ -201,11 +205,11 @@ def NPV_calculator(waterfall,princ_list,interest_list):
     principal = deepcopy(princ_list)
     interest = deepcopy(interest_list)
     
-    total_recycle = [principal[k] + interest[k] for k in dates_recycle]
-    NPV_asset_pool = np.npv(rate_discount / 12,total_recycle) / (1 + rate_discount / 12 )
+    actual_recycle = [principal[k] + interest[k] for k in dates_recycle]
+    NPV_asset_pool = np.npv(rate_discount / 12,actual_recycle) / (1 + rate_discount / 12 )
     
-    total_pay_to_Originator = tranches_cf['amount_pay_C_principal'] + tranches_cf['amount_pay_C_interest'] + tranches_cf['amount_pay_EE_principal']+ tranches_cf['fee_service']
-    NPV_originator = np.npv(rate_discount / 12,total_pay_to_Originator) / (1 + rate_discount / 12 )  #
+    actual_pay_to_Originator = tranches_cf['amount_pay_C_principal'] + tranches_cf['amount_pay_C_interest'] + tranches_cf['amount_pay_EE_principal']+ tranches_cf['fee_service']
+    NPV_originator = np.npv(rate_discount / 12,actual_pay_to_Originator) / (1 + rate_discount / 12 )  #
     
     NPVs = pd.DataFrame({'NPV_asset_pool':[NPV_asset_pool],
                         'NPV_originator':[NPV_originator]
