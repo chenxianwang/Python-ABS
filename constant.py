@@ -12,8 +12,6 @@ path_root = os.path.dirname(os.path.realpath(__file__))
 
 ProjectName = 'ABS9'
 #ProjectName = 'ABS10'
-#ProjectName = 'ABS_UAT_Round2'
-#ProjectName = 'From&To_Trust'
 #ProjectName = 'Jonah_tests_Collection'
 
 

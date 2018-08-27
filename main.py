@@ -26,23 +26,24 @@ def main():
     
     start_time = datetime.datetime.now()
 
-#    if os.path.isfile(wb_name):
-#      os.remove(wb_name)
+    if os.path.isfile(wb_name):
+      os.remove(wb_name)
 
     asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']    
+    RD = RevolvingDeal(True,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
+    #RD = RevolvingDeal(False,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
     
-    D = Deal(ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
-    D.get_AssetPool()    # D.asset_pool is available
+    RD.get_AssetPool()    # D.asset_pool is available
 
-    #D.select_by_ContractNO('focus','ABS9_R1_selected')
+    #RD.select_by_ContractNO('focus','ABS9_R1_selected')
     
-    #D.asset_pool = D.asset_pool[D.asset_pool['Credit_Score_15'] > 0]
-#  #D.asset_pool = D.asset_pool[(pd.to_datetime(D.asset_pool['Dt_Start']).dt.date < datetime.date(2018,7,1)) &
+    #RD.asset_pool = D.asset_pool[D.asset_pool['Credit_Score_15'] > 0]
+#   #RD.asset_pool = D.asset_pool[(pd.to_datetime(D.asset_pool['Dt_Start']).dt.date < datetime.date(2018,7,1)) &
 #                                (D.asset_pool['Credit_Score_15'] == -1)
 #                                ]
-#    D.asset_pool = D.asset_pool[pd.to_datetime(D.asset_pool['Dt_Maturity']).dt.date >= datetime.datetime.now().date()]
+#    RD.asset_pool = D.asset_pool[pd.to_datetime(D.asset_pool['Dt_Maturity']).dt.date >= datetime.datetime.now().date()]
     
-#    D.add_Columns([
+#    RD.add_Columns([
 #                  #[['AssetsFromCFIT'],'No_Contract','#合同号'],
 #                  #[['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
 #                  [['abs10_contract_list_0','abs10_contract_list_1'],'No_Contract','#合同号']
@@ -50,51 +51,25 @@ def main():
 #                  )
  
     
-    ##D.asset_pool[D.asset_pool['LoanRemainTerm'] <= 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/udpate_cs_ABS10_1.csv',index=False)
-    ##D.asset_pool[D.asset_pool['LoanRemainTerm'] > 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/update_cs_ABS10_2.csv',index=False)    
+    #RD.asset_pool[D.asset_pool['LoanRemainTerm'] <= 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/udpate_cs_ABS10_1.csv',index=False)
+    #RD.asset_pool[D.asset_pool['LoanRemainTerm'] > 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/update_cs_ABS10_2.csv',index=False)    
     
-    D.asset_pool['Credit_Score'] = D.asset_pool['Credit_Score_15']#.round(3)
+    RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15']#.round(3)
 
-    ##D.run_ReverseSelection(Targets,RS_Group_d)
-    ##D.asset_pool.rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/ABS9_R1_selected_final_20180801.csv',index=False)
+    #RD.run_ReverseSelection(Targets,RS_Group_d)
+    #RD.asset_pool.rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/ABS9_R1_selected_final_20180801.csv',index=False)
     
-    #D.asset_pool['Amount_Outstanding_yuan'] = D.asset_pool['Amount_Outstanding_yuan'].where(D.asset_pool['Days_Overdue_Current']<=180,0)
-    #D.run_Stat()
+    #RD.asset_pool['Amount_Outstanding_yuan'] = D.asset_pool['Amount_Outstanding_yuan'].where(D.asset_pool['Days_Overdue_Current']<=180,0)
+    #RD.run_Stat()
     
-#    D.asset_pool['SERVICE_FEE_RATE'] = 0
-    D.get_adjust_oAPCF()    
-#    
-    D.init_oAP_Acc()
-    D.run_WaterFall()    # D.waterfall[scenario_id] is available
-    for scenario_id in scenarios.keys():
-        save_to_excel(D.waterfall[scenario_id],scenario_id,wb_name)
-        save_to_excel(D.wf_BasicInfo[scenario_id],scenario_id,wb_name)
-        save_to_excel(D.wf_CoverRatio[scenario_id],scenario_id,wb_name)
-        save_to_excel(D.wf_NPVs[scenario_id],scenario_id,wb_name)
-    
-    RnR = D.cal_RnR()
-    logger.info('RnR is: %s' % RnR)
-    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
+    RD.get_adjust_oAPCF()    
+    RD.init_oAP_Acc()
 
-
-    RD = RevolvingDeal(ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
-    RD.get_rAssetPool() 
-    
-    RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15'].round(3)
-    ##RD.run_Stat()
-    
-    #RD.get_adjust_oAPCF()         # RD.apcf is available
-    #RD.get_rAPCF_structure()
-    
-    RD.get_adjust_oAPCF() 
     RD.get_rAPCF_structure()
-        
-    RD.init_oAP_Acc()    
     RD.forcast_Revolving_APCF()
     
-    RD.run_WaterFall()    # RD.waterfall[scenario_id] is available
+    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
     for scenario_id in scenarios.keys():
-        logger.info('Saving results from scenario_id {0}'.format(scenario_id))
         save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
         save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
         save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
@@ -103,12 +78,13 @@ def main():
     RnR = RD.cal_RnR()
     logger.info('RnR is: %s' % RnR)
     save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
+
 #    
 #    SR = ServiceReport(ProjectName,ADate,1)
-#    SR.get_ServiceReportAssetsList('1stReportDate',
-#                                   ['pre_1','pre_2','pre_3','pre_4'], #pre_AllAssetList
+#    SR.get_ServiceReportAssetsList('4thReportDate',
+#                                   ['3_1','3_2','3_3','3_4','3_5','3_6'], #pre_AllAssetList
 #                                   #'',
-#                                   ['1','2','3','4'], #AllAssetList
+#                                   ['4_1','4_2','4_3','4_4','4_5','4_6'], #AllAssetList
 #                                   '',              #'DefaultAssetList',
 #                                   'WaivedAssetList',              #'WaivedAssetListq',
 #                                   ''
@@ -128,7 +104,7 @@ def main():
 #    SR.check_Redemption_price()
 
 #    report_basis = SR.service_report_AllAssetList[(SR.service_report_AllAssetList['贷款是否已结清'] == '未结清') 
-#                                                  #&(SR.service_report_AllAssetList['ABS资产性质'] == 'ABS循环测试round3_r5')
+#                                                  &(SR.service_report_AllAssetList['ABS资产性质'] == 'Jonah_tests_Collection_r1')
 #                                                  ]
 #    report_basis['Amount_Outstanding_yuan'] = report_basis['Amount_Outstanding_yuan'].where(report_basis['Days_Overdue_Current']<=180,0)
 #    report_basis['Type_Five_Category'] = report_basis['Type_Five_Category'].where(~report_basis['Type_Five_Category'].isnull(),'XNA')
@@ -146,7 +122,7 @@ def main():
 #    check = OP_PCD.merge(OP_All,left_on='No_Contract',right_on='No_Contract',how='inner')
 #    check = check.merge(OP_Waived,left_on='No_Contract',right_on='订单号',how='left')
 #    check['本金减免金额'] = check['本金减免金额'].where(~check['本金减免金额'].isnull(),0)
-#    check = check[abs(check['Amount_Outstanding_yuan'] - check['剩余本金_poolcutdate_calc'] - check['本金减免金额']) > 0.02]
+#    check = check[abs(check['Amount_Outstanding_yuan'] - check['剩余本金_poolcutdate_calc'] - check['本金减免金额']) > 0.04]
 #    #check = check[(check['Amount_Outstanding_yuan']==check['Amount_Outstanding']) & (check['本金：正常回收'] + check['本金：账务处理'] == 0)]
 #    check.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName + '/check_OutstandingPrincipal_pre.csv')
 
