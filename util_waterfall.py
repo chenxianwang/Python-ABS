@@ -61,7 +61,7 @@ def run_Accounts(princ_actual,princ_pay,princ_buy,prin_loss,prin_original,
         #logger.info('calc bais for {0} is {1}'.format(date_pay,sum([principal_actual[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) - RevolvingPool_PurchaseAmount[date_pay_index+1]))
         #logger.info('calc tax bais for {0} is {1}'.format(date_pay,interest_actual[dates_recycle[date_pay_index]]))
         pay_for_fee = tax_Acc.pay(date_pay,interest_actual[dates_recycle[date_pay_index]])#,0][B_PAcc.iBalance(date_pay) == 0])
-        #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
+        logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
         #logger.info('principal_actual is {0}'.format(sum([principal_actual[k] for k in principal_actual.keys()])))
         calc_basis_for_fee = sum([principal_original[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) 
         #logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
@@ -74,17 +74,17 @@ def run_Accounts(princ_actual,princ_pay,princ_buy,prin_loss,prin_original,
                 calc_basis_for_fee -= sum([purchase_RevolvingPool[k] for k in range(date_pay_index+1,max(purchase_RevolvingPool.keys())+1)])# * (1-scenarios[scenario_id]['rate_default'])
             else: pass
     
-        #logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
+        logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
         
         pay_for_fee += trustee_FAcc.pay(date_pay,calc_basis_for_fee)
         pay_for_fee += trust_m_FAcc.pay(date_pay,calc_basis_for_fee)
         pay_for_fee += service_FAcc.pay(date_pay,calc_basis_for_fee)
-        #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
+        logger.info('pay_for_fee -- all service fee -- for {0} is {1}'.format(date_pay,pay_for_fee))
         pay_for_fee += A_IAcc.pay(date_pay,A_PAcc.iBalance(date_pay))
         pay_for_fee += B_IAcc.pay(date_pay,B_PAcc.iBalance(date_pay))
         pay_for_fee += C_IAcc.pay(date_pay,C_PAcc.iBalance(date_pay))
         
-        #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
+        logger.info('pay_for_fee --all fee -- for {0} is {1}'.format(date_pay,pay_for_fee))
         #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,interest_actual[dates_recycle[date_pay_index]]))
         
         interest_transfer_to_prin = interest_to_pay[dates_recycle[date_pay_index]] - pay_for_fee
