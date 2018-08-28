@@ -16,18 +16,18 @@ pd.options.mode.chained_assignment = None
 def cash_flow_collection(df_cash_flow,dates_recycle,first_due_period,revolving_pool_name,wb_name):
     
     #logger.info('Calculating PMT for ' + revolving_pool_name + '.....')
-    unique_due_month = pd.unique(df_cash_flow[first_due_period].ravel())
+    #unique_due_month = pd.unique(df_cash_flow[first_due_period].ravel())
     
     #logger.info('Calculating PPMT for ' + revolving_pool_name + '.....')
-    df_ppmt = calc_PPMT(df_cash_flow,unique_due_month,dates_recycle,first_due_period)
+    df_ppmt = calc_PPMT(df_cash_flow,dates_recycle,first_due_period)
     #save_to_excel(df_ppmt,'acf_ppmt_'+revolving_pool_name,wb_name)
     
     #logger.info('Calculating IPMT for ' + revolving_pool_name + '.....')
-    df_ipmt = calc_IPMT(df_cash_flow,unique_due_month,dates_recycle,first_due_period)
+    df_ipmt = calc_IPMT(df_cash_flow,dates_recycle,first_due_period)
     #save_to_excel(df_ipmt,'acf_ipmt_'+revolving_pool_name,wb_name)
     
     #logger.info('Calculating Fee for ' + revolving_pool_name + '.....')
-    df_fee = calc_FEE(df_cash_flow,unique_due_month,dates_recycle,first_due_period)
+    df_fee = calc_FEE(df_cash_flow,dates_recycle,first_due_period)
     #save_to_excel(df_fee,'acf_fee_'+revolving_pool_name,wb_name)
     
     df_ppmt_total_by_date = pd.DataFrame([df_ppmt[dates_recycle].sum()])
@@ -37,7 +37,7 @@ def cash_flow_collection(df_cash_flow,dates_recycle,first_due_period,revolving_p
     df_pmt_total_by_date = pd.DataFrame({'date_recycle': dates_recycle,
                                          'amount_principal': df_ppmt_total_by_date.transpose()[0],
                                          'amount_interest': df_ipmt_total_by_date.transpose()[0],
-                                         'amount_fee': df_fee_total_by_date.transpose()[0],
+                                         #'amount_fee': df_fee_total_by_date.transpose()[0],
                                          'amount_total': (df_ppmt_total_by_date
                                                           + df_ipmt_total_by_date
                                                           + df_fee_total_by_date
@@ -50,8 +50,8 @@ def cash_flow_collection(df_cash_flow,dates_recycle,first_due_period,revolving_p
     return df_pmt_total_by_date#,df_ppmt_total_by_date,df_ipmt_total_by_date,df_fee_total_by_date
     
 
-def calc_PPMT(df,first_due_month,dts_r,first_due_period):
-    
+def calc_PPMT(df,dts_r,first_due_period):
+    first_due_month = pd.unique(df[first_due_period].ravel())
     df_ppmt = pd.DataFrame()
     
     for f_d_m in first_due_month:
@@ -73,8 +73,8 @@ def calc_PPMT(df,first_due_month,dts_r,first_due_period):
     return df_ppmt
 
 #SERVICE_FEE_RATE   
-def calc_IPMT(df,first_due_month,dts_r,first_due_period):
-    
+def calc_IPMT(df,dts_r,first_due_period):
+    first_due_month = pd.unique(df[first_due_period].ravel())
     df_ipmt = pd.DataFrame()
     
     for f_d_m in first_due_month:
@@ -94,8 +94,8 @@ def calc_IPMT(df,first_due_month,dts_r,first_due_period):
     return df_ipmt
 
 
-def calc_FEE(df,first_due_month,dts_r,first_due_period):
-    
+def calc_FEE(df,dts_r,first_due_period):
+    first_due_month = pd.unique(df[first_due_period].ravel())
     df_fee = pd.DataFrame()
     
     for f_d_m in first_due_month:
