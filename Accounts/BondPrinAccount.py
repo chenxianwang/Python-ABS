@@ -56,5 +56,7 @@ class BondPrinAccount():
            
     def iBalance(self,date_pay):
         #logger.info('date_pay for {0} is {1}'.format(self.name_bond,date_pay))
-        
-        return self.bondinfo['amount'] if (date_pay==dates_pay[0])|(not self.balance) else self.balance[date_pay+relativedelta(months= -1)]
+        try:
+            return self.bondinfo['amount'] if (date_pay==dates_pay[0])|(not self.balance) else self.balance[date_pay+relativedelta(months= -1)]
+        except(KeyError):
+            return 0
