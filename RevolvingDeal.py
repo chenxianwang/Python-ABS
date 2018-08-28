@@ -95,7 +95,8 @@ class RevolvingDeal(Deal):
                     #save_to_excel(self.apcf_revolving[which_revolving_pool],'rAPCF_' + scenario_id + str(which_revolving_pool),wb_name)
     
                     APCFa = APCF_adjuster(apcf_revolving_structure,self.recycle_adjust_factor,self.scenarios,scenario_id)
-                    this_adjusted = deepcopy(APCFa.adjust_APCF('R',dates_recycle_list_revolving))
+                    #this_adjusted = deepcopy(APCFa.adjust_APCF('R',dates_recycle_list_revolving))
+                    this_adjusted = deepcopy(APCFa.adjust_APCF_term_by_term('R',dates_recycle_list_revolving))
                     
                     self.apcf_revolving_adjusted[scenario_id][which_revolving_pool] = deepcopy(this_adjusted)
                     

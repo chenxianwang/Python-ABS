@@ -43,12 +43,12 @@ def main():
 #                                ]
 #    RD.asset_pool = D.asset_pool[pd.to_datetime(D.asset_pool['Dt_Maturity']).dt.date >= datetime.datetime.now().date()]
     
-#    RD.add_Columns([
-#                  #[['AssetsFromCFIT'],'No_Contract','#合同号'],
-#                  #[['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
-#                  [['abs10_contract_list_0','abs10_contract_list_1'],'No_Contract','#合同号']
-#                  ]
-#                  )
+    RD.add_Columns([
+                  #[['AssetsFromCFIT'],'No_Contract','#合同号'],
+                  #[['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
+                  [['abs10_contract_list_0','abs10_contract_list_1'],'No_Contract','#合同号']
+                  ]
+                  )
  
     
     #RD.asset_pool[D.asset_pool['LoanRemainTerm'] <= 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/udpate_cs_ABS10_1.csv',index=False)
@@ -70,6 +70,7 @@ def main():
     
     RD.run_WaterFall()    # D.waterfall[scenario_id] is available
     for scenario_id in scenarios.keys():
+        logger.info('Saving results for scenario {0} '.format(scenario_id))
         save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
         save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
         save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)

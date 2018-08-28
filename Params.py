@@ -57,22 +57,22 @@ rate_discount = 0.40
 amount_total_issuance = 3015926877.69
 
 Bonds = {}
-#Bonds['A'] = {'ptg':0.6714,'amount':2025000000, 'rate':0.0575}
-#Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.0719}
-#Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
+Bonds['A'] = {'ptg':0.6714,'amount':2025000000, 'rate':0.0575}
+Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.0719}
+Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
 
-Bonds['A'] = {'ptg':0.75,'amount': amount_total_issuance * 0.75, 'rate':0.0575}
-Bonds['B'] = {'ptg':0.15,'amount': amount_total_issuance * 0.15,'rate':0.0719}
-Bonds['C'] = {'ptg':0.1,'amount': amount_total_issuance * 0.1,'rate':0.0}
+#Bonds['A'] = {'ptg':0.75,'amount': amount_total_issuance * 0.75, 'rate':0.0575}
+#Bonds['B'] = {'ptg':0.15,'amount': amount_total_issuance * 0.15,'rate':0.0719}
+#Bonds['C'] = {'ptg':0.1,'amount': amount_total_issuance * 0.1,'rate':0.0}
 
 Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
 
 scenarios = {}
-scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.02,'scenario_weight':0.1}
-scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.02,'scenario_weight':0.15}
-scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.02,'scenario_weight':0.5}
-scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.03,'scenario_weight':0.15}
-scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.03,'scenario_weight':0.1}
+scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.0019,     'scenario_weight':0.1}
+scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.002,   'scenario_weight':0.15}
+scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.0021,'scenario_weight':0.5}
+scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.0022,    'scenario_weight':0.15}
+scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0023,      'scenario_weight':0.1}
     
 
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
