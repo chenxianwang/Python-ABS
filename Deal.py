@@ -181,13 +181,15 @@ class Deal():
                              )
 
         self.apcf_original,self.apcf_original_structure,self.dates_recycle_list = APCF.calc_APCF(0)  #BackMonth  
-        #save_to_excel(self.apcf_original,'cf_o',wb_name)
+        save_to_excel(self.apcf_original,'cf_o',wb_name)
         #save_to_excel(self.apcf_original_structure,'cf_o_structure',wb_name)
         
         logger.info('get_adjust_oAPCF_simulation...')
         for scenario_id in self.scenarios.keys():
+            logger.info('get_adjust_oAPCF_simulation for scenario_id {0}...'.format(scenario_id))
             APCFa = APCF_adjuster(self.apcf_original_structure,self.recycle_adjust_factor,self.scenarios,scenario_id)
-            self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O',self.dates_recycle_list))
+            #self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O',self.dates_recycle_list))
+            self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF_term_by_term('O',self.dates_recycle_list))
             #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
         
 
