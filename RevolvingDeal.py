@@ -27,11 +27,12 @@ logger = get_logger(__name__)
 
 class RevolvingDeal(Deal):
     
-    def __init__(self,Revolving_or_not,name,PoolCutDate,AssetPoolName,date_revolving_pools_cut,date_trust_effective,recycle_adjust_factor,scenarios):
-        super().__init__(name,PoolCutDate,AssetPoolName,date_trust_effective,recycle_adjust_factor,scenarios)
+    def __init__(self,Revolving_or_not,name,PoolCutDate,AssetPoolName,date_revolving_pools_cut,date_trust_effective,scenarios):
+        super().__init__(name,PoolCutDate,AssetPoolName,date_trust_effective,scenarios)
         
         self.RevolvingDeal = Revolving_or_not
         self.RevolvingPool_PurchaseAmount = {}
+        self.CDR = {}
         
         self.apcf_adjusted = {}  # Original_adjusted + Revolving_adjusted
         
@@ -94,9 +95,9 @@ class RevolvingDeal(Deal):
                     #save_to_excel(apcf_revolving_structure,'Revolving_APCF_Structure_' + str(which_revolving_pool),wb_name)
                     #save_to_excel(self.apcf_revolving[which_revolving_pool],'rAPCF_' + scenario_id + str(which_revolving_pool),wb_name)
     
-                    APCFa = APCF_adjuster(apcf_revolving_structure,self.recycle_adjust_factor,self.scenarios,scenario_id)
+                    APCFa = APCF_adjuster(apcf_revolving_structure,self.scenarios,scenario_id)
                     #this_adjusted = deepcopy(APCFa.adjust_APCF('R',dates_recycle_list_revolving))
-                    this_adjusted = deepcopy(APCFa.adjust_APCF_term_by_term('R',dates_recycle_list_revolving))
+                    this_adjusted = deepcopy(APCFa.adjust_APCF('R',dates_recycle_list_revolving))
                     
                     self.apcf_revolving_adjusted[scenario_id][which_revolving_pool] = deepcopy(this_adjusted)
                     
@@ -107,24 +108,24 @@ class RevolvingDeal(Deal):
                     _AP_PAcc_actual = {}
                     _AP_PAcc_pay = {}
                     _AP_PAcc_buy = {}
-                    _AP_PAcc_loss = {}
+                    _AP_PAcc_loss_currentTerm = {}
                     _AP_PAcc_original = {}
                     _AP_PAcc_actual[scenario_id] = _principal_available[0]                
                     _AP_PAcc_pay[scenario_id] = _principal_available[1]
                     _AP_PAcc_buy[scenario_id] = _principal_available[2]
-                    _AP_PAcc_loss[scenario_id] = _principal_available[3]
+                    _AP_PAcc_loss_currentTerm[scenario_id] = _principal_available[3]
                     _AP_PAcc_original[scenario_id] = _principal_available[4]
                     
                     _interest_available = _AP_Acc.available_interest()
                     _AP_IAcc_actual = {}
                     _AP_IAcc_pay = {}
                     _AP_IAcc_buy = {}
-                    _AP_IAcc_loss = {}
+                    _AP_IAcc_loss_currentTerm = {}
                     _AP_IAcc_original = {}
                     _AP_IAcc_actual[scenario_id] = _interest_available[0]                
                     _AP_IAcc_pay[scenario_id] = _interest_available[1]
                     _AP_IAcc_buy[scenario_id] = _interest_available[2]
-                    _AP_IAcc_loss[scenario_id] = _interest_available[3]
+                    _AP_IAcc_loss_currentTerm[scenario_id] = _interest_available[3]
                     _AP_IAcc_original[scenario_id] = _interest_available[4]
                     
                     #logger.info('_AP_PAcc_actual[scenario_id][k] for date {0} is {1}'.format(datetime.date(2018,8,31),_AP_PAcc_actual[scenario_id][datetime.date(2018,8,31)]))
@@ -134,13 +135,13 @@ class RevolvingDeal(Deal):
                         self.AP_PAcc_actual[scenario_id][k] += _AP_PAcc_actual[scenario_id][k]
                         self.AP_PAcc_pay[scenario_id][k] += _AP_PAcc_pay[scenario_id][k]
                         self.AP_PAcc_buy[scenario_id][k] += _AP_PAcc_buy[scenario_id][k]
-                        self.AP_PAcc_loss[scenario_id][k] += _AP_PAcc_loss[scenario_id][k]
+                        self.AP_PAcc_loss_currentTerm[scenario_id][k] += _AP_PAcc_loss_currentTerm[scenario_id][k]
                         self.AP_PAcc_original[scenario_id][k] += _AP_PAcc_original[scenario_id][k]
                         
                         self.AP_IAcc_actual[scenario_id][k] += _AP_IAcc_actual[scenario_id][k]
                         self.AP_IAcc_pay[scenario_id][k] += _AP_IAcc_pay[scenario_id][k]
                         self.AP_IAcc_buy[scenario_id][k] += _AP_IAcc_buy[scenario_id][k]
-                        self.AP_IAcc_loss[scenario_id][k] += _AP_IAcc_loss[scenario_id][k]
+                        self.AP_IAcc_loss_currentTerm[scenario_id][k] += _AP_IAcc_loss_currentTerm[scenario_id][k]
                         self.AP_IAcc_original[scenario_id][k] += _AP_IAcc_original[scenario_id][k]
     
                     #logger.info('self.AP_PAcc_actual[scenario_id][k] for date {0} is {1}'.format(datetime.date(2018,8,31),self.AP_PAcc_actual[scenario_id][datetime.date(2018,8,31)]))
@@ -150,7 +151,9 @@ class RevolvingDeal(Deal):
                     else: 
                         self.apcf_revolving_adjusted_all[scenario_id] = self.apcf_revolving_adjusted_all[scenario_id].merge(self.apcf_revolving_adjusted[scenario_id][which_revolving_pool],left_on = 'date_recycle',right_on = 'date_recycle', how = 'outer')
             
-
+                self.CDR[scenario_id] =  [sum([self.AP_PAcc_loss_currentTerm[scenario_id][k] for k in dates_recycle]) / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]       
+            save_to_excel(pd.DataFrame.from_dict(self.CDR),'RnR&CDR',wb_name)
+            
     def prepare_PurchaseAmount(self,for_which_revolving_pool,scenario_id):
         amount_principal = self.AP_PAcc_actual[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
         amount_interest = self.AP_IAcc_actual[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
