@@ -30,8 +30,8 @@ def main():
       os.remove(wb_name)
 
     asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']    
-    RD = RevolvingDeal(True,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
-    #RD = RevolvingDeal(False,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],recycle_adjust_factor,scenarios)
+    RD = RevolvingDeal(True,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
+    #RD = RevolvingDeal(False,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
     
     RD.get_AssetPool()    # D.asset_pool is available
 
@@ -43,18 +43,18 @@ def main():
 #                                ]
 #    RD.asset_pool = D.asset_pool[pd.to_datetime(D.asset_pool['Dt_Maturity']).dt.date >= datetime.datetime.now().date()]
     
-    RD.add_Columns([
-                  #[['AssetsFromCFIT'],'No_Contract','#合同号'],
-                  #[['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
-                  [['abs10_contract_list_0','abs10_contract_list_1'],'No_Contract','#合同号']
-                  ]
-                  )
+#    RD.add_Columns([
+#                  #[['AssetsFromCFIT'],'No_Contract','#合同号'],
+#                  #[['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
+#                  [['abs10_contract_list_0','abs10_contract_list_1'],'No_Contract','#合同号']
+#                  ]
+#                  )
  
     
     #RD.asset_pool[D.asset_pool['LoanRemainTerm'] <= 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/udpate_cs_ABS10_1.csv',index=False)
     #RD.asset_pool[D.asset_pool['LoanRemainTerm'] > 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/update_cs_ABS10_2.csv',index=False)    
     
-    RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15']#.round(3)
+    #RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15']#.round(3)
 
     #RD.run_ReverseSelection(Targets,RS_Group_d)
     #RD.asset_pool.rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/ABS9_R1_selected_final_20180801.csv',index=False)
@@ -63,22 +63,22 @@ def main():
     #RD.run_Stat()
     
     RD.get_adjust_oAPCF()    
-    RD.init_oAP_Acc()
-
-    RD.get_rAPCF_structure()
-    RD.forcast_Revolving_APCF()
-    
-    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
-    for scenario_id in scenarios.keys():
-        logger.info('Saving results for scenario {0} '.format(scenario_id))
-        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
-        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
-        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
-        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
-    
-    RnR = RD.cal_RnR()
-    logger.info('RnR is: %s' % RnR)
-    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR',wb_name)
+#    RD.init_oAP_Acc()
+#
+#    RD.get_rAPCF_structure()
+#    RD.forcast_Revolving_APCF()
+#    
+#    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
+#    for scenario_id in scenarios.keys():
+#        logger.info('Saving results for scenario {0} '.format(scenario_id))
+#        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
+#        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
+#        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
+#        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
+#    
+#    RnR = RD.cal_RnR()
+#    logger.info('RnR is: %s' % RnR)
+#    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR&CDR',wb_name)
 
 #    
 #    SR = ServiceReport(ProjectName,ADate,1)

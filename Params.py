@@ -7,35 +7,45 @@ Created on Mon Jun 18 16:11:08 2018
 
 import os
 import datetime
+from dateutil.relativedelta import relativedelta
+from abs_util.util_general import *
+from constant import *
 
 Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute)+str(datetime.datetime.now().second)
 
+days_in_a_year = 365
+rate_discount = 0.40
 ADate = datetime.date(2018,8,1)
 
-dates_pay = [datetime.date(2018,8,26),datetime.date(2018,9,26),datetime.date(2018,10,26),datetime.date(2018,11,26),datetime.date(2018,12,26),datetime.date(2019,1,26),
-             datetime.date(2019,2,26),datetime.date(2019,3,26),datetime.date(2019,4,26),datetime.date(2019,5,26),datetime.date(2019,6,26),datetime.date(2019,7,26),
-             datetime.date(2019,8,26),datetime.date(2019,9,26),datetime.date(2019,10,26),datetime.date(2019,11,26),datetime.date(2019,12,26),datetime.date(2020,1,26),
-             datetime.date(2020,2,26),datetime.date(2020,3,26),datetime.date(2020,4,26),datetime.date(2020,5,26),datetime.date(2020,6,26),datetime.date(2020,7,26),
-             datetime.date(2020,8,26),datetime.date(2020,9,26),datetime.date(2020,10,26),datetime.date(2020,11,26),datetime.date(2020,12,26),datetime.date(2021,1,26),
-             datetime.date(2021,2,26),datetime.date(2021,3,26),datetime.date(2021,4,26),datetime.date(2021,5,26),datetime.date(2021,6,26),datetime.date(2021,7,26)
-             ]
-dates_recycle = [datetime.date(2018,7,31),datetime.date(2018,8,31),datetime.date(2018,9,30),datetime.date(2018,10,31),datetime.date(2018,11,30),datetime.date(2018,12,31),
-                 datetime.date(2019,1,31),datetime.date(2019,2,28),datetime.date(2019,3,31),datetime.date(2019,4,30),datetime.date(2019,5,31),datetime.date(2019,6,30),
-                 datetime.date(2019,7,31),datetime.date(2019,8,31),datetime.date(2019,9,30),datetime.date(2019,10,31),datetime.date(2019,11,30),datetime.date(2019,12,31),
-                 datetime.date(2020,1,31),datetime.date(2020,2,29),datetime.date(2020,3,31),datetime.date(2020,4,30),datetime.date(2020,5,31),datetime.date(2020,6,30),
-                 datetime.date(2020,7,31),datetime.date(2020,8,31),datetime.date(2020,9,30),datetime.date(2020,10,31),datetime.date(2020,11,30),datetime.date(2020,12,31),
-                 datetime.date(2021,1,31),datetime.date(2021,2,28),datetime.date(2021,3,31),datetime.date(2021,4,30),datetime.date(2021,5,31),datetime.date(2021,6,30),
-        ]
 
-dt_param = {'dt_pool_cut':datetime.date(2018,4,16),'dt_effective':datetime.date(2018,7,20),
-            'dt_first_calc':datetime.date(2018,7,31),'dt_first_pay':datetime.date(2018,8,26)
-            }
+if ProjectName == 'ABS9':
+    amount_total_issuance = 3015926877.69
+    Bonds = {}
+    Bonds['A'] = {'ptg':0.6714,'amount':2025000000, 'rate':0.0575}
+    Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.0719}
+    Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
+    Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
+    dt_param = {'dt_pool_cut':datetime.date(2018,4,16),'dt_effective':datetime.date(2018,7,20)}
 
-date_revolving_pools_cut = [datetime.date(2018,8,1),datetime.date(2018,9,1),datetime.date(2018,10,1),
-                            datetime.date(2018,11,1),datetime.date(2018,12,1),datetime.date(2019,1,1),
-                            #datetime.date(2019,2,1),datetime.date(2019,3,1),datetime.date(2019,4,1),
-                            #datetime.date(2019,5,1),datetime.date(2019,6,1),datetime.date(2019,7,1)
-                            ]
+elif ProjectName == 'ABS10':
+    amount_total_issuance = 3014292721.30
+    Bonds = {}
+    Bonds['A'] = {'ptg':0.6502,'amount':1960000000, 'rate':0.055}
+    Bonds['B'] = {'ptg':0.1287,'amount':388000000,'rate':0.066}
+    Bonds['C'] = {'ptg':0.2211,'amount':666292721.30,'rate':0.0}
+    Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
+    dt_param = {'dt_pool_cut':datetime.date(2018,7,23),'dt_effective':datetime.date(2018,10,16)}
+
+else: pass
+
+dt_param['dt_first_calc'] = get_next_eom(dt_param['dt_effective'],0)
+dt_param['dt_first_pay'] = dt_param['dt_first_calc']+ relativedelta(days = 26)
+dates_pay = [dt_param['dt_first_pay'] + relativedelta(months= i) for i in range(36)]
+dates_recycle = [get_next_eom(dt_param['dt_first_calc'],month_increment) for month_increment in range(36)]
+
+########## Hom many revolving pools ###############
+nbr_revolving_pools = 1
+date_revolving_pools_cut = [dt_param['dt_first_calc'] + relativedelta(days = 1) + relativedelta(months= i) for i in range(nbr_revolving_pools)]
 
 fees = { 'tax':{'rate':0.0326},
         'trustee':{'rate':0.0005},
@@ -47,34 +57,13 @@ fees = { 'tax':{'rate':0.0326},
          'C':{'rate':0.0},
          }
 
-recycle_adjust_factor = {'rate_recovery_normal':0.75,'rate_recovery_in_0_month':0.70,'rate_recovery_in_1_month':0.50,
-                 'rate_recovery_in_2_month':0.35,'rate_recovery_in_3_month':0.25,'rate_recovery_default':0.2,
-                 'rate_early_repaid':0.0125}
-
-days_in_a_year = 365
-rate_discount = 0.40
-
-amount_total_issuance = 3015926877.69
-
-Bonds = {}
-Bonds['A'] = {'ptg':0.6714,'amount':2025000000, 'rate':0.0575}
-Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.0719}
-Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
-
-#Bonds['A'] = {'ptg':0.75,'amount': amount_total_issuance * 0.75, 'rate':0.0575}
-#Bonds['B'] = {'ptg':0.15,'amount': amount_total_issuance * 0.15,'rate':0.0719}
-#Bonds['C'] = {'ptg':0.1,'amount': amount_total_issuance * 0.1,'rate':0.0}
-
-Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
-
 scenarios = {}
-scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.0019,     'scenario_weight':0.1}
-scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.002,   'scenario_weight':0.15}
-scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.0021,'scenario_weight':0.5}
-scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.0022,    'scenario_weight':0.15}
-scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0023,      'scenario_weight':0.1}
+#scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.0008,     'scenario_weight':0.1}
+#scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.0009,   'scenario_weight':0.15}
+#scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.001,'scenario_weight':0.5}
+#scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.0011,    'scenario_weight':0.15}
+scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0012,      'scenario_weight':0.1}
     
-
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065
@@ -108,9 +97,8 @@ Targets_keys = ['Credit_Score_max','Credit_Score_min',
                 #'LoanRemainTerm',
                ]
 
-RS_Group_d = ['Credit_Score',
-              'Interest_Rate',#'Province',#'Usage'
-              #'LoanRemainTerm',
+RS_Group_d = ['Credit_Score','Interest_Rate',
+              #'Province',#'Usage'#'LoanRemainTerm',
               ]
 
 Targets = {k:Targets_all[k] for k in Targets_keys}

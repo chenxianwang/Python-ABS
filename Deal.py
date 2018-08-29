@@ -30,7 +30,7 @@ logger = get_logger(__name__)
 
 class Deal():
     
-    def __init__(self,name,PoolCutDate,AssetPoolName,date_trust_effective,recycle_adjust_factor,scenarios):
+    def __init__(self,name,PoolCutDate,AssetPoolName,date_trust_effective,scenarios):
         
         self.RevolvingDeal = False
         self.RevolvingPool_PurchaseAmount = None
@@ -46,19 +46,18 @@ class Deal():
         self.asset_pool = pd.DataFrame()  
         self.apcf_original = pd.DataFrame()
         self.apcf_original_structure = pd.DataFrame()
-        self.recycle_adjust_factor = recycle_adjust_factor
         self.apcf_original_adjusted = {}
         
         self.AP_PAcc_actual = {}
         self.AP_PAcc_pay = {}
         self.AP_PAcc_buy = {}
-        self.AP_PAcc_loss = {}
+        self.AP_PAcc_loss_currentTerm = {}
         self.AP_PAcc_original = {}
         
         self.AP_IAcc_actual = {}
         self.AP_IAcc_pay = {}
         self.AP_IAcc_buy = {}
-        self.AP_IAcc_loss = {}
+        self.AP_IAcc_loss_currentTerm = {}
         self.AP_IAcc_original = {}
         
         self.waterfall = {}
@@ -187,9 +186,9 @@ class Deal():
         logger.info('get_adjust_oAPCF_simulation...')
         for scenario_id in self.scenarios.keys():
             logger.info('get_adjust_oAPCF_simulation for scenario_id {0}...'.format(scenario_id))
-            APCFa = APCF_adjuster(self.apcf_original_structure,self.recycle_adjust_factor,self.scenarios,scenario_id)
+            APCFa = APCF_adjuster(self.apcf_original_structure,self.scenarios,scenario_id)
             #self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O',self.dates_recycle_list))
-            self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF_term_by_term('O',self.dates_recycle_list))
+            self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O',self.dates_recycle_list))
             #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
         
 
@@ -204,28 +203,28 @@ class Deal():
              self.AP_PAcc_actual[scenario_id] = principal_available[0]
              self.AP_PAcc_pay[scenario_id] = principal_available[1]
              self.AP_PAcc_buy[scenario_id] = principal_available[2]
-             self.AP_PAcc_loss[scenario_id] = principal_available[3]
+             self.AP_PAcc_loss_currentTerm[scenario_id] = principal_available[3]
              self.AP_PAcc_original[scenario_id] = principal_available[4]
              
              interest_available = AP_Acc.available_interest()
              self.AP_IAcc_actual[scenario_id] = interest_available[0]
              self.AP_IAcc_pay[scenario_id] = interest_available[1]
              self.AP_IAcc_buy[scenario_id] = interest_available[2]
-             self.AP_IAcc_loss[scenario_id] = interest_available[3]
+             self.AP_IAcc_loss_currentTerm[scenario_id] = interest_available[3]
              self.AP_IAcc_original[scenario_id] = interest_available[4]
              
-#             for pay_date in dates_pay[:5]:
-#                 logger.info('self.AP_PAcc_pay[{0}][{1}] is {2}'.format(scenario_id,dates_recycle[dates_pay.index(pay_date)],self.AP_PAcc_pay[scenario_id][dates_recycle[dates_pay.index(pay_date)]]))
-#                 logger.info('self.AP_IAcc_pay[{0}][{1}] is {2}'.format(scenario_id,dates_recycle[dates_pay.index(pay_date)],self.AP_IAcc_pay[scenario_id][dates_recycle[dates_pay.index(pay_date)]]))
-#            
+             if self.RevolvingDeal is not True:
+                 self.CDR[scenario_id] =  [sum([self.AP_PAcc_loss[scenario_id][k] for k in dates_recycle]) / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]       
+        if self.RevolvingDeal is not True:
+            save_to_excel(pd.DataFrame.from_dict(self.CDR),'RnR&CDR',wb_name)
             
     def run_WaterFall(self):
          
          for scenario_id in self.scenarios.keys():
              logger.info('scenario_id is {0}'.format(scenario_id))
              #WF = Waterfall(self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],self.AP_IAcc_pay[scenario_id],dt_param)
-             waterfall = run_Accounts(self.AP_PAcc_actual[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],self.AP_PAcc_loss[scenario_id],self.AP_PAcc_original[scenario_id],
-                                      self.AP_IAcc_actual[scenario_id],self.AP_IAcc_pay[scenario_id],self.AP_IAcc_buy[scenario_id],self.AP_IAcc_loss[scenario_id],self.AP_IAcc_original[scenario_id],
+             waterfall = run_Accounts(self.AP_PAcc_actual[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],self.AP_PAcc_loss_currentTerm[scenario_id],self.AP_PAcc_original[scenario_id],
+                                      self.AP_IAcc_actual[scenario_id],self.AP_IAcc_pay[scenario_id],self.AP_IAcc_buy[scenario_id],self.AP_IAcc_loss_currentTerm[scenario_id],self.AP_IAcc_original[scenario_id],
                                       scenario_id,Bonds,self.RevolvingDeal,self.RevolvingPool_PurchaseAmount)
              
              self.waterfall[scenario_id] = deepcopy(waterfall)
