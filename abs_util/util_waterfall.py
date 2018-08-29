@@ -20,7 +20,7 @@ from Accounts.TaxAccount import TaxAccount
 
 logger = get_logger(__name__)
 
-def run_Accounts(princ_actual,princ_pay,princ_buy,prin_loss,prin_original,
+def run_Accounts(princ_actual,princ_pay,princ_buy,princ_loss,princ_original,
                  int_actual,int_pay,int_buy,int_loss,int_original,
                  scenario_id,Bonds,RevolvingDeal,RevolvingPool_PurchaseAmount = None): # Initalizing BondsCashFlow
     
@@ -30,7 +30,7 @@ def run_Accounts(princ_actual,princ_pay,princ_buy,prin_loss,prin_original,
     principal_to_pay = deepcopy(princ_pay)
 #    principal_to_buy = deepcopy(princ_buy)
 #    principal_to_loss = deepcopy(princ_loss)
-    principal_original = deepcopy(prin_original)
+    principal_original = deepcopy(princ_original)
     
     interest_actual = deepcopy(int_actual)
     interest_to_pay = deepcopy(int_pay)
@@ -106,10 +106,12 @@ def run_Accounts(princ_actual,princ_pay,princ_buy,prin_loss,prin_original,
     AP_PAcc_actual_wf = pd.DataFrame(list(princ_actual.items()), columns=['date_recycle', 'principal_recycle_total'])
     AP_PAcc_pay_wf = pd.DataFrame(list(princ_pay.items()), columns=['date_recycle', 'principal_recycle_to_pay'])
     AP_PAcc_buy_wf = pd.DataFrame(list(princ_buy.items()), columns=['date_recycle', 'principal_recycle_to_buy'])
+    AP_PAcc_loss_wf = pd.DataFrame(list(princ_loss.items()), columns=['date_recycle', 'principal_recycle_loss'])
     
     AP_IAcc_actual_wf = pd.DataFrame(list(int_actual.items()), columns=['date_recycle', 'interest_recycle_total'])
     AP_IAcc_pay_wf = pd.DataFrame(list(int_pay.items()), columns=['date_recycle', 'interest_recycle_to_pay'])
     AP_IAcc_buy_wf = pd.DataFrame(list(int_buy.items()), columns=['date_recycle', 'interest_recycle_to_buy'])
+    AP_IAcc_loss_wf = pd.DataFrame(list(int_loss.items()), columns=['date_recycle', 'interest_recycle_loss'])
     
     A_Principal_wf = pd.DataFrame(list(A_PAcc.receive.items()), columns=['date_pay', 'amount_pay_A_principal'])
     B_Principal_wf = pd.DataFrame(list(B_PAcc.receive.items()), columns=['date_pay', 'amount_pay_B_principal'])
@@ -132,9 +134,11 @@ def run_Accounts(princ_actual,princ_pay,princ_buy,prin_loss,prin_original,
     AssetPool_wf = AP_PAcc_actual_wf\
                     .merge(AP_PAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
                     .merge(AP_PAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
+                    .merge(AP_PAcc_loss_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
                     .merge(AP_IAcc_actual_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
                     .merge(AP_IAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
-                    .merge(AP_IAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
+                    .merge(AP_IAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
+                    .merge(AP_IAcc_loss_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
                     
     AssetPool_wf['date_pay'] = dates_pay
     
