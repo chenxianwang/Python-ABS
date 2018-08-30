@@ -38,14 +38,16 @@ elif ProjectName == 'ABS10':
 
 else: pass
 
-dt_param['dt_first_calc'] = get_next_eom(dt_param['dt_effective'],0)
-dt_param['dt_first_pay'] = dt_param['dt_first_calc']+ relativedelta(days = 26)
-dates_pay = [dt_param['dt_first_pay'] + relativedelta(months= i) for i in range(36)]
-dates_recycle = [get_next_eom(dt_param['dt_first_calc'],month_increment) for month_increment in range(36)]
-
+try:
+    dt_param['dt_first_calc'] = get_next_eom(dt_param['dt_effective'],0)
+    dt_param['dt_first_pay'] = dt_param['dt_first_calc']+ relativedelta(days = 26)
+    dates_pay = [dt_param['dt_first_pay'] + relativedelta(months= i) for i in range(36)]
+    dates_recycle = [get_next_eom(dt_param['dt_first_calc'],month_increment) for month_increment in range(36)]
 ########## Hom many revolving pools ###############
-nbr_revolving_pools = 1
-date_revolving_pools_cut = [dt_param['dt_first_calc'] + relativedelta(days = 1) + relativedelta(months= i) for i in range(nbr_revolving_pools)]
+    nbr_revolving_pools = 6
+    date_revolving_pools_cut = [dt_param['dt_first_calc'] + relativedelta(days = 1) + relativedelta(months= i) for i in range(nbr_revolving_pools)]
+except(NameError):
+    pass
 
 fees = { 'tax':{'rate':0.0326},
         'trustee':{'rate':0.0005},
@@ -58,11 +60,11 @@ fees = { 'tax':{'rate':0.0326},
          }
 
 scenarios = {}
-#scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.0008,     'scenario_weight':0.1}
-#scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.0009,   'scenario_weight':0.15}
-#scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.001,'scenario_weight':0.5}
-#scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.0011,    'scenario_weight':0.15}
-scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0012,      'scenario_weight':0.1}
+scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.0017,     'scenario_weight':0.1}
+scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.0018,   'scenario_weight':0.15}
+scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.0019,'scenario_weight':0.5}
+scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.0020,    'scenario_weight':0.15}
+scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0021,      'scenario_weight':0.1}
     
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 

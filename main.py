@@ -35,57 +35,57 @@ def main():
     
     RD.get_AssetPool()    # D.asset_pool is available
 
-    #RD.select_by_ContractNO('focus','ABS9_R1_selected')
-    
-    #RD.asset_pool = D.asset_pool[D.asset_pool['Credit_Score_15'] > 0]
+#    RD.select_by_ContractNO('focus','ABS9_R1_selected')
+#    
+#    RD.asset_pool = D.asset_pool[D.asset_pool['Credit_Score_15'] > 0]
 #   #RD.asset_pool = D.asset_pool[(pd.to_datetime(D.asset_pool['Dt_Start']).dt.date < datetime.date(2018,7,1)) &
 #                                (D.asset_pool['Credit_Score_15'] == -1)
 #                                ]
 #    RD.asset_pool = D.asset_pool[pd.to_datetime(D.asset_pool['Dt_Maturity']).dt.date >= datetime.datetime.now().date()]
-    
+#    
 #    RD.add_Columns([
 #                  #[['AssetsFromCFIT'],'No_Contract','#合同号'],
 #                  #[['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
 #                  [['abs10_contract_list_0','abs10_contract_list_1'],'No_Contract','#合同号']
 #                  ]
 #                  )
- 
-    
-    #RD.asset_pool[D.asset_pool['LoanRemainTerm'] <= 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/udpate_cs_ABS10_1.csv',index=False)
-    #RD.asset_pool[D.asset_pool['LoanRemainTerm'] > 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/update_cs_ABS10_2.csv',index=False)    
-    
-    #RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15']#.round(3)
-
-    #RD.run_ReverseSelection(Targets,RS_Group_d)
-    #RD.asset_pool.rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/ABS9_R1_selected_final_20180801.csv',index=False)
-    
-    #RD.asset_pool['Amount_Outstanding_yuan'] = D.asset_pool['Amount_Outstanding_yuan'].where(D.asset_pool['Days_Overdue_Current']<=180,0)
-    #RD.run_Stat()
+# 
+#    
+#    RD.asset_pool[D.asset_pool['LoanRemainTerm'] <= 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/udpate_cs_ABS10_1.csv',index=False)
+#    RD.asset_pool[D.asset_pool['LoanRemainTerm'] > 230].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/update_cs_ABS10_2.csv',index=False)    
+#    
+#    RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15']#.round(3)
+#
+#    RD.run_ReverseSelection(Targets,RS_Group_d)
+#    RD.asset_pool.rename(columns = DWH_header_REVERSE_rename).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/ABS9_R1_selected_final_20180801.csv',index=False)
+#    
+#    RD.asset_pool['Amount_Outstanding_yuan'] = D.asset_pool['Amount_Outstanding_yuan'].where(D.asset_pool['Days_Overdue_Current']<=180,0)
+#    RD.run_Stat()
     
     RD.get_adjust_oAPCF()    
-#    RD.init_oAP_Acc()
-#
-#    RD.get_rAPCF_structure()
-#    RD.forcast_Revolving_APCF()
-#    
-#    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
-#    for scenario_id in scenarios.keys():
-#        logger.info('Saving results for scenario {0} '.format(scenario_id))
-#        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
-#        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
-#        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
-#        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
-#    
-#    RnR = RD.cal_RnR()
-#    logger.info('RnR is: %s' % RnR)
-#    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR&CDR',wb_name)
+    RD.init_oAP_Acc()
+
+    RD.get_rAPCF_structure()
+    RD.forcast_Revolving_APCF()
+    
+    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
+    for scenario_id in scenarios.keys():
+        logger.info('Saving results for scenario {0} '.format(scenario_id))
+        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
+    
+    RnR = RD.cal_RnR()
+    logger.info('RnR is: %s' % RnR)
+    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR&CDR',wb_name)
 
 #    
 #    SR = ServiceReport(ProjectName,ADate,1)
-#    SR.get_ServiceReportAssetsList('4thReportDate',
-#                                   ['3_1','3_2','3_3','3_4','3_5','3_6'], #pre_AllAssetList
+#    SR.get_ServiceReportAssetsList('7thReportDate',
+#                                   ['6_1','6_2','6_3','6_4','6_5','6_6'], #pre_AllAssetList
 #                                   #'',
-#                                   ['4_1','4_2','4_3','4_4','4_5','4_6'], #AllAssetList
+#                                   ['7_1','7_2','7_3','7_4','7_5','7_6'], #AllAssetList
 #                                   '',              #'DefaultAssetList',
 #                                   'WaivedAssetList',              #'WaivedAssetListq',
 #                                   ''
@@ -105,7 +105,7 @@ def main():
 #    SR.check_Redemption_price()
 
 #    report_basis = SR.service_report_AllAssetList[(SR.service_report_AllAssetList['贷款是否已结清'] == '未结清') 
-#                                                  &(SR.service_report_AllAssetList['ABS资产性质'] == 'Jonah_tests_Collection_r1')
+#                                                  #&(SR.service_report_AllAssetList['ABS资产性质'] == 'Jonah_tests_Collection_r1')
 #                                                  ]
 #    report_basis['Amount_Outstanding_yuan'] = report_basis['Amount_Outstanding_yuan'].where(report_basis['Days_Overdue_Current']<=180,0)
 #    report_basis['Type_Five_Category'] = report_basis['Type_Five_Category'].where(~report_basis['Type_Five_Category'].isnull(),'XNA')
@@ -133,13 +133,13 @@ def main():
 #    check_results = check[check['Age_Project_Start'] != check['Age_Project_Start_sr']]
 #    check_results.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName + '/check_AgePoolCutDate.csv')
 #
-#    for_report = SR.service_report_AllAssetList_pre[#(~SR.service_report_AllAssetList['No_Contract'].isin(self.service_report_RedemptionAssetList['订单号'])) &
-#                                                       #(SR.service_report_AllAssetList['贷款是否已结清'] == 'N') &
-#                                                       (SR.service_report_AllAssetList_pre['No_Contract'] == '#3526383292003') #&
+#    for_report = SR.service_report_AllAssetList[#(~SR.service_report_AllAssetList['No_Contract'].isin(self.service_report_RedemptionAssetList['订单号'])) &
+#                                                       #(SR.service_report_AllAssetList['贷款是否已结清']=='未结清') &
+#                                                       (SR.service_report_AllAssetList['No_Contract'].isin(['#3788595146003','#3990572481001','#3990670054001','#3920094675002'])) #&
 #                                                       #(SR.service_report_AllAssetList['合格资产'] == '是 ') &
 #                                                       #(SR.service_report_AllAssetList['Days_Overdue_Current']>180) #.isnull()) #&
 #                                                       #(SR.service_report_AllAssetList['ABS资产性质'] == 'ABS循环测试round3_r5') #&
-#                                                       #(SR.service_report_AllAssetList['贷款状态'] == '正常贷款' ) #&
+#                                                       #(SR.service_report_AllAssetList['贷款状态'].isnull() ) #&
 #                                                       #(SR.service_report_AllAssetList['Type_Five_Category'] == 'XNA')
 #                                                       #(SR.service_report_AllAssetList['Usage'] == '278657	') #&
 #                                                       #(pd.to_datetime(SR.service_report_AllAssetList['Dt_Maturity']).dt.year == 2020) &

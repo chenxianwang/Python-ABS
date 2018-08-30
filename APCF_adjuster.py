@@ -123,7 +123,6 @@ class APCF_adjuster():
         
         return APCF_adjusted[['date_recycle',
                               'amount_recycle_principal','amount_recycle_interest','amount_total_outstanding_principal',
-                              #'amount_recycle_principal_overdue_1_30','amount_recycle_interest_overdue_1_30',
                               'amount_principal_overdue_1_30_currentTerm','amount_interest_overdue_1_30_currentTerm',
                               'amount_principal_loss_currentTerm','amount_interest_loss_currentTerm',
                               'amount_principal_overdue_1_30_allTerm','amount_interest_overdue_1_30_allTerm',
