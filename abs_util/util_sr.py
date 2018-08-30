@@ -100,7 +100,7 @@ def cal_table_7(DetailList,wb_name):
         
         this_recycle_sub_type = recycle_type_en + '_sub_type'
         #for  this_recycle_sub_type in [recycle_type+'1：正常回收',recycle_type+'2：提前还款',recycle_type+'3：拖欠回收',recycle_type+'4：违约回收',recycle_type+'5：账务处理']:
-        for  this_recycle_sub_type in [recycle_type+'：正常回收',recycle_type+'：提前还款',recycle_type+'：拖欠回收',recycle_type+'：违约回收',recycle_type+'：账务处理']:
+        for  this_recycle_sub_type in [recycle_type+'：正常回收',recycle_type+'：提前还款',recycle_type+'：拖欠回收',recycle_type+'：违约回收',recycle_type+'：账务处理','调整回收款']:
             this_recycle_type.append(DetailList[this_recycle_sub_type].sum())
 
         table_7[recycle_type] = this_recycle_type
