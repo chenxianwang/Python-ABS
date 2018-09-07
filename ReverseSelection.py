@@ -36,11 +36,11 @@ class ReverseSelection():
             logger.info('Original WARate is: {0}'.format((self.asset_pool['Interest_Rate']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
         except(KeyError):
             pass
-        try:
-            logger.info('Original WALoanRemainTerm is: {0}'.format((self.asset_pool['LoanRemainTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
-            logger.info('Original WALoanTerm is: {0}'.format((self.asset_pool['LoanTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
-        except(KeyError):
-            pass
+#        try:
+#            logger.info('Original WALoanRemainTerm is: {0}'.format((self.asset_pool['LoanRemainTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+#            logger.info('Original WALoanTerm is: {0}'.format((self.asset_pool['LoanTerm']*self.asset_pool['Amount_Outstanding']).sum()/self.asset_pool['Amount_Outstanding'].sum()))
+#        except(KeyError):
+#            pass
         
         for target in self.targets.keys():
             logger.info("Target for {0} is {1} {2}".format(target,self.targets[target]['object'],self.targets[target]['object_value']))
@@ -55,9 +55,11 @@ class ReverseSelection():
         Assets['No_Contract'] = range(1,len(Assets['Interest_Rate'])+1)
         Assets['Interest_Rate_min'] = Assets['Interest_Rate']
         Assets['Interest_Rate_max'] = Assets['Interest_Rate']
-        
-        Assets['Credit_Score_min'] = Assets['Credit_Score']
-        Assets['Credit_Score_max'] = Assets['Credit_Score']
+        try:
+            Assets['Credit_Score_min'] = Assets['Credit_Score']
+            Assets['Credit_Score_max'] = Assets['Credit_Score']
+        except(KeyError):
+            pass
         
         for target_d in self.targets.keys() :
             if 'Amount_Outstanding' not in target_d:
@@ -77,7 +79,7 @@ class ReverseSelection():
         Interest_Rate_max_Helper = Assets['Interest_Rate_maxHelper']
         
         if 'LoanRemainTerm' in self.group_d:
-            LoanRemainTermHelper = Assets['LoanRemainTermHelper']
+            LoanRemainTermHelper = Assets['LoanRemainTerm']
         
         P = range(len(Contracts))
         # Declare problem instance, maximization problem

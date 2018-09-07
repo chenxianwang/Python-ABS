@@ -47,7 +47,7 @@ def cash_flow_collection(df_cash_flow,dates_recycle,first_due_period,revolving_p
     
     #logger.info('Cash Flow Calculation Done for ' + revolving_pool_name + '.....')
     
-    return df_pmt_total_by_date#,df_ppmt_total_by_date,df_ipmt_total_by_date,df_fee_total_by_date
+    return df_pmt_total_by_date,df_ppmt,df_ipmt#,df_ppmt_total_by_date,df_ipmt_total_by_date,df_fee_total_by_date
     
 
 def calc_PPMT(df,dts_r,first_due_period):

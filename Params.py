@@ -36,6 +36,15 @@ elif ProjectName == 'ABS10':
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
     dt_param = {'dt_pool_cut':datetime.date(2018,7,23),'dt_effective':datetime.date(2018,10,16)}
 
+elif ProjectName == 'ABS11':
+    amount_total_issuance = 4004337813.55
+    Bonds = {}
+    Bonds['A'] = {'ptg':0.6502,'amount':amount_total_issuance * 0.6502 , 'rate':0.055}
+    Bonds['B'] = {'ptg':0.1287,'amount':amount_total_issuance * 0.1287,'rate':0.066}
+    Bonds['C'] = {'ptg':0.2211,'amount':amount_total_issuance * 0.2211,'rate':0.0}
+    Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
+    dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_effective':datetime.date(2018,12,23)}
+    
 else: pass
 
 try:
@@ -60,24 +69,24 @@ fees = { 'tax':{'rate':0.0326},
          }
 
 scenarios = {}
-scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.0017,     'scenario_weight':0.1}
-scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.0018,   'scenario_weight':0.15}
-scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.0019,'scenario_weight':0.5}
-scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.0020,    'scenario_weight':0.15}
-scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0021,      'scenario_weight':0.1}
+scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.001,     'scenario_weight':0.1}
+scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.0011,   'scenario_weight':0.15}
+scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.0012,'scenario_weight':0.5}
+scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.0013,    'scenario_weight':0.15}
+scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0014,      'scenario_weight':0.1}
     
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065
-MinWAScore = MaxWAScore * 0.994
- 
+MinWAScore = MaxWAScore * 0.991
+
 MinWARate = 0.18
-MaxWARate = MinWARate * 1.0009278
+MaxWARate = 0.18 * 1.0005
 
 MaxWALoanRemainTerm = 390
 
-MaxIssueVolumn = 1673000000 / 1.2
-MinIssueVolumn = 1672600000 / 1.2
+MaxIssueVolumn = 539751324.53
+MinIssueVolumn = 539751324.53 * 0.99999999
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
@@ -96,11 +105,11 @@ Targets_all = {
 Targets_keys = ['Credit_Score_max','Credit_Score_min',
                 'Interest_Rate_min','Interest_Rate_max',
                 'Amount_Outstanding_max','Amount_Outstanding_min',
-                #'LoanRemainTerm',
                ]
 
-RS_Group_d = ['Credit_Score','Interest_Rate',
-              #'Province',#'Usage'#'LoanRemainTerm',
+RS_Group_d = ['Credit_Score',
+              'Interest_Rate',#'Usage','LoanRemainTerm'#,'Province',#'Usage'
+              #'LoanRemainTerm',
               ]
 
 Targets = {k:Targets_all[k] for k in Targets_keys}
@@ -111,7 +120,7 @@ Distribution_By_Category = ['Type_Loans',
                             'Province',
                             'Profession','职业_信托',
                             'Type_Five_Category',
-                            'Usage',
+                            'Usage','购买商品_信托',
                             'Gender'
                             ]
 
@@ -137,7 +146,7 @@ Distribution_By_Bins = {
                         'LoanRemainTerm':future_days_bins,
                         'Days_Overdue_Max':dpd_max_bins,
                         'Days_Overdue_Current':dpd_bins,
-                        #'Overdue_Times':overdue_times_bins,
+                        'Overdue_Times':overdue_times_bins,
                         #'综合费用率':total_fee_rate_bins,
                         'Credit_Score':credit_score_bins
                         }

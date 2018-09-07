@@ -21,17 +21,18 @@ logger = get_logger(__name__)
 
 class APCF_adjuster():
     
-    def __init__(self,apcf,scenario,scenario_id):
+    def __init__(self,apcf,scenario,scenario_id,df_ppmt,df_ipmt):
         
         self.apcf = apcf
+        self.df_ppmt = df_ppmt
+        self.df_ipmt = df_ipmt
+        self.scenario_id = scenario_id
         self.main_params = scenarios[scenario_id]      
     
     def adjust_APCF(self,OoR,dates_recycle_list):
         
-        APCF_adjusted_structure = deepcopy(self.apcf)
-        main_params = self.main_params 
-        
-        first_due_period = 'first_due_period_'+OoR
+        df_ppmt = deepcopy(self.df_ppmt)
+        df_ipmt = deepcopy(self.df_ipmt)
         
         APCF_adjusted_dict = {}
         
@@ -51,20 +52,18 @@ class APCF_adjuster():
             amount_principal_loss_currentTerm_helper[dates_recycle_list[date_r_index]] = 0
             amount_interest_loss_currentTerm_helper[dates_recycle_list[date_r_index]] = 0
         
+        APCF_ppmt_1,APCF_ipmt_1 = df_ppmt,df_ipmt                
+        APCF_adjusted_structure = deepcopy(self.apcf)
+        
         for date_r_index,date_r in enumerate(dates_recycle_list):
-
-            APCF_adjusted_structure['Overdue_Flag_'+str(date_r_index)] = pd.DataFrame(list(bernoulli.rvs(size=len(APCF_adjusted_structure.index),p= (1-main_params['rate_overdue']) ))) 
-            ######TODO: Find out WHY  Null happens ########
-            APCF_adjusted_structure['Overdue_Flag_'+str(date_r_index)] = APCF_adjusted_structure['Overdue_Flag_'+str(date_r_index)].where(~APCF_adjusted_structure['Overdue_Flag_'+str(date_r_index)].isnull(),0)
+            #logger.info('Adjusting for date_r {0}'.format(date_r))
             
-            APCF_adjusted_structure_1 = deepcopy(APCF_adjusted_structure[APCF_adjusted_structure['Overdue_Flag_'+str(date_r_index)]==1])
-            APCF_ppmt_1 = calc_PPMT(APCF_adjusted_structure_1,dates_recycle_list,first_due_period)
-            APCF_ipmt_1 = calc_IPMT(APCF_adjusted_structure_1,dates_recycle_list,first_due_period)
-            
-            APCF_adjusted_structure_0 = deepcopy(APCF_adjusted_structure[APCF_adjusted_structure['Overdue_Flag_'+str(date_r_index)]==0])
-            APCF_ppmt_0 = calc_PPMT(APCF_adjusted_structure_0,dates_recycle_list,first_due_period)
-            APCF_ipmt_0 = calc_IPMT(APCF_adjusted_structure_0,dates_recycle_list,first_due_period)
-            
+            try:APCF_ppmt_1,APCF_ipmt_1,APCF_ppmt_0,APCF_ipmt_0 = self.prepare_APCF_Account(APCF_ppmt_1,APCF_ipmt_1,OoR,dates_recycle_list,date_r_index)
+            except(ValueError): 
+                logger.info('Adjusting for date_r {0}'.format(date_r))
+                sys.exit("!!!!!!!!!    Wrong number of items passed 0, placement implies 1     !!!!!!!")
+                
+                
             amount_principal_overdue_1_30_currentTerm[date_r] = APCF_ppmt_0[date_r].sum()
             amount_interest_overdue_1_30_currentTerm[date_r] = APCF_ipmt_0[date_r].sum()
             
@@ -80,6 +79,7 @@ class APCF_adjuster():
             amount_principal_loss_allTerm[date_r] = 0 if date_r_index==0 else sum([amount_principal_overdue_1_30_allTerm[k] for k in dates_recycle_list[0:date_r_index]])
             amount_interest_loss_allTerm[date_r] = 0 if date_r_index==0 else sum([amount_interest_overdue_1_30_allTerm[k] for k in dates_recycle_list[0:date_r_index]])
             
+            #logger.info('Generating APCF_adjusted_dict for date_r {0} '.format(date_r))
             APCF_adjusted_dict[date_r] = [APCF_ppmt_1[date_r].sum(),
                                           APCF_ipmt_1[date_r].sum(),
                                           amount_principal_overdue_1_30_currentTerm[date_r],
@@ -92,10 +92,10 @@ class APCF_adjuster():
                                           amount_interest_loss_allTerm[date_r]
                                           ]
         
-            APCF_adjusted_structure = deepcopy(APCF_adjusted_structure_1)
         #logger.info('Saving APCF_adjusted_structure for scenario {0}: '.format(self.scenario_id))
         #save_to_excel(APCF_adjusted_structure,'APCF_adjusted_structure_simulation',wb_name)
         
+        #logger.info('Generating APCF_adjusted...' )
         df_total_by_date = pd.DataFrame(APCF_adjusted_dict)
         APCF_adjusted = pd.DataFrame({'date_recycle': dates_recycle_list,
                                          'amount_principal': df_total_by_date.transpose()[0],
@@ -128,3 +128,21 @@ class APCF_adjuster():
                               'amount_principal_overdue_1_30_allTerm','amount_interest_overdue_1_30_allTerm',
                               'amount_principal_loss_allTerm','amount_interest_loss_allTerm'
                               ]]
+        
+    def prepare_APCF_Account(self,ppmt,ipmt,OoR,dates_recycle_list,date_r_index):
+        
+        main_params = self.main_params 
+        first_due_period = 'first_due_period_'+OoR
+        
+        ppmt['Overdue_Flag_'+str(date_r_index)] = pd.DataFrame(list(bernoulli.rvs(size=len(ppmt.index),p= (1-main_params['rate_overdue']) ))) 
+        ######TODO: Find out WHY  Null happens ########
+        ppmt['Overdue_Flag_'+str(date_r_index)] = ppmt['Overdue_Flag_'+str(date_r_index)].where(~ppmt['Overdue_Flag_'+str(date_r_index)].isnull(),0)
+        ipmt['Overdue_Flag_'+str(date_r_index)] = ppmt['Overdue_Flag_'+str(date_r_index)]
+        
+        ppmt_1 = deepcopy(ppmt[ppmt['Overdue_Flag_'+str(date_r_index)]==1])
+        ipmt_1 = deepcopy(ipmt[ipmt['Overdue_Flag_'+str(date_r_index)]==1])
+        
+        ppmt_0 = deepcopy(ppmt[ppmt['Overdue_Flag_'+str(date_r_index)]==0])
+        ipmt_0 = deepcopy(ipmt[ipmt['Overdue_Flag_'+str(date_r_index)]==0])
+        
+        return ppmt_1,ipmt_1,ppmt_0,ipmt_0

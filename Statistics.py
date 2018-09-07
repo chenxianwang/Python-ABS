@@ -117,9 +117,13 @@ class Statistics():
         dimension_bins_list = []
         for dimension_bins in Distribution_By_Bins.keys():
             logger.info('Calculating for ' + dimension_bins )
-            group_this_d_bins = df_bins_result(df,dimension_bins,Distribution_By_Bins[dimension_bins])
-            group_this_d_bins[dimension_bins] = group_this_d_bins[dimension_bins].astype(str)
-            dimension_bins_list.append(group_this_d_bins)
+            try:
+                group_this_d_bins = df_bins_result(df,dimension_bins,Distribution_By_Bins[dimension_bins])
+                group_this_d_bins[dimension_bins] = group_this_d_bins[dimension_bins].astype(str)
+                dimension_bins_list.append(group_this_d_bins)
+            except(KeyError): 
+                logger.info('Calculating for ' + dimension_bins + 'Failed' ) 
+                continue
         save_to_excel(dimension_bins_list,'statistics'+Batch_ID,wb_name)
         
         self.max_province_profession = max_province_profession

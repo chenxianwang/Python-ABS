@@ -90,12 +90,12 @@ class RevolvingDeal(Deal):
                     for d_r in dates_recycle_list_revolving:
                         apcf_revolving_structure[d_r] = 0
                     
-                    self.apcf_revolving[which_revolving_pool] = cash_flow_collection(apcf_revolving_structure,dates_recycle_list_revolving,'first_due_period_R','Revolving'+str(which_revolving_pool),wb_name)
+                    self.apcf_revolving[which_revolving_pool],df_ppmt,df_ipmt = cash_flow_collection(apcf_revolving_structure,dates_recycle_list_revolving,'first_due_period_R','Revolving'+str(which_revolving_pool),wb_name)
                                     
                     #save_to_excel(apcf_revolving_structure,'Revolving_APCF_Structure_' + str(which_revolving_pool),wb_name)
                     #save_to_excel(self.apcf_revolving[which_revolving_pool],'rAPCF_' + scenario_id + str(which_revolving_pool),wb_name)
     
-                    APCFa = APCF_adjuster(apcf_revolving_structure,self.scenarios,scenario_id)
+                    APCFa = APCF_adjuster(apcf_revolving_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt)
                     #this_adjusted = deepcopy(APCFa.adjust_APCF('R',dates_recycle_list_revolving))
                     this_adjusted = deepcopy(APCFa.adjust_APCF('R',dates_recycle_list_revolving))
                     
