@@ -81,7 +81,7 @@ class ServiceReport():
                 AssetPool_Waive = pd.read_csv(AssetPoolPath_Waive,encoding = 'utf-8') 
             except:
                 AssetPool_Waive = pd.read_csv(AssetPoolPath_Waive,encoding = 'gbk') 
-                AssetPool_Waive['订单号'] = '#' + AssetPool_Waive['订单号'].astype(str)
+                #AssetPool_Waive['订单号'] = '#' + AssetPool_Waive['订单号'].astype(str)
             self.service_report_WaivedAssetList = self.service_report_WaivedAssetList.append(AssetPool_Waive,ignore_index=True)
         
         if RedemptionAssetList != '':
@@ -134,18 +134,18 @@ class ServiceReport():
     def check_OutstandingPrincipal(self):
         logger.info('check_OutstandingPrincipal......')
         DetailList = self.service_report_AllAssetList#[(~self.service_report_AllAssetList['本金:账务处理'].isnull())& (self.service_report_AllAssetList['本金:账务处理'] != 0)]
-#        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']]
-#        DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']] = DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']].where(DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']]!=0,0)
-#        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})
-#        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['B1：正常回收']+DetailList['B2：提前还款']+DetailList['B3：拖欠回收']+DetailList['B4：违约回收']+DetailList['B5：账务处理']
-##        
-        header_name_dict = {k:k.replace(":","：") for k in list(DetailList.columns.values) }    
-        DetailList = DetailList.rename(columns = {k:v for k,v in header_name_dict.items()})    
-        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]
-        DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']] = DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']].where(DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]!=0,0)
+        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']]
+        DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']] = DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']].where(DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']]!=0,0)
         DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})
-        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['本金：正常回收']+DetailList['本金：提前还款']+DetailList['本金：拖欠回收']+DetailList['本金：违约回收']+DetailList['本金：账务处理'] + DetailList['调整回收款']
-        
+        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['B1：正常回收']+DetailList['B2：提前还款']+DetailList['B3：拖欠回收']+DetailList['B4：违约回收']+DetailList['B5：账务处理']
+#        
+#        header_name_dict = {k:k.replace(":","：") for k in list(DetailList.columns.values) }    
+#        DetailList = DetailList.rename(columns = {k:v for k,v in header_name_dict.items()})    
+#        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]
+#        DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']] = DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']].where(DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]!=0,0)
+#        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})
+#        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['本金：正常回收']+DetailList['本金：提前还款']+DetailList['本金：拖欠回收']+DetailList['本金：违约回收']+DetailList['本金：账务处理'] + DetailList['调整回收款']
+#        
 #        DetailList = self.service_report_RedemptionAssetList
 #        DetailList['No_Contract'] = '#' + DetailList['订单号'].astype(str)
 #        DetailList = DetailList[['No_Contract','赎回贷款债权的未偿本金余额','本金']]
@@ -153,7 +153,8 @@ class ServiceReport():
 #        DetailList = DetailList.rename(columns = {'赎回贷款债权的未偿本金余额':'Amount_Outstanding'})
 #        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['本金']
         
-        return DetailList,self.service_report_WaivedAssetList[['订单号','本金减免金额']]
+        try:return DetailList,self.service_report_WaivedAssetList[['订单号','本金减免金额']]
+        except(KeyError):return DetailList,self.service_report_WaivedAssetList[['订单号','减免金额']]
      
     def check_AgePoolCutDate(self):
         logger.info('check_AgePoolCutDate......')

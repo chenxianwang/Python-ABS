@@ -85,7 +85,8 @@ class Deal():
                 AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
 
-        #self.asset_pool = self.asset_pool[list(DWH_header_rename.keys())] 
+        #self.asset_pool = self.asset_pool[list(Header_Rename.keys())] 
+        #self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)
         logger.info('Renaming header....')
         self.asset_pool = self.asset_pool.rename(columns = Header_Rename) 
         logger.info('Original Asset Pool Gotten.')
@@ -93,7 +94,7 @@ class Deal():
         return self.asset_pool
         
     def add_Columns(self,file_names_left_right):
-        #self.asset_pool = self.AP.add_Columns_From(list_NewColumns_Files)
+        logger.info('Adding Columns...')
         for file_name_left_right in file_names_left_right:
             list_NewColumns_Files = file_name_left_right[0]
             left = file_name_left_right[1]
@@ -108,13 +109,14 @@ class Deal():
                 except:
                     AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
                 AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
-            #AssetPool['#合同号'] = '#' + AssetPool['合同号'].astype(str)
-            AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_old'})
-            logger.info('left Merging...')
-            self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号','信用评分_old']],left_on= left,right_on = right,how='left')
-            logger.info('Columns added....')
+            #AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str)
+            #AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_old'})
+            logger.info('outer Merging...')
+            self.asset_pool = self.asset_pool.merge(AssetPool,left_on= left,right_on = right,how='left')
+        self.asset_pool = self.asset_pool[(~self.asset_pool['职业_信托'].isnull()) & (~self.asset_pool['购买商品_信托'].isnull())]
+        logger.info('Columns added....')
         
-        return self.asset_pool
+        return self.asset_pool#[~self.asset_pool['职业_信托'].isnull()]
         
         
     def select_by_ContractNO(self,exclude_or_focus,these_assets):
@@ -126,14 +128,18 @@ class Deal():
         
         logger.info(exclude_or_focus + 'ing ...') 
         if exclude_or_focus == 'exclude':
-            self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
+            try:
+                self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
+            except(KeyError):
+                self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['No_Contract'])]
         #assets = self.asset_pool[self.asset_pool['ReverseSelection_Flag'].isin(assets_to_exclude_or_focus['ReverseSelection_Flag'])]
         #assets_to_exclude_or_focus['#合同号'] = '#' + assets_to_exclude_or_focus['合同号'].astype(str)       
         else:
-            self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
-        #assets = self.asset_pool.rename(columns = DWH_header_REVERSE_rename) 
-        #assets.to_csv('1stRevolvingPool.csv')
-        logger.info(exclude_or_focus + ' is done.')
+            try:self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
+            except(KeyError):self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['No_Contract'])]
+            #assets = self.asset_pool.rename(columns = DWH_header_REVERSE_rename) 
+            #assets.to_csv('1stRevolvingPool.csv')
+        logger.info(exclude_or_focus +'assets in ' + these_assets +'  is done.')
         
         return self.asset_pool
         
@@ -144,7 +150,7 @@ class Deal():
         for d in group_d:
             self.asset_pool['ReverseSelection_Flag'] += self.asset_pool[d].astype(str)
             
-        RS = ReverseSelection(self.asset_pool[['No_Contract','Amount_Outstanding_yuan','LoanRemainTerm','LoanTerm'#,'Province','Usage'
+        RS = ReverseSelection(self.asset_pool[['No_Contract','Amount_Outstanding_yuan'#,'Province','Usage'
                                                ] + group_d],
                               iTarget,group_d
                               )
@@ -185,14 +191,14 @@ class Deal():
                              self.date_pool_cut
                              )
 
-        self.apcf_original,self.apcf_original_structure,self.dates_recycle_list = APCF.calc_APCF(0)  #BackMonth  
+        self.apcf_original,self.apcf_structure,self.dates_recycle_list,df_ppmt,df_ipmt = APCF.calc_APCF(0)  #BackMonth  
         save_to_excel(self.apcf_original,'cf_o',wb_name)
         #save_to_excel(self.apcf_original_structure,'cf_o_structure',wb_name)
         
         logger.info('get_adjust_oAPCF_simulation...')
         for scenario_id in self.scenarios.keys():
             logger.info('get_adjust_oAPCF_simulation for scenario_id {0}...'.format(scenario_id))
-            APCFa = APCF_adjuster(self.apcf_original_structure,self.scenarios,scenario_id)
+            APCFa = APCF_adjuster(self.apcf_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt)
             #self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O',self.dates_recycle_list))
             self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O',self.dates_recycle_list))
             #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
@@ -227,7 +233,7 @@ class Deal():
              self.AP_IAcc_loss_allTerm[scenario_id] = interest_available[7]
              
              if self.RevolvingDeal is not True:
-                self.CDR[scenario_id] =  [sum([self.AP_PAcc_overdue_1_30_allTerm[scenario_id][k] for k in dates_recycle]) / sum([self.AP_PAcc_original[scenario_id][k] for k in self.dates_recycle_list])]       
+                self.CDR[scenario_id] =  [sum([self.AP_PAcc_overdue_1_30_allTerm[scenario_id][k] for k in dates_recycle]) / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]       
         if self.RevolvingDeal is not True:
             save_to_excel(pd.DataFrame.from_dict(self.CDR),'RnR&CDR',wb_name)
             

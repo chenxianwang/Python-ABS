@@ -45,9 +45,9 @@ class AssetsCashFlow():
             self.apcf_structure[d_r] = 0
         
         #save_to_excel(self.apcf_structure,'Original_APCF_Structure',self.wb_save_results)
-        self.apcf = cash_flow_collection(self.apcf_structure,self.dates_recycle_list,'first_due_period_O','Original',self.wb_save_results)
+        self.apcf,df_ppmt,df_ipmt = cash_flow_collection(self.apcf_structure,self.dates_recycle_list,'first_due_period_O','Original',self.wb_save_results)
         
-        return self.apcf,self.apcf_structure,self.dates_recycle_list        
+        return self.apcf,self.apcf_structure,self.dates_recycle_list,df_ppmt,df_ipmt        
         
     def rearrange_APCF_Structure(self):
     
