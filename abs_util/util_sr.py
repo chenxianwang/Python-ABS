@@ -18,7 +18,7 @@ def cal_table_4_1(DetailList,wb_name):
     
     #DetailList = DetailList[(DetailList['贷款是否已结清']=='N')]
     logger.info('cal_table_4_1...')
-    DetailList['贷款状态'] = DetailList['贷款状态'].where(DetailList['贷款是否已结清'] == '未结清','已结清')
+    DetailList['贷款状态'] = DetailList['贷款状态'].where(DetailList['贷款是否已结清'] == 'N','已结清')
     DetailList['Amount_Outstanding_yuan'] = DetailList['Amount_Outstanding_yuan'].where(DetailList['Days_Overdue_Current']<=180,0)
     save_to_excel(group_by_d(DetailList,['贷款状态'],'Amount_Outstanding_yuan'),'service_report'+Batch_ID,wb_name)
     
@@ -93,14 +93,14 @@ def cal_table_7(DetailList,wb_name):
     DetailList = DetailList.rename(columns = {k:v for k,v in header_name_dict.items()})
     
     table_7 = pd.DataFrame()
-    #fee_type_dict = {'B':'principal','C':'interest','E':'penalty','F':'acc'}
-    fee_type_dict = {'本金':'principal','利息':'interest','违约金':'penalty','其他':'acc'}
+    fee_type_dict = {'B':'principal','C':'interest','E':'penalty','F':'acc'}
+    #fee_type_dict = {'本金':'principal','利息':'interest','违约金':'penalty','其他':'acc'}
     for recycle_type,recycle_type_en in fee_type_dict.items():
         this_recycle_type = []
         
         this_recycle_sub_type = recycle_type_en + '_sub_type'
-        #for  this_recycle_sub_type in [recycle_type+'1：正常回收',recycle_type+'2：提前还款',recycle_type+'3：拖欠回收',recycle_type+'4：违约回收',recycle_type+'5：账务处理']:
-        for  this_recycle_sub_type in [recycle_type+'：正常回收',recycle_type+'：提前还款',recycle_type+'：拖欠回收',recycle_type+'：违约回收',recycle_type+'：账务处理','调整回收款']:
+        for  this_recycle_sub_type in [recycle_type+'1：正常回收',recycle_type+'2：提前还款',recycle_type+'3：拖欠回收',recycle_type+'4：违约回收',recycle_type+'5：账务处理']:
+        #for  this_recycle_sub_type in [recycle_type+'：正常回收',recycle_type+'：提前还款',recycle_type+'：拖欠回收',recycle_type+'：违约回收',recycle_type+'：账务处理','调整回收款']:
             this_recycle_type.append(DetailList[this_recycle_sub_type].sum())
 
         table_7[recycle_type] = this_recycle_type
