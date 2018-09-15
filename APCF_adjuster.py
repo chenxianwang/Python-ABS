@@ -38,22 +38,38 @@ class APCF_adjuster():
         
         amount_principal_overdue_1_30_currentTerm = {}
         amount_interest_overdue_1_30_currentTerm = {}        
+        amount_principal_overdue_31_60_currentTerm = {}
+        amount_interest_overdue_31_60_currentTerm = {}    
+        amount_principal_overdue_61_90_currentTerm = {}
+        amount_interest_overdue_61_90_currentTerm = {}    
         amount_principal_loss_currentTerm = {}
         amount_interest_loss_currentTerm = {}
         
         amount_principal_overdue_1_30_allTerm = {}
         amount_interest_overdue_1_30_allTerm = {} 
+        amount_principal_overdue_31_60_allTerm = {}
+        amount_interest_overdue_31_60_allTerm = {}    
+        amount_principal_overdue_61_90_allTerm = {}
+        amount_interest_overdue_61_90_allTerm = {}  
         amount_principal_loss_allTerm = {}
         amount_interest_loss_allTerm = {}
         
+        amount_principal_overdue_31_60_currentTerm_helper = {}
+        amount_interest_overdue_31_60_currentTerm_helper = {}
+        amount_principal_overdue_61_90_currentTerm_helper = {}
+        amount_interest_overdue_61_90_currentTerm_helper = {}
         amount_principal_loss_currentTerm_helper = {}
         amount_interest_loss_currentTerm_helper = {}
-        for date_r_index in range(len(dates_recycle_list)):
-            amount_principal_loss_currentTerm_helper[dates_recycle_list[date_r_index]] = 0
-            amount_interest_loss_currentTerm_helper[dates_recycle_list[date_r_index]] = 0
+
+        for date_r_index,date_r in enumerate(dates_recycle_list):
+            amount_principal_overdue_31_60_currentTerm_helper[date_r] = 0
+            amount_interest_overdue_31_60_currentTerm_helper[date_r] = 0
+            amount_principal_overdue_61_90_currentTerm_helper[date_r] = 0
+            amount_interest_overdue_61_90_currentTerm_helper[date_r] = 0
+            amount_principal_loss_currentTerm_helper[date_r] = 0
+            amount_interest_loss_currentTerm_helper[date_r] = 0
         
         APCF_ppmt_1,APCF_ipmt_1 = df_ppmt,df_ipmt                
-        APCF_adjusted_structure = deepcopy(self.apcf)
         
         for date_r_index,date_r in enumerate(dates_recycle_list):
             #logger.info('Adjusting for date_r {0}'.format(date_r))
@@ -67,27 +83,68 @@ class APCF_adjuster():
             amount_principal_overdue_1_30_currentTerm[date_r] = APCF_ppmt_0[date_r].sum()
             amount_interest_overdue_1_30_currentTerm[date_r] = APCF_ipmt_0[date_r].sum()
             
-            amount_principal_loss_currentTerm[date_r] = sum(amount_principal_loss_currentTerm_helper[k] for k in dates_recycle_list[0:date_r_index+1])
-            amount_interest_loss_currentTerm[date_r] =  sum(amount_interest_loss_currentTerm_helper[k] for k in dates_recycle_list[0:date_r_index+1])
+#            amount_principal_overdue_31_60_currentTerm[date_r] =  amount_principal_loss_currentTerm_helper[dates_recycle_list[date_r_index]]
+#            amount_interest_overdue_31_60_currentTerm[date_r] = amount_interest_loss_currentTerm_helper[dates_recycle_list[date_r_index]]
+#            amount_principal_overdue_61_90_currentTerm[date_r] = 0 if date_r_index <= 1 else amount_principal_loss_currentTerm_helper[dates_recycle_list[date_r_index-1]]
+#            amount_interest_overdue_61_90_currentTerm[date_r] = 0 if date_r_index <= 1 else amount_interest_loss_currentTerm_helper[dates_recycle_list[date_r_index-1]]
+#            amount_principal_loss_currentTerm[date_r] = 0 if date_r_index <= 2 else sum(amount_principal_loss_currentTerm_helper[k] for k in dates_recycle_list[0:date_r_index-1])
+#            amount_interest_loss_currentTerm[date_r] = 0 if date_r_index <= 2 else sum(amount_interest_loss_currentTerm_helper[k] for k in dates_recycle_list[0:date_r_index-1])
+#            
+            amount_principal_overdue_31_60_currentTerm[date_r] = sum(amount_principal_overdue_31_60_currentTerm_helper[k] for k in dates_recycle_list[date_r_index-1:date_r_index+1])
+            amount_interest_overdue_31_60_currentTerm[date_r] = sum(amount_interest_overdue_31_60_currentTerm_helper[k] for k in dates_recycle_list[date_r_index-1:date_r_index+1])
+            amount_principal_overdue_61_90_currentTerm[date_r] = amount_principal_overdue_61_90_currentTerm_helper[date_r]
+            amount_interest_overdue_61_90_currentTerm[date_r] = amount_interest_overdue_61_90_currentTerm_helper[date_r]
+            amount_principal_loss_currentTerm[date_r] =  sum(amount_principal_loss_currentTerm_helper[k] for k in dates_recycle_list[0:date_r_index+1]) \
+                                                        -amount_principal_overdue_31_60_currentTerm[date_r]\
+                                                        -amount_principal_overdue_61_90_currentTerm[date_r]
+            amount_interest_loss_currentTerm[date_r] = sum(amount_interest_loss_currentTerm_helper[k] for k in dates_recycle_list[0:date_r_index+1]) \
+                                                        -amount_interest_overdue_31_60_currentTerm[date_r]\
+                                                        -amount_interest_overdue_61_90_currentTerm[date_r]
+
+            if date_r_index < len(dates_recycle_list)-1:
+                amount_principal_overdue_61_90_currentTerm_helper[dates_recycle_list[date_r_index+1]] = 0 if date_r_index==0 else sum(amount_principal_overdue_31_60_currentTerm_helper[k] for k in dates_recycle_list[date_r_index-1:date_r_index+2])
+                amount_interest_overdue_61_90_currentTerm_helper[dates_recycle_list[date_r_index+1]] = 0 if date_r_index==0 else sum(amount_interest_overdue_31_60_currentTerm_helper[k] for k in dates_recycle_list[date_r_index-1:date_r_index+2])
+            
             for overdue_date in dates_recycle_list[date_r_index:]:
+                amount_principal_overdue_31_60_currentTerm_helper[overdue_date] = APCF_ppmt_0[overdue_date].sum()
+                amount_interest_overdue_31_60_currentTerm_helper[overdue_date] = APCF_ipmt_0[overdue_date].sum()
                 amount_principal_loss_currentTerm_helper[overdue_date] += APCF_ppmt_0[overdue_date].sum()
                 amount_interest_loss_currentTerm_helper[overdue_date] += APCF_ipmt_0[overdue_date].sum()
                 
             amount_principal_overdue_1_30_allTerm[date_r] = sum(APCF_ppmt_0[dates_recycle_list[date_r_index:]].sum())
             amount_interest_overdue_1_30_allTerm[date_r] = sum(APCF_ipmt_0[dates_recycle_list[date_r_index:]].sum())
             
-            amount_principal_loss_allTerm[date_r] = 0 if date_r_index==0 else sum([amount_principal_overdue_1_30_allTerm[k] for k in dates_recycle_list[0:date_r_index]])
-            amount_interest_loss_allTerm[date_r] = 0 if date_r_index==0 else sum([amount_interest_overdue_1_30_allTerm[k] for k in dates_recycle_list[0:date_r_index]])
+            amount_principal_overdue_31_60_allTerm[date_r] = 0 if date_r_index == 0 else amount_principal_overdue_1_30_allTerm[dates_recycle_list[date_r_index-1]]
+            amount_interest_overdue_31_60_allTerm[date_r] = 0 if date_r_index == 0 else amount_interest_overdue_1_30_allTerm[dates_recycle_list[date_r_index-1]]
+            amount_principal_overdue_61_90_allTerm[date_r] = 0 if date_r_index <= 1 else amount_principal_overdue_31_60_allTerm[dates_recycle_list[date_r_index-1]]
+            amount_interest_overdue_61_90_allTerm[date_r] = 0 if date_r_index <= 1 else amount_interest_overdue_31_60_allTerm[dates_recycle_list[date_r_index-1]]
+            amount_principal_loss_allTerm[date_r] = sum([amount_principal_overdue_61_90_allTerm[k] for k in dates_recycle_list[0:date_r_index]])
+            amount_interest_loss_allTerm[date_r] = sum([amount_interest_overdue_61_90_allTerm[k] for k in dates_recycle_list[0:date_r_index]])
             
+#            amount_principal_overdue_31_60_allTerm[date_r] = 0
+#            amount_interest_overdue_31_60_allTerm[date_r] = 0
+#            amount_principal_overdue_61_90_allTerm[date_r] = 0
+#            amount_interest_overdue_61_90_allTerm[date_r] = 0
+#            amount_principal_loss_allTerm[date_r] = 0 if date_r_index==0 else sum([amount_principal_overdue_1_30_allTerm[k] for k in dates_recycle_list[0:date_r_index]])
+#            amount_interest_loss_allTerm[date_r] = 0 if date_r_index==0 else sum([amount_interest_overdue_1_30_allTerm[k] for k in dates_recycle_list[0:date_r_index]])
+
             #logger.info('Generating APCF_adjusted_dict for date_r {0} '.format(date_r))
             APCF_adjusted_dict[date_r] = [APCF_ppmt_1[date_r].sum(),
                                           APCF_ipmt_1[date_r].sum(),
                                           amount_principal_overdue_1_30_currentTerm[date_r],
-                                          amount_interest_overdue_1_30_currentTerm[date_r],                                          
+                                          amount_interest_overdue_1_30_currentTerm[date_r],  
+                                          amount_principal_overdue_31_60_currentTerm[date_r],
+                                          amount_interest_overdue_31_60_currentTerm[date_r],
+                                          amount_principal_overdue_61_90_currentTerm[date_r],
+                                          amount_interest_overdue_61_90_currentTerm[date_r],
                                           amount_principal_loss_currentTerm[date_r],
                                           amount_interest_loss_currentTerm[date_r],
                                           amount_principal_overdue_1_30_allTerm[date_r],
                                           amount_interest_overdue_1_30_allTerm[date_r],
+                                          amount_principal_overdue_31_60_allTerm[date_r],
+                                          amount_interest_overdue_31_60_allTerm[date_r],
+                                          amount_principal_overdue_61_90_allTerm[date_r],
+                                          amount_interest_overdue_61_90_allTerm[date_r],
                                           amount_principal_loss_allTerm[date_r],
                                           amount_interest_loss_allTerm[date_r]
                                           ]
@@ -102,18 +159,26 @@ class APCF_adjuster():
                                          'amount_interest': df_total_by_date.transpose()[1],
                                          'amount_principal_overdue_1_30_currentTerm': df_total_by_date.transpose()[2],
                                          'amount_interest_overdue_1_30_currentTerm': df_total_by_date.transpose()[3],
-                                         'amount_principal_loss_currentTerm': df_total_by_date.transpose()[4],
-                                         'amount_interest_loss_currentTerm': df_total_by_date.transpose()[5],
-                                         'amount_principal_overdue_1_30_allTerm': df_total_by_date.transpose()[6],
-                                         'amount_interest_overdue_1_30_allTerm': df_total_by_date.transpose()[7],
-                                         'amount_principal_loss_allTerm': df_total_by_date.transpose()[8],
-                                         'amount_interest_loss_allTerm': df_total_by_date.transpose()[9],
+                                         'amount_principal_overdue_31_60_currentTerm': df_total_by_date.transpose()[4],
+                                         'amount_interest_overdue_31_60_currentTerm': df_total_by_date.transpose()[5],
+                                         'amount_principal_overdue_61_90_currentTerm': df_total_by_date.transpose()[6],
+                                         'amount_interest_overdue_61_90_currentTerm': df_total_by_date.transpose()[7],
+                                         'amount_principal_loss_currentTerm': df_total_by_date.transpose()[8],
+                                         'amount_interest_loss_currentTerm': df_total_by_date.transpose()[9],
+                                         'amount_principal_overdue_1_30_allTerm': df_total_by_date.transpose()[10],
+                                         'amount_interest_overdue_1_30_allTerm': df_total_by_date.transpose()[11],
+                                         'amount_principal_overdue_31_60_allTerm': df_total_by_date.transpose()[12],
+                                         'amount_interest_overdue_31_60_allTerm': df_total_by_date.transpose()[13],
+                                         'amount_principal_overdue_61_90_allTerm': df_total_by_date.transpose()[14],
+                                         'amount_interest_overdue_61_90_allTerm': df_total_by_date.transpose()[15],
+                                         'amount_principal_loss_allTerm': df_total_by_date.transpose()[16],
+                                         'amount_interest_loss_allTerm': df_total_by_date.transpose()[17],
                                          'amount_total': df_total_by_date.transpose()[0] + df_total_by_date.transpose()[1]
                                          })
         
         #logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
         if OoR == 'R':pass
-        else:save_to_excel(APCF_adjusted,'cf_'+OoR+'_adjusted_simulation',wb_name)
+        else:save_to_excel(APCF_adjusted,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         
         TOTAL_Principal = APCF_adjusted['amount_principal'].sum()
         APCF_adjusted['amount_total_outstanding_principal'] = TOTAL_Principal - APCF_adjusted['amount_principal'].cumsum()        
@@ -124,8 +189,12 @@ class APCF_adjuster():
         return APCF_adjusted[['date_recycle',
                               'amount_recycle_principal','amount_recycle_interest','amount_total_outstanding_principal',
                               'amount_principal_overdue_1_30_currentTerm','amount_interest_overdue_1_30_currentTerm',
+                              'amount_principal_overdue_31_60_currentTerm','amount_interest_overdue_31_60_currentTerm',
+                              'amount_principal_overdue_61_90_currentTerm','amount_interest_overdue_61_90_currentTerm',
                               'amount_principal_loss_currentTerm','amount_interest_loss_currentTerm',
                               'amount_principal_overdue_1_30_allTerm','amount_interest_overdue_1_30_allTerm',
+                              'amount_principal_overdue_31_60_allTerm','amount_interest_overdue_31_60_allTerm',
+                              'amount_principal_overdue_61_90_allTerm','amount_interest_overdue_61_90_allTerm',
                               'amount_principal_loss_allTerm','amount_interest_loss_allTerm'
                               ]]
         
@@ -137,6 +206,7 @@ class APCF_adjuster():
         ppmt['Overdue_Flag_'+str(date_r_index)] = pd.DataFrame(list(bernoulli.rvs(size=len(ppmt.index),p= (1-main_params['rate_overdue']) ))) 
         ######TODO: Find out WHY  Null happens ########
         ppmt['Overdue_Flag_'+str(date_r_index)] = ppmt['Overdue_Flag_'+str(date_r_index)].where(~ppmt['Overdue_Flag_'+str(date_r_index)].isnull(),0)
+        ppmt['Overdue_Flag_'+str(date_r_index)] = ppmt['Overdue_Flag_'+str(date_r_index)].where(ppmt[first_due_period] <= date_r_index,1)
         ipmt['Overdue_Flag_'+str(date_r_index)] = ppmt['Overdue_Flag_'+str(date_r_index)]
         
         ppmt_1 = deepcopy(ppmt[ppmt['Overdue_Flag_'+str(date_r_index)]==1])
