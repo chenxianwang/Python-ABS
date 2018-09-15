@@ -14,6 +14,7 @@ ProjectName = 'ABS9'
 #ProjectName = 'ABS10'
 #ProjectName = 'ABS11'
 #ProjectName = 'Jonah_tests_Collection'
+#ProjectName = 'SwappedAssets'
 
 
 path_project = path_root  + '/../CheckTheseProjects/' + ProjectName
@@ -22,11 +23,11 @@ wb_name = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectName
 wb_name_sr = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectName+'_ServiceReport.xlsx'
 
 Header_Rename = {'#合同号':'No_Contract','订单号':'No_Contract','合同编号':'No_Contract','TO_CHAR(T1.TEXT_CONTRACT_NUMBE':'No_Contract',
-                 'SKP_CLIENT':'ID','证件号码':'ID','账户号':'ID','#证件号码':'ID',
+                 'SKP_CLIENT':'ID','证件号码':'ID','账户号':'ID',#'#证件号码':'ID',
                  '职业':'Profession','职业类别':'Profession','借款人职业':'Profession',
                  '年收入':'Income','年收入(万元)':'Income','借款人年收入':'Income',
                  '省份':'Province','G3:省份':'Province',
-                 '购买商品':'Usage','G4:商品类型':'Usage','贷款用途':'Usage',
+                 '购买商品':'Usage',#'G4:商品类型':'Usage','贷款用途':'Usage',
                  '业务品种':'Type_Loans','G1:产品类型':'Type_Loans',
                  '起始日':'Dt_Start','起息日':'Dt_Start','贷款发放日':'Dt_Start',                 
                  '到期日':'Dt_Maturity','贷款到期日':'Dt_Maturity',                 

@@ -86,7 +86,7 @@ class Deal():
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
 
         #self.asset_pool = self.asset_pool[list(Header_Rename.keys())] 
-        #self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)
+        self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)
         logger.info('Renaming header....')
         self.asset_pool = self.asset_pool.rename(columns = Header_Rename) 
         logger.info('Original Asset Pool Gotten.')
@@ -110,21 +110,26 @@ class Deal():
                     AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
                 AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
             #AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str)
-            #AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_old'})
-            logger.info('outer Merging...')
-            self.asset_pool = self.asset_pool.merge(AssetPool,left_on= left,right_on = right,how='left')
-        self.asset_pool = self.asset_pool[(~self.asset_pool['职业_信托'].isnull()) & (~self.asset_pool['购买商品_信托'].isnull())]
+            AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_new'})
+            logger.info('left Merging...')
+            self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号','信用评分_new']],left_on= left,right_on = right,how='left')
+        #self.asset_pool = self.asset_pool[(~self.asset_pool['职业_信托'].isnull()) & (~self.asset_pool['购买商品_信托'].isnull())]
         logger.info('Columns added....')
         
         return self.asset_pool#[~self.asset_pool['职业_信托'].isnull()]
         
         
     def select_by_ContractNO(self,exclude_or_focus,these_assets):
-        
+        assets_to_exclude_or_focus = pd.DataFrame()
         #self.asset_pool = self.AP.exclude_or_focus_by_ContractNo(exclude_or_focus,these_assets)
         logger.info('Reading Assets_to_' + exclude_or_focus + '....')
-        path_assets = path_project + '/AssetPoolList/' + these_assets + '.csv'
-        assets_to_exclude_or_focus = pd.read_csv(path_assets,encoding = 'gbk')
+        for these_asset in these_assets:
+            path_assets = path_project + '/AssetPoolList/' + these_asset + '.csv'
+            try:
+                assets_to_exclude_or_focus_this = pd.read_csv(path_assets,encoding = 'utf-8') 
+            except:
+                assets_to_exclude_or_focus_this = pd.read_csv(path_assets,encoding = 'gbk') 
+            assets_to_exclude_or_focus = assets_to_exclude_or_focus.append(assets_to_exclude_or_focus_this,ignore_index=True)
         
         logger.info(exclude_or_focus + 'ing ...') 
         if exclude_or_focus == 'exclude':
@@ -139,7 +144,7 @@ class Deal():
             except(KeyError):self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['No_Contract'])]
             #assets = self.asset_pool.rename(columns = DWH_header_REVERSE_rename) 
             #assets.to_csv('1stRevolvingPool.csv')
-        logger.info(exclude_or_focus +'assets in ' + these_assets +'  is done.')
+        logger.info(exclude_or_focus +' assets is done.')
         
         return self.asset_pool
         
