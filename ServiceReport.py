@@ -217,6 +217,11 @@ class ServiceReport():
     
     def service_report_cal(self):
         logger.info('service_report_cal...')
+        
+        self.service_report_AllAssetList = self.service_report_AllAssetList[(self.service_report_AllAssetList['贷款是否已结清'] == 'N') 
+                                                  &(self.service_report_AllAssetList['入池时间'] == '2018/8/1')
+                                                  ]
+        
         cal_table_4_1(self.service_report_AllAssetList,wb_name_sr)
         #cal_table_4_2(self.service_report_DefaultAssetList,self.wb_save_results)
         #cal_table_4_3(ServiceReportListPath_D,self.pool_cut_volumn,self.report_period,self.wb_to_save_results)

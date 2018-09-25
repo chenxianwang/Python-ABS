@@ -15,6 +15,7 @@ from abs_util.util_cf import *
 from dateutil.relativedelta import relativedelta
 import datetime
 
+logger = get_logger(__name__)
 
 class AssetsCashFlow():
     
@@ -35,6 +36,11 @@ class AssetsCashFlow():
         #logger.info('calc_AssetPool_Structure....')
         self.asset_pool['first_due_period_O'] = (pd.to_datetime(self.asset_pool['first_due_date_after_pool_cut']).dt.year - self.date_pool_cut.year) * 12 + \
                                               pd.to_datetime(self.asset_pool['first_due_date_after_pool_cut']).dt.month- self.date_pool_cut.month - BackMonth
+        
+#        logger.info('(self.asset_pool[Term_Remain]).max() is {0}'.format((self.asset_pool['Term_Remain']).max()))
+#        logger.info('(self.asset_pool[first_due_period_O]).max() is {0}'.format((self.asset_pool['first_due_period_O']).max()))
+#        logger.info('(self.asset_pool[Term_Remain] + self.asset_pool[first_due_period_O]).max() is {0}'.format((self.asset_pool['Term_Remain'] + self.asset_pool['first_due_period_O']).max()))
+#        
         last_term = int((self.asset_pool['Term_Remain'] + self.asset_pool['first_due_period_O']).max())
         self.dates_recycle_list= [get_next_eom(self.date_pool_cut,i) for i in range(last_term)]
         #logger.info('gen_APCF_Structure for APCF....')
