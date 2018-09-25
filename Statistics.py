@@ -29,13 +29,20 @@ class Statistics():
         df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
         df['OutstandingPrincipal'] = df['Amount_Outstanding_yuan']
         df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']/10000
+        df['No_Contract_helper'] = df['No_Contract']
         
         df_unique_ID = df.groupby('ID')\
                        .agg({'No_Contract':'count'})\
                        .reset_index()\
                        .rename(columns = {'No_Contract':'ID_Unique'})
+                       
+        df_unique_NO = df.groupby('No_Contract_helper')\
+               .agg({'No_Contract':'count'})\
+               .reset_index()\
+               .rename(columns = {'No_Contract_helper':'NO_Unique'})
         
         b_s_1 = {'贷款笔数':df['No_Contract'].count(),
+                 '合同数':df_unique_NO['NO_Unique'].count(),
                '借款人数量':df_unique_ID['ID_Unique'].count(),
                '合同初始金额总额（万元）':df['Amount_Contract'].sum(),
                '未偿本金余额总额（万元）':df['Amount_Outstanding'].sum(),
@@ -112,6 +119,10 @@ class Statistics():
                     max_province_profession[dimension_category] = max(group_this_d['本金余额占比'])
             except(KeyError):
                 logger.info(dimension_category + ' Calculation failed.' )
+            except(ValueError):
+                logger.info(dimension_category + ' Calculation failed.' )
+                continue
+                
         save_to_excel(dimension_category_list,'statistics'+Batch_ID,wb_name)
         
         dimension_bins_list = []

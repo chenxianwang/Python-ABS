@@ -37,15 +37,15 @@ elif ProjectName == 'ABS10':
     dt_param = {'dt_pool_cut':datetime.date(2018,7,23),'dt_effective':datetime.date(2018,10,16)}
 
 elif ProjectName == 'ABS11':
-    amount_total_issuance = 2500010000
+    amount_total_issuance = 2501010000.7
     Bonds = {}
     Bonds['A'] = {'ptg':0.6502,'amount':amount_total_issuance * 0.6502 , 'rate':0.055}
     Bonds['B'] = {'ptg':0.1287,'amount':amount_total_issuance * 0.1287,'rate':0.072}
     Bonds['C'] = {'ptg':0.2211,'amount':amount_total_issuance * 0.2211,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
-    dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_effective':datetime.date(2018,12,23)}
+    dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_effective':datetime.date(2018,11,30)}
     
-else: dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_effective':datetime.date(2018,12,23)}
+else: dt_param = {'dt_pool_cut':datetime.date(2018,8,1),'dt_effective':datetime.date(2018,8,8)}
 
 try:
     dt_param['dt_first_calc'] = get_next_eom(dt_param['dt_effective'],0)
@@ -58,35 +58,36 @@ try:
 except(NameError):
     pass
 
-fees = { 'tax':{'rate':0.0326},
+fees = { 'tax':{'rate':0.032621359223},
         'trustee':{'rate':0.0005},
-        'trust_management':{'rate':0.000055},
-        'service':{'rate':0.001},
-         'pre_issue':{'amount':643692.18},
+        'custodian':{'rate':0.000055},
+        'servicer':{'rate':0.001},
+        'pay_interest_service':{'rate':0.00005},
+         'pre_issue':{'amount':245797.32215745+500000},
          'A':{'rate':0.058},
          'B':{'rate':0.068},
          'C':{'rate':0.0},
          }
 
 scenarios = {}
-scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.002,     'scenario_weight':0.1}
-scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.0021,   'scenario_weight':0.15}
-scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.0022,'scenario_weight':0.5}
-scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.0023,    'scenario_weight':0.15}
-scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0024,      'scenario_weight':0.1}
+scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.001,     'scenario_weight':0.1}
+scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.0015,   'scenario_weight':0.15}
+scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.0018,'scenario_weight':0.5}
+scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.002,    'scenario_weight':0.15}
+scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0025,      'scenario_weight':0.1}
     
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065
-MinWAScore = 0.049
+MinWAScore = 0.04
 
-MinWARate = 0.185
-MaxWARate = 0.185 * 1.001
+MinWARate = 0.2085
+MaxWARate = 0.21
 
 MaxWALoanRemainTerm = 390
 
-MaxIssueVolumn = 2500010000
-MinIssueVolumn = 2500000000
+MaxIssueVolumn = 153857062.53 
+MinIssueVolumn = 152857062.53 
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
@@ -130,7 +131,7 @@ outstanding_principal_bins = [-0.001,2000,4000,6000,8000,10000,20000,1000000]
 duration_days_bins = [0,90,180,360,540,720,1080,3000]
 past_days_bins = [-0.01,90,180,360,540,720,1080,3000]
 future_days_bins = [-0.01,90,180,360,540,720,1080,3000]
-overdue_times_bins = [-0.001,0,5,10,15,20,25,30]
+overdue_times_bins = [-0.001,0,1,2,5,10,15,20,25,30]
 dpd_max_bins = [-0.01,0,30,60,90,120,150,180,360]
 dpd_bins = [-0.01,0,30,60,90,120,150,180,360,1000]
 #total_fee_rate_bins = [-0.01,0,0.2,0.24,0.36,0.5,0.6]

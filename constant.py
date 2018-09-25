@@ -10,10 +10,10 @@ import datetime
 
 path_root = os.path.dirname(os.path.realpath(__file__))
 
-ProjectName = 'ABS9'
+#ProjectName = 'ABS9'
 #ProjectName = 'ABS10'
-#ProjectName = 'ABS11'
-#ProjectName = 'Jonah_tests_Collection'
+ProjectName = 'ABS11'
+#ProjectName = 'RevolvingPools'
 #ProjectName = 'SwappedAssets'
 
 
@@ -27,7 +27,7 @@ Header_Rename = {'#合同号':'No_Contract','订单号':'No_Contract','合同编
                  '职业':'Profession','职业类别':'Profession','借款人职业':'Profession',
                  '年收入':'Income','年收入(万元)':'Income','借款人年收入':'Income',
                  '省份':'Province','G3:省份':'Province',
-                 '购买商品':'Usage',#'G4:商品类型':'Usage','贷款用途':'Usage',
+                 '贷款用途':'Usage','购买商品':'Usage','G4:商品类型':'Usage',
                  '业务品种':'Type_Loans','G1:产品类型':'Type_Loans',
                  '起始日':'Dt_Start','起息日':'Dt_Start','贷款发放日':'Dt_Start',                 
                  '到期日':'Dt_Maturity','贷款到期日':'Dt_Maturity',                 
@@ -36,11 +36,12 @@ Header_Rename = {'#合同号':'No_Contract','订单号':'No_Contract','合同编
                  'INTEREST_RATE':'Interest_Rate','INTEREST_RATE(%)':'Interest_Rate','合同贷款利率':'Interest_Rate',
                  '当期逾期天数':'Days_Overdue_Current','当前逾期天数':'Days_Overdue_Current',
                  '贷款发放时借款人年龄':'Age_Loan_Start','初始起算日借款人年龄':'Age_Project_Start','年龄':'Age_Project_Start','借款人年龄':'Age_Project_Start',
+                 '出生日期':'出生日期',
                  '封包后的第一个还款日':'first_due_date_after_pool_cut','下一个交易日':'first_due_date_after_pool_cut',
                  '合同天数':'LoanTerm','合同天数(天)':'LoanTerm',
                  '账龄（天数）':'LoanAge','账龄（天数）(天)':'LoanAge','账龄':'LoanAge',
                  '剩余天数':'LoanRemainTerm','剩余天数(天)':'LoanRemainTerm',
-                 '性别':'Gender','家庭状况':'Marriagestate','历史逾期次数':'Overdue_Times','综合费用率':'综合费用率',
+                 '性别':'Gender','家庭状况':'Marriagestate','历史逾期次数':'Overdue_Times',#'综合费用率':'综合费用率',
                  'SERVICE_FEE_RATE':'SERVICE_FEE_RATE','IS_NEW_SERVICE_FEE_CALCULATION':'SERVICE_FEE_CALCULATION',
                  '信用评分':'Credit_Score_15','信用分数':'Credit_Score_15','CREDIT_SCORE':'Credit_Score_15',
                  '初始还款日':'Dt_First_Pay','合同期限':'Term_Contract','剩余期数':'Term_Remain',

@@ -84,9 +84,9 @@ class Deal():
             except:
                 AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
-
+        if 'ABSSYSTEM' in self.list_AssetPoolName[0]:
+            self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)                
         #self.asset_pool = self.asset_pool[list(Header_Rename.keys())] 
-        self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)
         logger.info('Renaming header....')
         self.asset_pool = self.asset_pool.rename(columns = Header_Rename) 
         logger.info('Original Asset Pool Gotten.')
@@ -110,9 +110,10 @@ class Deal():
                     AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
                 AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
             #AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str)
-            AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_new'})
+            #AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_new'})
+            #[['#合同号','出生日期']]
             logger.info('left Merging...')
-            self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号','信用评分_new']],left_on= left,right_on = right,how='left')
+            self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号','出生日期']],left_on= left,right_on = right,how='left')
         #self.asset_pool = self.asset_pool[(~self.asset_pool['职业_信托'].isnull()) & (~self.asset_pool['购买商品_信托'].isnull())]
         logger.info('Columns added....')
         
@@ -145,8 +146,6 @@ class Deal():
             #assets = self.asset_pool.rename(columns = DWH_header_REVERSE_rename) 
             #assets.to_csv('1stRevolvingPool.csv')
         logger.info(exclude_or_focus +' assets is done.')
-        
-        return self.asset_pool
         
         
     def run_ReverseSelection(self,iTarget,group_d):
@@ -192,6 +191,7 @@ class Deal():
     
     def get_adjust_oAPCF(self):
         
+        #self.asset_pool['SERVICE_FEE_RATE'] = 0
         APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain']],
                              self.date_pool_cut
                              )

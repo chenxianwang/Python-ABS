@@ -185,7 +185,7 @@ class RevolvingDeal(Deal):
         amount_interest_reserve = 0  
         amount_interest_reserve += amount_interest * fees['tax']['rate']
         #logger.info('amount_interest_reserve for tax of Revolving Pool {0} is {1}'.format(for_which_revolving_pool,amount_interest_reserve))
-        for fee_name in ['trustee','trust_management','service']:
+        for fee_name in ['trustee','custodian','servicer']:
             amount_interest_reserve += self.reserve_for_fee(dates_pay[for_which_revolving_pool - 1],fee_name,
                                                             sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle if dates_recycle.index(k) >= for_which_revolving_pool - 1]),
                                                             scenario_id

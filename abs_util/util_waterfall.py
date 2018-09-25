@@ -44,8 +44,11 @@ def run_Accounts(princ_original,princ_actual,princ_pay,princ_buy,
     #preissue_FAcc = FeesAccount('pre_issue',fees)
     tax_Acc = TaxAccount('tax',fees)
     trustee_FAcc = FeesAccount('trustee',fees)
-    trust_m_FAcc = FeesAccount('trust_management',fees)
-    service_FAcc = FeesAccount('service',fees)
+    custodian_FAcc = FeesAccount('custodian',fees)
+    servicer_FAcc = FeesAccount('servicer',fees)
+    pre_issue_FAcc = FeesAccount('pre_issue',fees)
+    pay_interest_service_FAcc = FeesAccount('pay_interest_service',fees)
+    
     A_IAcc = FeesAccount('A',fees)
     B_IAcc = FeesAccount('B',fees)
     C_IAcc = FeesAccount('C',fees)
@@ -78,9 +81,9 @@ def run_Accounts(princ_original,princ_actual,princ_pay,princ_buy,
         
             #logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
             
-            pay_for_fee += trustee_FAcc.pay(date_pay,calc_basis_for_fee)
-            pay_for_fee += trust_m_FAcc.pay(date_pay,calc_basis_for_fee)
-            pay_for_fee += service_FAcc.pay(date_pay,calc_basis_for_fee)
+            pay_for_fee += trustee_FAcc.pay(date_pay,calc_basis_for_fee) # amount of outstanding principal of assetpool at the beginning of the month
+            pay_for_fee += custodian_FAcc.pay(date_pay,calc_basis_for_fee) #amount of outstanding principal of assetpool at the end of the month
+            pay_for_fee += servicer_FAcc.pay(date_pay,calc_basis_for_fee)
             #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
             pay_for_fee += A_IAcc.pay(date_pay,A_PAcc.iBalance(date_pay))
             pay_for_fee += B_IAcc.pay(date_pay,B_PAcc.iBalance(date_pay))
@@ -121,10 +124,10 @@ def run_Accounts(princ_original,princ_actual,princ_pay,princ_buy,
     A_Interest_wf = pd.DataFrame(list(A_IAcc.receive.items()), columns=['date_pay', 'amount_pay_A_interest'])
     B_Interest_wf = pd.DataFrame(list(B_IAcc.receive.items()), columns=['date_pay', 'amount_pay_B_interest'])
     C_Interest_wf = pd.DataFrame(list(C_IAcc.receive.items()), columns=['date_pay', 'amount_pay_C_interest'])
-    service_fee_wf = pd.DataFrame(list(service_FAcc.receive.items()), columns=['date_pay', 'fee_service'])
+    servicer_fee_wf = pd.DataFrame(list(servicer_FAcc.receive.items()), columns=['date_pay', 'fee_servicer'])
     tax_wf = pd.DataFrame(list(tax_Acc.receive.items()), columns=['date_pay', 'fee_tax'])
     trustee_wf = pd.DataFrame(list(trustee_FAcc.receive.items()), columns=['date_pay', 'fee_trustee'])
-    trust_m_wf = pd.DataFrame(list(trust_m_FAcc.receive.items()), columns=['date_pay', 'fee_trust_m'])
+    custodian_wf = pd.DataFrame(list(custodian_FAcc.receive.items()), columns=['date_pay', 'fee_custodian'])
     
     A_Balance_wf = pd.DataFrame(list(A_PAcc.balance.items()), columns=['date_pay', 'amount_outstanding_A_principal'])
     B_Balance_wf = pd.DataFrame(list(B_PAcc.balance.items()), columns=['date_pay', 'amount_outstanding_B_principal'])
@@ -148,10 +151,10 @@ def run_Accounts(princ_original,princ_actual,princ_pay,princ_buy,
               .merge(A_Interest_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(B_Interest_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(C_Interest_wf,left_on='date_pay',right_on='date_pay',how='outer')\
-              .merge(service_fee_wf,left_on='date_pay',right_on='date_pay',how='outer')\
+              .merge(servicer_fee_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(tax_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(trustee_wf,left_on='date_pay',right_on='date_pay',how='outer')\
-              .merge(trust_m_wf,left_on='date_pay',right_on='date_pay',how='outer')\
+              .merge(custodian_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(A_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(B_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(C_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
@@ -213,7 +216,7 @@ def NPV_calculator(waterfall,princ_list,interest_list):
     actual_recycle = [principal[k] + interest[k] for k in dates_recycle]
     NPV_asset_pool = np.npv(rate_discount / 12,actual_recycle) / (1 + rate_discount / 12 )
     
-    actual_pay_to_Originator = tranches_cf['amount_pay_C_principal'] + tranches_cf['amount_pay_C_interest'] + tranches_cf['amount_pay_EE_principal']+ tranches_cf['fee_service']
+    actual_pay_to_Originator = tranches_cf['amount_pay_C_principal'] + tranches_cf['amount_pay_C_interest'] + tranches_cf['amount_pay_EE_principal']+ tranches_cf['fee_servicer']
     NPV_originator = np.npv(rate_discount / 12,actual_pay_to_Originator) / (1 + rate_discount / 12 )  #
     
     NPVs = pd.DataFrame({'NPV_asset_pool':[NPV_asset_pool],
