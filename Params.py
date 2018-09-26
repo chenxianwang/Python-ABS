@@ -39,9 +39,9 @@ elif ProjectName == 'ABS10':
 elif ProjectName == 'ABS11':
     amount_total_issuance = 2501010000.7
     Bonds = {}
-    Bonds['A'] = {'ptg':0.6502,'amount':amount_total_issuance * 0.6502 , 'rate':0.055}
-    Bonds['B'] = {'ptg':0.1287,'amount':amount_total_issuance * 0.1287,'rate':0.072}
-    Bonds['C'] = {'ptg':0.2211,'amount':amount_total_issuance * 0.2211,'rate':0.0}
+    Bonds['A'] = {'ptg':0.6502,'amount':1626000000 , 'rate':0.0575}
+    Bonds['B'] = {'ptg':0.1287,'amount':322000000,'rate':0.0719}
+    Bonds['C'] = {'ptg':0.2211,'amount':553010000.7,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
     dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_effective':datetime.date(2018,11,30)}
     
@@ -70,11 +70,11 @@ fees = { 'tax':{'rate':0.032621359223},
          }
 
 scenarios = {}
-scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.001,     'scenario_weight':0.1}
-scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.0015,   'scenario_weight':0.15}
-scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.0018,'scenario_weight':0.5}
-scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.002,    'scenario_weight':0.15}
-scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.0025,      'scenario_weight':0.1}
+scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.02,     'scenario_weight':0.1}
+scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.023,   'scenario_weight':0.15}
+scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.025,'scenario_weight':0.5}
+scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.027,    'scenario_weight':0.15}
+scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.03,      'scenario_weight':0.1}
     
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 

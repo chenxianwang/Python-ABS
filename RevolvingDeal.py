@@ -32,7 +32,7 @@ class RevolvingDeal(Deal):
         
         self.RevolvingDeal = Revolving_or_not
         self.RevolvingPool_PurchaseAmount = {}
-        self.CDR = {}
+        self.CDR_all = {}
         
         self.apcf_adjusted = {}  # Original_adjusted + Revolving_adjusted
         
@@ -71,6 +71,7 @@ class RevolvingDeal(Deal):
             pass
         else:
             for scenario_id in self.scenarios.keys():
+                _CDR = {}
                 logger.info('forcast_Revolving_APCF for scenario_id {0}...'.format(scenario_id))  
                 for which_revolving_pool in range(1,len(self.date_revolving_pools_cut) + 1):
                     #logger.info('forcast_Revolving_APCF for which_revolving_pool {0}...'.format(which_revolving_pool))
@@ -143,7 +144,6 @@ class RevolvingDeal(Deal):
                     _AP_IAcc_loss_allTerm[scenario_id] = _interest_available[7]
                     
                     #logger.info('_AP_PAcc_actual[scenario_id][k] for date {0} is {1}'.format(datetime.date(2018,8,31),_AP_PAcc_actual[scenario_id][datetime.date(2018,8,31)]))
-                    
                     #TODO: Check why AP_PAcc_pay has all keys
                     for k in dates_recycle:
                         self.AP_PAcc_original[scenario_id][k] += _AP_PAcc_original[scenario_id][k]
@@ -173,8 +173,11 @@ class RevolvingDeal(Deal):
                 
                 #logger.info('self.AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]] on dates_recycle_list_revolving[-1] {0} is {1}'.format(dates_recycle_list_revolving[-1],self.AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]]))
                 #logger.info('sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])] is {0}'.format(sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])))
-                self.CDR[scenario_id] =  [sum([self.AP_PAcc_overdue_1_30_allTerm[scenario_id][k] for k in dates_recycle]) / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]       
-            save_to_excel(pd.DataFrame.from_dict(self.CDR),'RnR&CDR',wb_name)
+                    _CDR[scenario_id+'_R'+str(which_revolving_pool)] =  [_AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]] / sum([_AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
+                save_to_excel(pd.DataFrame.from_dict(_CDR),'RnR&CDR',wb_name)
+    
+                self.CDR_all[scenario_id+'_All'] =  [self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
+            save_to_excel(pd.DataFrame.from_dict(self.CDR_all),'RnR&CDR',wb_name)
             
     def prepare_PurchaseAmount(self,for_which_revolving_pool,scenario_id):
         amount_principal = self.AP_PAcc_actual[scenario_id][dates_recycle[for_which_revolving_pool - 1]]
