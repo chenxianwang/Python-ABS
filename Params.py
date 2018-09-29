@@ -53,7 +53,7 @@ try:
     dates_pay = [dt_param['dt_first_pay'] + relativedelta(months= i) for i in range(36)]
     dates_recycle = [get_next_eom(dt_param['dt_first_calc'],month_increment) for month_increment in range(36)]
 ########## Hom many revolving pools ###############
-    nbr_revolving_pools = 6
+    nbr_revolving_pools = 1
     date_revolving_pools_cut = [dt_param['dt_first_calc'] + relativedelta(days = 1) + relativedelta(months= i) for i in range(nbr_revolving_pools)]
 except(NameError):
     pass
@@ -70,11 +70,11 @@ fees = { 'tax':{'rate':0.032621359223},
          }
 
 scenarios = {}
-scenarios['best'] = {'rate_default':0.06,'rate_prepay':0.29,'rate_overdue':0.02,     'scenario_weight':0.1}
-scenarios['better'] = {'rate_default':0.07,'rate_prepay':0.27,'rate_overdue':0.023,   'scenario_weight':0.15}
-scenarios['benchmark'] = {'rate_default':0.08,'rate_prepay':0.01,'rate_overdue':0.025,'scenario_weight':0.5}
-scenarios['worse'] = {'rate_default':0.09,'rate_prepay':0.24,'rate_overdue':0.027,    'scenario_weight':0.15}
-scenarios['worst'] = {'rate_default':0.1,'rate_prepay':0.22,'rate_overdue':0.03,      'scenario_weight':0.1}
+scenarios['best'] = {'M0_2_M1':0.0513,'M1_2_M0M2':0.389,'scenario_weight':0.1}
+#scenarios['better'] = {'M0_2_M1':0.0115,'M0_2_M1':0.01,   'scenario_weight':0.15}
+#scenarios['benchmark'] = {'rate_prepay':0.01,'M0_2_M1':0.0125,'scenario_weight':0.5}
+#scenarios['worse'] = {'rate_prepay':0.24,'M0_2_M1':0.0135,    'scenario_weight':0.15}
+#scenarios['worst'] = {'rate_prepay':0.22,'M0_2_M1':0.015,      'scenario_weight':0.1}
     
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
@@ -127,12 +127,16 @@ Distribution_By_Category = ['Type_Loans',
 
 income_bins = [0,50000,100000,150000,200000,2000000,100000000]
 age_bins = [17.9999,20,30,40,50,55,60]
-outstanding_principal_bins = [-0.001,2000,4000,6000,8000,10000,20000,1000000]
+outstanding_principal_bins = [-0.001,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,20000,1000000]
+
 duration_days_bins = [0,90,180,360,540,720,1080,3000]
 past_days_bins = [-0.01,90,180,360,540,720,1080,3000]
 future_days_bins = [-0.01,90,180,360,540,720,1080,3000]
+
+duration_months_bins = [0,5.999,9.999,12,18,24,31]
+
 overdue_times_bins = [-0.001,0,1,2,5,10,15,20,25,30]
-dpd_max_bins = [-0.01,0,30,60,90,120,150,180,360]
+dpd_max_bins = [-0.01,0,5,30,60,90,120,150,180,360]
 dpd_bins = [-0.01,0,30,60,90,120,150,180,360,1000]
 #total_fee_rate_bins = [-0.01,0,0.2,0.24,0.36,0.5,0.6]
 credit_score_bins = [-0.01,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,
@@ -145,6 +149,7 @@ Distribution_By_Bins = {
                         'LoanTerm':duration_days_bins,
                         'LoanAge':past_days_bins,
                         'LoanRemainTerm':future_days_bins,
+                        'Term_Contract':duration_months_bins,
                         'Days_Overdue_Max':dpd_max_bins,
                         'Days_Overdue_Current':dpd_bins,
                         'Overdue_Times':overdue_times_bins,

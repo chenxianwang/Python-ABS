@@ -34,6 +34,16 @@ class AssetPoolAccount():
         self.recylce_principal_overdue_1_30_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_principal_overdue_1_30_allTerm'].sum() for k in dates_recycle}
         self.recylce_principal_overdue_1_30_allTerm[dates_recycle[0]] = ACFa['amount_principal_overdue_1_30_allTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
         
+        self.recylce_principal_overdue_31_60_currentTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_principal_overdue_31_60_currentTerm'].sum() for k in dates_recycle}
+        self.recylce_principal_overdue_31_60_currentTerm[dates_recycle[0]] = ACFa['amount_principal_overdue_31_60_currentTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        self.recylce_principal_overdue_31_60_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_principal_overdue_31_60_allTerm'].sum() for k in dates_recycle}
+        self.recylce_principal_overdue_31_60_allTerm[dates_recycle[0]] = ACFa['amount_principal_overdue_31_60_allTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        
+        self.recylce_principal_overdue_61_90_currentTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_principal_overdue_61_90_currentTerm'].sum() for k in dates_recycle}
+        self.recylce_principal_overdue_61_90_currentTerm[dates_recycle[0]] = ACFa['amount_principal_overdue_61_90_currentTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        self.recylce_principal_overdue_61_90_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_principal_overdue_61_90_allTerm'].sum() for k in dates_recycle}
+        self.recylce_principal_overdue_61_90_allTerm[dates_recycle[0]] = ACFa['amount_principal_overdue_61_90_allTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        
         self.recylce_principal_loss_currentTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_principal_loss_currentTerm'].sum() for k in dates_recycle}
         self.recylce_principal_loss_currentTerm[dates_recycle[0]] = ACFa['amount_principal_loss_currentTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
         self.recylce_principal_loss_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_principal_loss_allTerm'].sum() for k in dates_recycle}
@@ -50,6 +60,16 @@ class AssetPoolAccount():
         self.recylce_interest_overdue_1_30_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_interest_overdue_1_30_allTerm'].sum() for k in dates_recycle}
         self.recylce_interest_overdue_1_30_allTerm[dates_recycle[0]] = ACFa['amount_interest_overdue_1_30_allTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
         
+        self.recylce_interest_overdue_31_60_currentTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_interest_overdue_31_60_currentTerm'].sum() for k in dates_recycle}
+        self.recylce_interest_overdue_31_60_currentTerm[dates_recycle[0]] = ACFa['amount_interest_overdue_31_60_currentTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        self.recylce_interest_overdue_31_60_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_interest_overdue_31_60_allTerm'].sum() for k in dates_recycle}
+        self.recylce_interest_overdue_31_60_allTerm[dates_recycle[0]] = ACFa['amount_interest_overdue_31_60_allTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        
+        self.recylce_interest_overdue_61_90_currentTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_interest_overdue_61_90_currentTerm'].sum() for k in dates_recycle}
+        self.recylce_interest_overdue_61_90_currentTerm[dates_recycle[0]] = ACFa['amount_interest_overdue_61_90_currentTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        self.recylce_interest_overdue_61_90_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_interest_overdue_61_90_allTerm'].sum() for k in dates_recycle}
+        self.recylce_interest_overdue_61_90_allTerm[dates_recycle[0]] = ACFa['amount_interest_overdue_61_90_allTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
+        
         self.recylce_interest_loss_currentTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_interest_loss_currentTerm'].sum() for k in dates_recycle}
         self.recylce_interest_loss_currentTerm[dates_recycle[0]] = ACFa['amount_interest_loss_currentTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
         self.recylce_interest_loss_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['amount_interest_loss_allTerm'].sum() for k in dates_recycle}
@@ -61,6 +81,10 @@ class AssetPoolAccount():
         self.principal_to_buy = {}
         self.principal_overdue_1_30_currentTerm = {}
         self.principal_overdue_1_30_allTerm = {}
+        self.principal_overdue_31_60_currentTerm = {}
+        self.principal_overdue_31_60_allTerm = {}
+        self.principal_overdue_61_90_currentTerm = {}
+        self.principal_overdue_61_90_allTerm = {}
         self.principal_loss_currentTerm = {}
         self.principal_loss_allTerm = {}
         
@@ -70,6 +94,10 @@ class AssetPoolAccount():
         self.interest_to_buy = {}
         self.interest_overdue_1_30_currentTerm = {}
         self.interest_overdue_1_30_allTerm = {}
+        self.interest_overdue_31_60_currentTerm = {}
+        self.interest_overdue_31_60_allTerm = {}
+        self.interest_overdue_61_90_currentTerm = {}
+        self.interest_overdue_61_90_allTerm = {}
         self.interest_loss_currentTerm = {}
         self.interest_loss_allTerm = {}
     
@@ -80,6 +108,10 @@ class AssetPoolAccount():
         self.principal_to_pay = deepcopy(self.recylce_principal)
         self.principal_overdue_1_30_currentTerm = deepcopy(self.recylce_principal_overdue_1_30_currentTerm)
         self.principal_overdue_1_30_allTerm = deepcopy(self.recylce_principal_overdue_1_30_allTerm)
+        self.principal_overdue_31_60_currentTerm = deepcopy(self.recylce_principal_overdue_31_60_currentTerm)
+        self.principal_overdue_31_60_allTerm = deepcopy(self.recylce_principal_overdue_31_60_allTerm)
+        self.principal_overdue_61_90_currentTerm = deepcopy(self.recylce_principal_overdue_61_90_currentTerm)
+        self.principal_overdue_61_90_allTerm = deepcopy(self.recylce_principal_overdue_61_90_allTerm)
         self.principal_loss_currentTerm = deepcopy(self.recylce_principal_loss_currentTerm)
         self.principal_loss_allTerm = deepcopy(self.recylce_principal_loss_allTerm)
         for k in dates_recycle:
@@ -87,6 +119,8 @@ class AssetPoolAccount():
         return self.principal_original,self.principal_actual,\
                self.principal_to_pay,self.principal_to_buy,\
                self.principal_overdue_1_30_currentTerm,self.principal_overdue_1_30_allTerm,\
+               self.principal_overdue_31_60_currentTerm,self.principal_overdue_31_60_allTerm,\
+               self.principal_overdue_61_90_currentTerm,self.principal_overdue_61_90_allTerm,\
                self.principal_loss_currentTerm,self.principal_loss_allTerm
                 
 
@@ -97,6 +131,10 @@ class AssetPoolAccount():
         self.interest_to_pay = deepcopy(self.recylce_interest)
         self.interest_overdue_1_30_currentTerm = deepcopy(self.recylce_interest_overdue_1_30_currentTerm)
         self.interest_overdue_1_30_allTerm = deepcopy(self.recylce_interest_overdue_1_30_allTerm)
+        self.interest_overdue_31_60_currentTerm = deepcopy(self.recylce_interest_overdue_31_60_currentTerm)
+        self.interest_overdue_31_60_allTerm = deepcopy(self.recylce_interest_overdue_31_60_allTerm)
+        self.interest_overdue_61_90_currentTerm = deepcopy(self.recylce_interest_overdue_61_90_currentTerm)
+        self.interest_overdue_61_90_allTerm = deepcopy(self.recylce_interest_overdue_61_90_allTerm)
         self.interest_loss_currentTerm = deepcopy(self.recylce_interest_loss_currentTerm)
         self.interest_loss_allTerm = deepcopy(self.recylce_interest_loss_allTerm)
         for k in dates_recycle:
@@ -104,4 +142,6 @@ class AssetPoolAccount():
         return self.interest_original,self.interest_actual,\
                self.interest_to_pay,self.interest_to_buy,\
                self.interest_overdue_1_30_currentTerm,self.interest_overdue_1_30_allTerm,\
+               self.interest_overdue_31_60_currentTerm,self.interest_overdue_31_60_allTerm,\
+               self.interest_overdue_61_90_currentTerm,self.interest_overdue_61_90_allTerm,\
                self.interest_loss_currentTerm,self.interest_loss_allTerm
