@@ -74,10 +74,12 @@ class APCF_adjuster():
         for date_r_index,date_r in enumerate(dates_recycle_list):
             #logger.info('Adjusting for date_r {0}'.format(date_r))
             
-            try:APCF_ppmt_1,APCF_ipmt_1,APCF_ppmt_0,APCF_ipmt_0 = self.prepare_APCF_Account(APCF_ppmt_1,APCF_ipmt_1,OoR,dates_recycle_list,date_r_index)
-            except(ValueError): 
-                logger.info('Adjusting for date_r {0}'.format(date_r))
-                sys.exit("!!!!!!!!!    Wrong number of items passed 0, placement implies 1     !!!!!!!")
+            APCF_ppmt_1,APCF_ipmt_1,APCF_ppmt_0,APCF_ipmt_0 = self.prepare_APCF_Account(APCF_ppmt_1,APCF_ipmt_1,OoR,dates_recycle_list,date_r_index)
+            
+#            try:APCF_ppmt_1,APCF_ipmt_1,APCF_ppmt_0,APCF_ipmt_0 = self.prepare_APCF_Account(APCF_ppmt_1,APCF_ipmt_1,OoR,dates_recycle_list,date_r_index)
+#            except(ValueError): 
+#                logger.info('Adjusting for date_r {0}'.format(date_r))
+#                sys.exit("!!!!!!!!!    Wrong number of items passed 0, placement implies 1     !!!!!!!")
                 
                 
             amount_principal_overdue_1_30_currentTerm[date_r] = APCF_ppmt_0[date_r].sum()

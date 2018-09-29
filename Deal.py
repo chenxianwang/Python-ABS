@@ -72,6 +72,7 @@ class Deal():
         self.wf_NPVs = {}
         
         self.RnR = 0.0
+        self.CDR_original = {}
      
     def get_AssetPool(self):
         #self.asset_pool = self.AP.get_AP()
@@ -237,10 +238,8 @@ class Deal():
              self.AP_IAcc_loss_currentTerm[scenario_id] = interest_available[6]
              self.AP_IAcc_loss_allTerm[scenario_id] = interest_available[7]
              
-             if self.RevolvingDeal is not True:
-                self.CDR[scenario_id] =  [sum([self.AP_PAcc_overdue_1_30_allTerm[scenario_id][k] for k in dates_recycle]) / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]       
-        if self.RevolvingDeal is not True:
-            save_to_excel(pd.DataFrame.from_dict(self.CDR),'RnR&CDR',wb_name)
+             self.CDR_original[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
+        save_to_excel(pd.DataFrame.from_dict(self.CDR_original),'RnR&CDR',wb_name)
             
     def run_WaterFall(self):
          
