@@ -33,7 +33,7 @@ def main():
 #    #asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2','OriginalPool_part3']  
     #asset_pool_name_list = ['ABSSYSTEM_OriginalPool_part1','ABSSYSTEM_OriginalPool_part2','ABSSYSTEM_OriginalPool_part3','ABSSYSTEM_OriginalPool_part4'] 
     asset_pool_name_list = ['Update_overduetimes_1_add_birthday','Update_overduetimes_2_add_birthday']
-    #asset_pool_name_list = ['exclude_from_ABSSYSTEM']
+    #asset_pool_name_list = ['ABS9_R1']
     
     RD = RevolvingDeal(True,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
     #RD = RevolvingDeal(False,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
@@ -67,10 +67,10 @@ def main():
 #    
     RD.get_adjust_oAPCF()    
     RD.init_oAP_Acc()
-#
+###
     RD.get_rAPCF_structure()
     RD.forcast_Revolving_APCF()
-    
+#    
 #    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
 #    for scenario_id in scenarios.keys():
 #        logger.info('Saving results for scenario {0} '.format(scenario_id))

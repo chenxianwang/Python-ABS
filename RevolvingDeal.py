@@ -96,9 +96,9 @@ class RevolvingDeal(Deal):
                     #save_to_excel(apcf_revolving_structure,'Revolving_APCF_Structure_' + str(which_revolving_pool),wb_name)
                     #save_to_excel(self.apcf_revolving[which_revolving_pool],'rAPCF_' + scenario_id + str(which_revolving_pool),wb_name)
     
-                    APCFa = APCF_adjuster(apcf_revolving_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt)
+                    APCFa = APCF_adjuster(apcf_revolving_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,dates_recycle_list_revolving)
                     #this_adjusted = deepcopy(APCFa.adjust_APCF('R',dates_recycle_list_revolving))
-                    this_adjusted = deepcopy(APCFa.adjust_APCF('R',dates_recycle_list_revolving))
+                    this_adjusted = deepcopy(APCFa.adjust_APCF('R'))
                     
                     self.apcf_revolving_adjusted[scenario_id][which_revolving_pool] = deepcopy(this_adjusted)
                     
@@ -112,6 +112,10 @@ class RevolvingDeal(Deal):
                     _AP_PAcc_buy = {}
                     _AP_PAcc_overdue_1_30_currentTerm = {}
                     _AP_PAcc_overdue_1_30_allTerm = {}
+                    _AP_PAcc_overdue_31_60_currentTerm = {}
+                    _AP_PAcc_overdue_31_60_allTerm = {}
+                    _AP_PAcc_overdue_61_90_currentTerm = {}
+                    _AP_PAcc_overdue_61_90_allTerm = {}
                     _AP_PAcc_loss_currentTerm = {}
                     _AP_PAcc_loss_allTerm = {}                    
                     
@@ -121,8 +125,12 @@ class RevolvingDeal(Deal):
                     _AP_PAcc_buy[scenario_id] = _principal_available[3]
                     _AP_PAcc_overdue_1_30_currentTerm[scenario_id] = _principal_available[4]
                     _AP_PAcc_overdue_1_30_allTerm[scenario_id] = _principal_available[5]
-                    _AP_PAcc_loss_currentTerm[scenario_id] = _principal_available[6]
-                    _AP_PAcc_loss_allTerm[scenario_id] = _principal_available[7]
+                    _AP_PAcc_overdue_31_60_currentTerm[scenario_id] = _principal_available[6]
+                    _AP_PAcc_overdue_31_60_allTerm[scenario_id] = _principal_available[7]
+                    _AP_PAcc_overdue_61_90_currentTerm[scenario_id] = _principal_available[8]
+                    _AP_PAcc_overdue_61_90_allTerm[scenario_id] = _principal_available[9]
+                    _AP_PAcc_loss_currentTerm[scenario_id] = _principal_available[10]
+                    _AP_PAcc_loss_allTerm[scenario_id] = _principal_available[11]
                     
                     _interest_available = _AP_Acc.available_interest()
                     _AP_IAcc_original = {}
@@ -131,6 +139,10 @@ class RevolvingDeal(Deal):
                     _AP_IAcc_buy = {}
                     _AP_IAcc_overdue_1_30_currentTerm = {}
                     _AP_IAcc_overdue_1_30_allTerm = {}
+                    _AP_IAcc_overdue_31_60_currentTerm = {}
+                    _AP_IAcc_overdue_31_60_allTerm = {}
+                    _AP_IAcc_overdue_61_90_currentTerm = {}
+                    _AP_IAcc_overdue_61_90_allTerm = {}
                     _AP_IAcc_loss_currentTerm = {}
                     _AP_IAcc_loss_allTerm = {} 
 
@@ -140,8 +152,12 @@ class RevolvingDeal(Deal):
                     _AP_IAcc_buy[scenario_id] = _interest_available[3]
                     _AP_IAcc_overdue_1_30_currentTerm[scenario_id] = _interest_available[4]
                     _AP_IAcc_overdue_1_30_allTerm[scenario_id] = _interest_available[5]
-                    _AP_IAcc_loss_currentTerm[scenario_id] = _interest_available[6]
-                    _AP_IAcc_loss_allTerm[scenario_id] = _interest_available[7]
+                    _AP_IAcc_overdue_31_60_currentTerm[scenario_id] = _interest_available[6]
+                    _AP_IAcc_overdue_31_60_allTerm[scenario_id] = _interest_available[7]
+                    _AP_IAcc_overdue_61_90_currentTerm[scenario_id] = _interest_available[8]
+                    _AP_IAcc_overdue_61_90_allTerm[scenario_id] = _interest_available[9]
+                    _AP_IAcc_loss_currentTerm[scenario_id] = _interest_available[10]
+                    _AP_IAcc_loss_allTerm[scenario_id] = _interest_available[11]
                     
                     #logger.info('_AP_PAcc_actual[scenario_id][k] for date {0} is {1}'.format(datetime.date(2018,8,31),_AP_PAcc_actual[scenario_id][datetime.date(2018,8,31)]))
                     #TODO: Check why AP_PAcc_pay has all keys
@@ -152,6 +168,10 @@ class RevolvingDeal(Deal):
                         self.AP_PAcc_buy[scenario_id][k] += _AP_PAcc_buy[scenario_id][k]
                         self.AP_PAcc_overdue_1_30_currentTerm[scenario_id][k] += _AP_PAcc_overdue_1_30_currentTerm[scenario_id][k]
                         self.AP_PAcc_overdue_1_30_allTerm[scenario_id][k] += _AP_PAcc_overdue_1_30_allTerm[scenario_id][k]
+                        self.AP_PAcc_overdue_31_60_currentTerm[scenario_id][k] += _AP_PAcc_overdue_31_60_currentTerm[scenario_id][k]
+                        self.AP_PAcc_overdue_31_60_allTerm[scenario_id][k] += _AP_PAcc_overdue_31_60_allTerm[scenario_id][k]
+                        self.AP_PAcc_overdue_61_90_currentTerm[scenario_id][k] += _AP_PAcc_overdue_61_90_currentTerm[scenario_id][k]
+                        self.AP_PAcc_overdue_61_90_allTerm[scenario_id][k] += _AP_PAcc_overdue_61_90_allTerm[scenario_id][k]
                         self.AP_PAcc_loss_currentTerm[scenario_id][k] += _AP_PAcc_loss_currentTerm[scenario_id][k]
                         self.AP_PAcc_loss_allTerm[scenario_id][k] += _AP_PAcc_loss_allTerm[scenario_id][k]
 
@@ -161,6 +181,10 @@ class RevolvingDeal(Deal):
                         self.AP_IAcc_buy[scenario_id][k] += _AP_IAcc_buy[scenario_id][k]
                         self.AP_IAcc_overdue_1_30_currentTerm[scenario_id][k] += _AP_IAcc_overdue_1_30_currentTerm[scenario_id][k]
                         self.AP_IAcc_overdue_1_30_allTerm[scenario_id][k] += _AP_IAcc_overdue_1_30_allTerm[scenario_id][k]
+                        self.AP_IAcc_overdue_31_60_currentTerm[scenario_id][k] += _AP_IAcc_overdue_31_60_currentTerm[scenario_id][k]
+                        self.AP_IAcc_overdue_31_60_allTerm[scenario_id][k] += _AP_IAcc_overdue_31_60_allTerm[scenario_id][k]
+                        self.AP_IAcc_overdue_61_90_currentTerm[scenario_id][k] += _AP_IAcc_overdue_61_90_currentTerm[scenario_id][k]
+                        self.AP_IAcc_overdue_61_90_allTerm[scenario_id][k] += _AP_IAcc_overdue_61_90_allTerm[scenario_id][k]
                         self.AP_IAcc_loss_currentTerm[scenario_id][k] += _AP_IAcc_loss_currentTerm[scenario_id][k]
                         self.AP_IAcc_loss_allTerm[scenario_id][k] += _AP_IAcc_loss_allTerm[scenario_id][k]
     
@@ -174,6 +198,8 @@ class RevolvingDeal(Deal):
                 #logger.info('self.AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]] on dates_recycle_list_revolving[-1] {0} is {1}'.format(dates_recycle_list_revolving[-1],self.AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]]))
                 #logger.info('sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])] is {0}'.format(sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])))
                     _CDR[scenario_id+'_R'+str(which_revolving_pool)] =  [_AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]] / sum([_AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
+                    logger.info("Check total principal: {0:.4f} for Revolving Pool {1} of {1}".format(_AP_PAcc_overdue_1_30_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_31_60_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_61_90_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+sum([_AP_PAcc_actual[scenario_id][k] for k in dates_recycle]) - sum([_AP_PAcc_original[scenario_id][k] for k in dates_recycle]),which_revolving_pool,scenario_id))
+                    logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,_CDR[scenario_id+'_R'+str(which_revolving_pool)][0]))
                 save_to_excel(pd.DataFrame.from_dict(_CDR),'RnR&CDR',wb_name)
     
                 self.CDR_all[scenario_id+'_All'] =  [self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
