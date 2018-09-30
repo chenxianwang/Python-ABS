@@ -208,6 +208,7 @@ class Deal():
         self.apcf_original,self.apcf_structure,self.dates_recycle_list,df_ppmt,df_ipmt = APCF.calc_APCF(0)  #BackMonth  
         save_to_excel(self.apcf_original,'cf_o',wb_name)
         #save_to_excel(self.apcf_original_structure,'cf_o_structure',wb_name)
+        #save_to_excel(df_ppmt,'df_ppmt',wb_name)
         
         logger.info('get_adjust_oAPCF_simulation...')
         for scenario_id in self.scenarios.keys():
@@ -256,7 +257,10 @@ class Deal():
              
              self.CDR_original[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
         
-             logger.info("Check total principal: {0:.4f} for {1}".format(self.AP_PAcc_overdue_1_30_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]]+sum([self.AP_PAcc_actual[scenario_id][k] for k in dates_recycle]) - sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle]),scenario_id))
+             logger.info("Check total principal from allTerm Data: {0:.4f} for {1}".format(self.AP_PAcc_overdue_1_30_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]]+sum([self.AP_PAcc_actual[scenario_id][k] for k in dates_recycle]) - sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle]),scenario_id))
+             logger.info("Check total principal from currentTerm Data: {0:.4f} for {1}".format(self.AP_PAcc_overdue_1_30_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_currentTerm[scenario_id][self.dates_recycle_list[-1]]+sum([self.AP_PAcc_actual[scenario_id][k] for k in dates_recycle]) - sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle]),scenario_id))
+             logger.info("Check allTerm - currentTerm : {0:.4f}".format(self.AP_PAcc_overdue_1_30_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] - (self.AP_PAcc_overdue_1_30_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_currentTerm[scenario_id][self.dates_recycle_list[-1]])))
+             
              logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_original[scenario_id+'_O'][0]))
         save_to_excel(pd.DataFrame.from_dict(self.CDR_original),'RnR&CDR',wb_name)
             
