@@ -208,7 +208,7 @@ class Deal():
         self.apcf_original,self.apcf_structure,self.dates_recycle_list,df_ppmt,df_ipmt = APCF.calc_APCF(0)  #BackMonth  
         save_to_excel(self.apcf_original,'cf_o',wb_name)
         #save_to_excel(self.apcf_original_structure,'cf_o_structure',wb_name)
-        save_to_excel(df_ppmt,'df_ppmt',wb_name)
+        #save_to_excel(df_ppmt,'df_ppmt',wb_name)
         
         logger.info('get_adjust_oAPCF_simulation...')
         for scenario_id in self.scenarios.keys():

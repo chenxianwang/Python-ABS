@@ -70,11 +70,11 @@ fees = { 'tax':{'rate':0.032621359223},
          }
 
 scenarios = {}
-scenarios['best'] = {'M0_2_M1':0.0513,'M1_2_M0M2':0.389,'M2_2_M0M3':0.713,'M3_2_M0L':1,'scenario_weight':0.1}
-#scenarios['better'] = {'M0_2_M1':0.0115,'M0_2_M1':0.01,   'scenario_weight':0.15}
-#scenarios['benchmark'] = {'rate_prepay':0.01,'M0_2_M1':0.0125,'scenario_weight':0.5}
-#scenarios['worse'] = {'rate_prepay':0.24,'M0_2_M1':0.0135,    'scenario_weight':0.15}
-#scenarios['worst'] = {'rate_prepay':0.22,'M0_2_M1':0.015,      'scenario_weight':0.1}
+scenarios['best'] = {'M0_2_M1':0.05,'M1_2_M0M2':0.4,'M2_2_M0M3':0.7,'M3_2_M0L':1,'scenario_weight':0.1}
+scenarios['better'] = {'M0_2_M1':0.053,'M1_2_M0M2':0.45,'M2_2_M0M3':0.75,'M3_2_M0L':1,'scenario_weight':0.15}
+scenarios['benchmark'] = {'M0_2_M1':0.056,'M1_2_M0M2':0.5,'M2_2_M0M3':0.8,'M3_2_M0L':1,'scenario_weight':0.5}
+scenarios['worse'] = {'M0_2_M1':0.059,'M1_2_M0M2':0.55,'M2_2_M0M3':0.85,'M3_2_M0L':1,'scenario_weight':0.15}
+scenarios['worst'] = {'M0_2_M1':0.06,'M1_2_M0M2':0.6,'M2_2_M0M3':0.9,'M3_2_M0L':1,'scenario_weight':0.1}
     
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 

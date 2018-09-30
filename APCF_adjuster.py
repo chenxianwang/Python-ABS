@@ -347,7 +347,7 @@ class APCF_adjuster():
                                  'total_recycle_principal': df_total_by_date.transpose()[0] + df_total_by_date.transpose()[18] + df_total_by_date.transpose()[20] + df_total_by_date.transpose()[22],
                                  })
     
-        logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
+        #logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
         if OoR == 'R':pass
         else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         #save_to_excel(APCF_adjusted,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
