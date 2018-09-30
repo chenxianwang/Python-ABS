@@ -42,7 +42,7 @@ class AssetsCashFlow():
 #        logger.info('(self.asset_pool[Term_Remain] + self.asset_pool[first_due_period_O]).max() is {0}'.format((self.asset_pool['Term_Remain'] + self.asset_pool['first_due_period_O']).max()))
 #        
         last_term = int((self.asset_pool['Term_Remain'] + self.asset_pool['first_due_period_O']).max())
-        self.dates_recycle_list= [get_next_eom(self.date_pool_cut,i) for i in range(last_term)]
+        self.dates_recycle_list= [get_next_eom(self.date_pool_cut,i) for i in range(last_term+3)]  #for recycle DefaultAssets
         #logger.info('gen_APCF_Structure for APCF....')
         
         self.apcf_structure = self.gen_APCF_Structure('first_due_period_O')
