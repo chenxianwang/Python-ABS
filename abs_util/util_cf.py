@@ -35,10 +35,10 @@ def cash_flow_collection(df_cash_flow,dates_recycle,first_due_period,revolving_p
     df_fee_total_by_date = pd.DataFrame([df_fee[dates_recycle].sum()])
    
     df_pmt_total_by_date = pd.DataFrame({'date_recycle': dates_recycle,
-                                         'amount_principal': df_ppmt_total_by_date.transpose()[0],
-                                         'amount_interest': df_ipmt_total_by_date.transpose()[0],
-                                         #'amount_fee': df_fee_total_by_date.transpose()[0],
-                                         'amount_total': (df_ppmt_total_by_date
+                                         'principal': df_ppmt_total_by_date.transpose()[0],
+                                         'interest': df_ipmt_total_by_date.transpose()[0],
+                                         #'fee': df_fee_total_by_date.transpose()[0],
+                                         'total': (df_ppmt_total_by_date
                                                           + df_ipmt_total_by_date
                                                           + df_fee_total_by_date
                                                           ).transpose()[0]
