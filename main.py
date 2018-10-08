@@ -65,29 +65,29 @@ def main():
 #
     #RD.run_Stat()
 #    
-#    RD.asset_pool = RD.asset_pool[(RD.asset_pool['Interest_Rate'] == 0) & 
-#                                  (RD.asset_pool['Interest_Rate'] == 0) &
-#                                  (pd.to_datetime(RD.asset_pool['first_due_date_after_pool_cut']).dt.day == 1)&
-#                                  (RD.asset_pool['Amount_Outstanding_yuan'] >= 4000)]
-    #RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/foucus.csv',index=False)
+#    RD.asset_pool = RD.asset_pool[#(RD.asset_pool['Interest_Rate'] == 0) & 
+#                                  (pd.to_datetime(RD.asset_pool['first_due_date_after_pool_cut']).dt.day == 31)
+#                                  #&(RD.asset_pool['Amount_Outstanding_yuan'] >= 4000)
+#                                  ]
+#    RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/foucus.csv',index=False)
     
     RD.get_adjust_oAPCF()    
     RD.init_oAP_Acc()
 ###
     RD.get_rAPCF_structure()
     RD.forcast_Revolving_APCF()
-    
-    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
-    for scenario_id in scenarios.keys():
-        logger.info('Saving results for scenario {0} '.format(scenario_id))
-        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
-        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
-        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
-        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
-    
-    RnR = RD.cal_RnR()
-    logger.info('RnR is: %s' % RnR)
-    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR&CDR',wb_name)
+#    
+#    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
+#    for scenario_id in scenarios.keys():
+#        logger.info('Saving results for scenario {0} '.format(scenario_id))
+#        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
+#        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
+#        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
+#        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
+#    
+#    RnR = RD.cal_RnR()
+#    logger.info('RnR is: %s' % RnR)
+#    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR&CDR',wb_name)
 
 #    
 #    SR = ServiceReport(ProjectName,ADate,1)

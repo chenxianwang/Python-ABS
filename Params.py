@@ -43,7 +43,7 @@ elif ProjectName == 'ABS11':
     Bonds['B'] = {'ptg':0.1287,'amount':322000000,'rate':0.0719}
     Bonds['C'] = {'ptg':0.2211,'amount':553010000.7,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
-    dt_param = {'dt_pool_cut':datetime.date(2018,9,1),'dt_effective':datetime.date(2018,11,30)}
+    dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_effective':datetime.date(2018,11,30)}
     
 else: dt_param = {'dt_pool_cut':datetime.date(2018,8,1),'dt_effective':datetime.date(2018,8,8)}
 
@@ -53,7 +53,7 @@ try:
     dates_pay = [dt_param['dt_first_pay'] + relativedelta(months= i) for i in range(36)]
     dates_recycle = [get_next_eom(dt_param['dt_first_calc'],month_increment) for month_increment in range(36)]
 ########## Hom many revolving pools ###############
-    nbr_revolving_pools = 6
+    nbr_revolving_pools = 1
     date_revolving_pools_cut = [dt_param['dt_first_calc'] + relativedelta(days = 1) + relativedelta(months= i) for i in range(nbr_revolving_pools)]
 except(NameError):
     pass
@@ -70,12 +70,12 @@ fees = { 'tax':{'rate':0.032621359223},
          }
 
 scenarios = {}
-scenarios['best'] = {'M0_2_M1':0.05,'M1_2_M0M2':0.4,'M2_2_M0M3':0.7,'M3_2_M0L':1,'scenario_weight':0.1}
-scenarios['better'] = {'M0_2_M1':0.053,'M1_2_M0M2':0.45,'M2_2_M0M3':0.75,'M3_2_M0L':1,'scenario_weight':0.15}
-scenarios['benchmark'] = {'M0_2_M1':0.056,'M1_2_M0M2':0.5,'M2_2_M0M3':0.8,'M3_2_M0L':1,'scenario_weight':0.5}
-scenarios['worse'] = {'M0_2_M1':0.059,'M1_2_M0M2':0.55,'M2_2_M0M3':0.85,'M3_2_M0L':1,'scenario_weight':0.15}
-scenarios['worst'] = {'M0_2_M1':0.06,'M1_2_M0M2':0.6,'M2_2_M0M3':0.9,'M3_2_M0L':1,'scenario_weight':0.1}
-    
+scenarios['best'] = {'M0_2_M1':0.05,'M1_2_M0M2':0.4,'M2_2_M0M3':0.7,'M3_2_M0L':0.8,'scenario_weight':0.1}
+#scenarios['better'] = {'M0_2_M1':0.053,'M1_2_M0M2':0.43,'M2_2_M0M3':0.73,'M3_2_M0L':0.83,'scenario_weight':0.15}
+#scenarios['benchmark'] = {'M0_2_M1':0.056,'M1_2_M0M2':0.46,'M2_2_M0M3':0.76,'M3_2_M0L':0.86,'scenario_weight':0.5}
+#scenarios['worse'] = {'M0_2_M1':0.059,'M1_2_M0M2':0.49,'M2_2_M0M3':0.79,'M3_2_M0L':0.89,'scenario_weight':0.15}
+#scenarios['worst'] = {'M0_2_M1':0.06,'M1_2_M0M2':0.5,'M2_2_M0M3':0.8,'M3_2_M0L':0.9,'scenario_weight':0.1}
+#    
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065
