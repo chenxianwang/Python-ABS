@@ -81,7 +81,7 @@ class RevolvingDeal(Deal):
                     self.RevolvingPool_PurchaseAmount[scenario_id][which_revolving_pool] = purchase_amount
                     self.total_purchase_amount += purchase_amount
                     
-                    #logger.info('purchase_amount for scenario_id {0} and Revolving pool {1} is :{2}'.format(scenario_id,which_revolving_pool,purchase_amount))
+                    logger.info('purchase_amount for scenario_id {0} and Revolving pool {1} is :{2}'.format(scenario_id,which_revolving_pool,purchase_amount))
                     #logger.info('Total purchase_amount is {0}'.format(self.total_purchase_amount))
                     
                     apcf_revolving_structure['OutstandingPrincipal'] = purchase_amount * apcf_revolving_structure['OutstandingPrincipal_Proportion']
@@ -205,7 +205,7 @@ class RevolvingDeal(Deal):
                 save_to_excel(pd.DataFrame.from_dict(_CDR),'RnR&CDR',wb_name)
     
                 self.CDR_all[scenario_id+'_All'] =  [self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
-#                logger.info('CDR_all for {0} is: {1:.4%} '.format(scenario_id,self.CDR_all[scenario_id+'_All'][0]))
+                logger.info('CDR_all for {0} is: {1:.4%} '.format(scenario_id,self.CDR_all[scenario_id+'_All'][0]))
             save_to_excel(pd.DataFrame.from_dict(self.CDR_all),'RnR&CDR',wb_name)
             
     def prepare_PurchaseAmount(self,for_which_revolving_pool,scenario_id):
