@@ -53,7 +53,7 @@ try:
     dates_pay = [dt_param['dt_first_pay'] + relativedelta(months= i) for i in range(36)]
     dates_recycle = [get_next_eom(dt_param['dt_first_calc'],month_increment) for month_increment in range(36)]
 ########## Hom many revolving pools ###############
-    nbr_revolving_pools = 1
+    nbr_revolving_pools = 6
     date_revolving_pools_cut = [dt_param['dt_first_calc'] + relativedelta(days = 1) + relativedelta(months= i) for i in range(nbr_revolving_pools)]
 except(NameError):
     pass
@@ -70,24 +70,24 @@ fees = { 'tax':{'rate':0.032621359223},
          }
 
 scenarios = {}
-scenarios['best'] = {'M0_2_M1':0.05,'M1_2_M0M2':0.4,'M2_2_M0M3':0.7,'M3_2_M0L':0.8,'scenario_weight':0.1}
-#scenarios['better'] = {'M0_2_M1':0.053,'M1_2_M0M2':0.43,'M2_2_M0M3':0.73,'M3_2_M0L':0.83,'scenario_weight':0.15}
-#scenarios['benchmark'] = {'M0_2_M1':0.056,'M1_2_M0M2':0.46,'M2_2_M0M3':0.76,'M3_2_M0L':0.86,'scenario_weight':0.5}
-#scenarios['worse'] = {'M0_2_M1':0.059,'M1_2_M0M2':0.49,'M2_2_M0M3':0.79,'M3_2_M0L':0.89,'scenario_weight':0.15}
-#scenarios['worst'] = {'M0_2_M1':0.06,'M1_2_M0M2':0.5,'M2_2_M0M3':0.8,'M3_2_M0L':0.9,'scenario_weight':0.1}
+scenarios['best'] = {'M0_2_ERM0':0.983,'M0_2_M1':0.03,'M1_2_M0M2':0.4,'M2_2_M0M3':0.7,'M3_2_M0L':0.8,'scenario_weight':0.1}
+scenarios['better'] = {'M0_2_ERM0':0.985,'M0_2_M1':0.033,'M1_2_M0M2':0.43,'M2_2_M0M3':0.73,'M3_2_M0L':0.83,'scenario_weight':0.15}
+scenarios['benchmark'] = {'M0_2_ERM0':0.987,'M0_2_M1':0.036,'M1_2_M0M2':0.46,'M2_2_M0M3':0.76,'M3_2_M0L':0.86,'scenario_weight':0.5}
+scenarios['worse'] = {'M0_2_ERM0':0.989,'M0_2_M1':0.039,'M1_2_M0M2':0.49,'M2_2_M0M3':0.79,'M3_2_M0L':0.89,'scenario_weight':0.15}
+scenarios['worst'] = {'M0_2_ERM0':0.99,'M0_2_M1':0.04,'M1_2_M0M2':0.5,'M2_2_M0M3':0.8,'M3_2_M0L':0.9,'scenario_weight':0.1}
 #    
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065
-MinWAScore = 0.04
+MinWAScore = 0.0645
 
-MinWARate = 0.2085
-MaxWARate = 0.21
+MinWARate = 0.18
+MaxWARate = 0.18004
 
 MaxWALoanRemainTerm = 390
 
-MaxIssueVolumn = 153857062.53 
-MinIssueVolumn = 152857062.53 
+MaxIssueVolumn = 767962857.70
+MinIssueVolumn = 767960857.70
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
