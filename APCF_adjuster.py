@@ -61,6 +61,12 @@ class APCF_adjuster():
         self.principal_overdue_61_90_recycle = {}
         self.interest_overdue_61_90_recycle = {}
         
+        self.principal_ER_recycle = {}
+        self.interest_ER_recycle = {}
+        
+        self.principal_Redemption_recycle = {}
+        self.interest_Redemption_recycle = {}
+        
         self.principal_overdue_31_60_currentTerm_helper = {}
         self.interest_overdue_31_60_currentTerm_helper = {}
         self.principal_overdue_31_60_allTerm_helper = {}
@@ -71,6 +77,8 @@ class APCF_adjuster():
         self.principal_loss_currentTerm_helper = {}
         self.interest_loss_currentTerm_helper = {}
         
+        self.Transition_principal_M1_2_M0 = {}
+        self.Transition_interest_M1_2_M0= {}
         self.Transition_principal_M2_2_M0 = {}
         self.Transition_interest_M2_2_M0= {}
         self.Transition_principal_M3_2_M0= {}
@@ -103,10 +111,17 @@ class APCF_adjuster():
             self.interest_overdue_31_60_recycle[date_r] = 0
             self.principal_overdue_61_90_recycle[date_r] = 0
             self.interest_overdue_61_90_recycle[date_r] = 0
+            
+            self.principal_ER_recycle[date_r] = 0
+            self.interest_ER_recycle[date_r] = 0
+            
+            self.principal_Redemption_recycle[date_r] = 0
+            self.interest_Redemption_recycle[date_r] = 0
 
+            self.Transition_principal_M1_2_M0[date_r] = pd.DataFrame()
+            self.Transition_interest_M1_2_M0[date_r] = pd.DataFrame()
             self.Transition_principal_M2_2_M0[date_r] = pd.DataFrame()
             self.Transition_interest_M2_2_M0[date_r] = pd.DataFrame()
-            
             self.Transition_principal_M3_2_M0[date_r] = pd.DataFrame()
             self.Transition_interest_M3_2_M0[date_r] = pd.DataFrame()
         
@@ -130,11 +145,13 @@ class APCF_adjuster():
         for date_r_index,date_r in enumerate(dates_recycle_list):
             #logger.info('Adjusting for date_r {0}'.format(date_r)) 
 #####################################################################################################################
-            if date_r_index>0:
-               self.principal_overdue_1_30_recycle[dates_recycle_list[date_r_index]] = ppmt_M1_2_M0[date_r].sum() + ppmt_M1_2_M0[dates_recycle_list[date_r_index-1]].sum()
-               self.interest_overdue_1_30_recycle[dates_recycle_list[date_r_index]] = ipmt_M1_2_M0[date_r].sum() + ipmt_M1_2_M0[dates_recycle_list[date_r_index-1]].sum()
-               ppmt_M1_2_M0[date_r],ppmt_M1_2_M0[dates_recycle_list[date_r_index-1]] = 0,0
-               ipmt_M1_2_M0[date_r],ipmt_M1_2_M0[dates_recycle_list[date_r_index-1]] = 0,0
+            if date_r_index>0 and date_r_index < len(dates_recycle_list)-1:
+                _ppmt_M1_2_M0 = self.Transition_principal_M1_2_M0[dates_recycle_list[date_r_index-1]]
+                _ipmt_M1_2_M0 = self.Transition_interest_M1_2_M0[dates_recycle_list[date_r_index-1]]
+                self.principal_overdue_1_30_recycle[dates_recycle_list[date_r_index+1]] = _ppmt_M1_2_M0[date_r].sum() + _ppmt_M1_2_M0[dates_recycle_list[date_r_index-1]].sum()
+                self.interest_overdue_1_30_recycle[dates_recycle_list[date_r_index+1]] = _ipmt_M1_2_M0[date_r].sum() + _ipmt_M1_2_M0[dates_recycle_list[date_r_index-1]].sum()
+                _ppmt_M1_2_M0[date_r],_ppmt_M1_2_M0[dates_recycle_list[date_r_index-1]] = 0,0
+                _ipmt_M1_2_M0[date_r],_ipmt_M1_2_M0[dates_recycle_list[date_r_index-1]] = 0,0
             if date_r_index>1 and date_r_index < len(dates_recycle_list)-1:
                 _ppmt_M2_2_M0 = self.Transition_principal_M2_2_M0[dates_recycle_list[date_r_index-2]]
                 _ipmt_M2_2_M0 = self.Transition_interest_M2_2_M0[dates_recycle_list[date_r_index-2]]
@@ -142,7 +159,7 @@ class APCF_adjuster():
                 self.interest_overdue_31_60_recycle[dates_recycle_list[date_r_index+1]] = _ipmt_M2_2_M0[date_r].sum() + _ipmt_M2_2_M0[dates_recycle_list[date_r_index-1]].sum() + _ipmt_M2_2_M0[dates_recycle_list[date_r_index-2]].sum()                                                        
                 _ppmt_M2_2_M0[date_r],_ppmt_M2_2_M0[dates_recycle_list[date_r_index-1]],_ppmt_M2_2_M0[dates_recycle_list[date_r_index-2]] = 0,0,0
                 _ipmt_M2_2_M0[date_r],_ipmt_M2_2_M0[dates_recycle_list[date_r_index-1]],_ipmt_M2_2_M0[dates_recycle_list[date_r_index-2]] = 0,0,0
-            if date_r_index>2 and date_r_index < len(dates_recycle_list)-2:       
+            if date_r_index>2 and date_r_index < len(dates_recycle_list)-1:       
                 _ppmt_M3_2_M0 = self.Transition_principal_M3_2_M0[dates_recycle_list[date_r_index-3]]
                 _ipmt_M3_2_M0 = self.Transition_interest_M3_2_M0[dates_recycle_list[date_r_index-3]]
                 self.principal_overdue_61_90_recycle[dates_recycle_list[date_r_index+1]] = _ppmt_M3_2_M0[date_r].sum() + _ppmt_M3_2_M0[dates_recycle_list[date_r_index-1]].sum() + _ppmt_M3_2_M0[dates_recycle_list[date_r_index-2]].sum() + _ppmt_M3_2_M0[dates_recycle_list[date_r_index-3]].sum()
@@ -150,22 +167,31 @@ class APCF_adjuster():
                 _ppmt_M3_2_M0[date_r],_ppmt_M3_2_M0[dates_recycle_list[date_r_index-1]],_ppmt_M3_2_M0[dates_recycle_list[date_r_index-2]],_ppmt_M3_2_M0[dates_recycle_list[date_r_index-3]] = 0,0,0,0
                 _ipmt_M3_2_M0[date_r],_ipmt_M3_2_M0[dates_recycle_list[date_r_index-1]],_ipmt_M3_2_M0[dates_recycle_list[date_r_index-2]],_ipmt_M3_2_M0[dates_recycle_list[date_r_index-3]] = 0,0,0,0
             
-            ppmt_M0,ipmt_M0,ppmt_M1,ipmt_M1 = self.transit_Status(ppmt_M0,ipmt_M0,OoR,date_r_index,'M0_2_M1')
+            ppmt_M0,ipmt_M0,ppmt_M1,ipmt_M1 = self.transit_Status(ppmt_M0,ipmt_M0,OoR,date_r_index,'M0_2_M1','Overdue')
             
             #ppmt_M0.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/check/ppmt_M0'+str(date_r)+'.csv',index=False)
             
             if date_r_index > 2:
-                ppmt_M0 = ppmt_M0.append(ppmt_M1_2_M0).append(_ppmt_M2_2_M0).append(_ppmt_M3_2_M0,ignore_index=True)
-                ipmt_M0 = ipmt_M0.append(ipmt_M1_2_M0).append(_ipmt_M2_2_M0).append(_ipmt_M3_2_M0,ignore_index=True)
+                ppmt_M0 = ppmt_M0.append(_ppmt_M1_2_M0).append(_ppmt_M2_2_M0).append(_ppmt_M3_2_M0,ignore_index=True)
+                ipmt_M0 = ipmt_M0.append(_ipmt_M1_2_M0).append(_ipmt_M2_2_M0).append(_ipmt_M3_2_M0,ignore_index=True)
             elif date_r_index > 1:
-                ppmt_M0 = ppmt_M0.append(ppmt_M1_2_M0).append(_ppmt_M2_2_M0,ignore_index=True)
-                ipmt_M0 = ipmt_M0.append(ipmt_M1_2_M0).append(_ipmt_M2_2_M0,ignore_index=True)
+                ppmt_M0 = ppmt_M0.append(_ppmt_M1_2_M0).append(_ppmt_M2_2_M0,ignore_index=True)
+                ipmt_M0 = ipmt_M0.append(_ipmt_M1_2_M0).append(_ipmt_M2_2_M0,ignore_index=True)
             elif date_r_index > 0:
-                ppmt_M0 = ppmt_M0.append(ppmt_M1_2_M0,ignore_index=True)
-                ipmt_M0 = ipmt_M0.append(ipmt_M1_2_M0,ignore_index=True)
+                ppmt_M0 = ppmt_M0.append(_ppmt_M1_2_M0,ignore_index=True)
+                ipmt_M0 = ipmt_M0.append(_ipmt_M1_2_M0,ignore_index=True)
             else:pass
             
-            #ppmt_M0.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/check/ppmt_M0_Appended'+str(date_r)+'.csv',index=False)
+        
+            #ppmt_M0.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/check/ppmt_M0'+str(date_r)+'.csv',index=False)
+            
+            #ER
+            ppmt_M0_ER,ipmt_M0_ER,ppmt_M0,ipmt_M0 = self.transit_Status(ppmt_M0,ipmt_M0,OoR,date_r_index,'M0_2_ERM0','ER')
+            
+            self.principal_ER_recycle[date_r] = sum(ppmt_M0_ER[dates_recycle_list[date_r_index:]].sum())
+            self.interest_ER_recycle[date_r] = sum(ipmt_M0_ER[dates_recycle_list[date_r_index:]].sum())
+            
+            #ppmt_M0.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/check/ppmt_M0_without_ER'+str(date_r)+'.csv',index=False)           
             
             self.principal_normal_currentTerm[date_r] = ppmt_M0[date_r].sum()
             self.interest_normal_currentTerm[date_r] = ipmt_M0[date_r].sum()   
@@ -178,7 +204,7 @@ class APCF_adjuster():
             #Transition M1_2_M0M2
             if date_r_index < len(dates_recycle_list)-1:
                 #logger.info('Transition M1_2_M0M2...')
-                ppmt_M1_2_M0,ipmt_M1_2_M0,ppmt_M1_2_M2,ipmt_M1_2_M2 = self.transit_Status(ppmt_M1,ipmt_M1,OoR,date_r_index,'M1_2_M0M2')#self.M1_2_M0M2(ppmt_M1,ipmt_M1)
+                ppmt_M1_2_M0,ipmt_M1_2_M0,ppmt_M1_2_M2,ipmt_M1_2_M2 = self.transit_Status(ppmt_M1,ipmt_M1,OoR,date_r_index,'M1_2_M0M2','Overdue')#self.M1_2_M0M2(ppmt_M1,ipmt_M1)
                 #logger.info('len(ppmt_M1_2_M0) is {0},len(ipmt_M1_2_M0) is {1}'.format(len(ppmt_M1_2_M0),len(ipmt_M1_2_M0)))
                 for k in self.dates_recycle_list:
                     self.principal_overdue_31_60_currentTerm_helper[k] = 0
@@ -194,7 +220,7 @@ class APCF_adjuster():
             #Transition M2_2_M0M3
             if date_r_index < len(dates_recycle_list)-2:
                 #logger.info('Transition M2_2_M0M3...')
-                ppmt_M2_2_M0,ipmt_M2_2_M0,ppmt_M2_2_M3,ipmt_M2_2_M3 = self.transit_Status(ppmt_M1_2_M2,ipmt_M1_2_M2,OoR,date_r_index,'M2_2_M0M3')
+                ppmt_M2_2_M0,ipmt_M2_2_M0,ppmt_M2_2_M3,ipmt_M2_2_M3 = self.transit_Status(ppmt_M1_2_M2,ipmt_M1_2_M2,OoR,date_r_index,'M2_2_M0M3','Overdue')
                 #logger.info('len(ppmt_M2_2_M0) is {0},len(ipmt_M2_2_M0) is {1}'.format(len(ppmt_M2_2_M0),len(ipmt_M2_2_M0)))
                 for k in self.dates_recycle_list:
                     self.principal_overdue_61_90_currentTerm_helper[k] = 0
@@ -210,7 +236,7 @@ class APCF_adjuster():
             #Transition M3_2_M0L
             if date_r_index < len(dates_recycle_list)-3:
                 #logger.info('Transition M3_2_M0L...')
-                ppmt_M3_2_M0,ipmt_M3_2_M0,ppmt_M3_2_L,ipmt_M3_2_L = self.transit_Status(ppmt_M2_2_M3,ipmt_M2_2_M3,OoR,date_r_index,'M3_2_M0L')     
+                ppmt_M3_2_M0,ipmt_M3_2_M0,ppmt_M3_2_L,ipmt_M3_2_L = self.transit_Status(ppmt_M2_2_M3,ipmt_M2_2_M3,OoR,date_r_index,'M3_2_M0L','Overdue')     
                 #logger.info('len(ppmt_M3_2_L) is {0},len(ipmt_M3_2_L) is {1}'.format(len(ppmt_M3_2_L),len(ipmt_M3_2_L)))
                 for overdue_date in dates_recycle_list[date_r_index:]:
                     self.principal_loss_currentTerm_helper[overdue_date] += ppmt_M3_2_L[overdue_date].sum()
@@ -220,9 +246,10 @@ class APCF_adjuster():
                 self.principal_loss_allTerm[dates_recycle_list[date_r_index+3]] = self.principal_loss_allTerm[dates_recycle_list[date_r_index+2]] + sum(ppmt_M3_2_L[dates_recycle_list[date_r_index:]].sum())
                 self.interest_loss_allTerm[dates_recycle_list[date_r_index+3]] = self.interest_loss_allTerm[dates_recycle_list[date_r_index+2]] + sum(ipmt_M3_2_L[dates_recycle_list[date_r_index:]].sum())          
                 
+            self.Transition_principal_M1_2_M0[date_r] = deepcopy(ppmt_M1_2_M0)
+            self.Transition_interest_M1_2_M0[date_r] = deepcopy(ipmt_M1_2_M0)
             self.Transition_principal_M2_2_M0[date_r] = deepcopy(ppmt_M2_2_M0)
             self.Transition_interest_M2_2_M0[date_r] = deepcopy(ipmt_M2_2_M0)
-            
             self.Transition_principal_M3_2_M0[date_r] = deepcopy(ppmt_M3_2_M0)
             self.Transition_interest_M3_2_M0[date_r] = deepcopy(ipmt_M3_2_M0)
                         
@@ -257,6 +284,9 @@ class APCF_adjuster():
                                           self.interest_overdue_31_60_recycle[date_r],
                                           self.principal_overdue_61_90_recycle[date_r],
                                           self.interest_overdue_61_90_recycle[date_r],
+                                          
+                                          self.principal_ER_recycle[date_r],
+                                          self.interest_ER_recycle[date_r],                                          
                                           ]
         
         #logger.info('Saving APCF_adjusted_structure for scenario {0}: '.format(self.scenario_id))
@@ -264,7 +294,7 @@ class APCF_adjuster():
         
         return self.gen_APCF_adjusted(OoR)
    
-    def transit_Status(self,ppmt_this,ipmt_this,OoR,date_r_index,transition):
+    def transit_Status(self,ppmt_this,ipmt_this,OoR,date_r_index,transition,FLAG):
         
         main_params = self.main_params 
         first_due_period = 'first_due_period_'+OoR
@@ -276,15 +306,17 @@ class APCF_adjuster():
         #logger.info('bernollio_list.count(0) is {0}, bernollio_list.count(1) is {1}, Equal_or Not: {2},{3}'.format(bernollio_list.count(0),bernollio_list.count(1),len(bernollio_list)==bernollio_list.count(0)+bernollio_list.count(1),len(bernollio_list)==len(ppmt_this)))
         
         bernollio_col = pd.DataFrame(bernollio_list,columns=['bernollio_col'])            
-        ppmt_this['Overdue_Flag_'+str(date_r_index)] = bernollio_col['bernollio_col']
-           
-        ppmt_this['Overdue_Flag_'+str(date_r_index)] = ppmt_this['Overdue_Flag_'+str(date_r_index)].where(ppmt_this[first_due_period] <= date_r_index,1)
-        ipmt_this['Overdue_Flag_'+str(date_r_index)] = ppmt_this['Overdue_Flag_'+str(date_r_index)]
+        ppmt_this[FLAG + '_'+str(date_r_index)] = bernollio_col['bernollio_col']
         
-        ppmt_pre = ppmt_this[ppmt_this['Overdue_Flag_'+str(date_r_index)]==1]
-        ipmt_pre = ipmt_this[ipmt_this['Overdue_Flag_'+str(date_r_index)]==1]
-        ppmt_next = ppmt_this[ppmt_this['Overdue_Flag_'+str(date_r_index)]==0]
-        ipmt_next = ipmt_this[ipmt_this['Overdue_Flag_'+str(date_r_index)]==0]
+        if FLAG == 'Overdue':   
+            ppmt_this[FLAG + '_'+str(date_r_index)] = ppmt_this[FLAG + '_'+str(date_r_index)].where(ppmt_this[first_due_period] <= date_r_index,1)
+        
+        ipmt_this[FLAG + '_'+str(date_r_index)] = ppmt_this[FLAG + '_'+str(date_r_index)]
+        
+        ppmt_pre = ppmt_this[ppmt_this[FLAG + '_'+str(date_r_index)]==1]
+        ipmt_pre = ipmt_this[ipmt_this[FLAG + '_'+str(date_r_index)]==1]
+        ppmt_next = ppmt_this[ppmt_this[FLAG + '_'+str(date_r_index)]==0]
+        ipmt_next = ipmt_this[ipmt_this[FLAG + '_'+str(date_r_index)]==0]
         
         ppmt_pre = ppmt_pre.reset_index(drop=True)
         ipmt_pre = ipmt_pre.reset_index(drop=True)
@@ -305,6 +337,7 @@ class APCF_adjuster():
         APCF_adjusted = pd.DataFrame({'date_recycle': self.dates_recycle_list,
                                          'Normal_recycle_principal': df_total_by_date.transpose()[0],
                                          'Normal_recycle_interest': df_total_by_date.transpose()[1],
+                                         
                                          'principal_overdue_1_30_currentTerm': df_total_by_date.transpose()[2],
                                          'interest_overdue_1_30_currentTerm': df_total_by_date.transpose()[3],
                                          'principal_overdue_31_60_currentTerm': df_total_by_date.transpose()[4],
@@ -321,14 +354,19 @@ class APCF_adjuster():
                                          'interest_overdue_61_90_allTerm': df_total_by_date.transpose()[15],
                                          'principal_loss_allTerm': df_total_by_date.transpose()[16],
                                          'interest_loss_allTerm': df_total_by_date.transpose()[17],
+                                         
                                          'Overdue_1_30_recycle_principal': df_total_by_date.transpose()[18],
                                          'Overdue_1_30_recycle_interest': df_total_by_date.transpose()[19],
                                          'Overdue_31_60_recycle_principal': df_total_by_date.transpose()[20],
                                          'Overdue_31_60_recycle_interest': df_total_by_date.transpose()[21],
                                          'Overdue_61_90_recycle_principal': df_total_by_date.transpose()[22],
                                          'Overdue_61_90_recycle_interest': df_total_by_date.transpose()[23],
-                                         'total_recycle_principal': df_total_by_date.transpose()[0] + df_total_by_date.transpose()[18] + df_total_by_date.transpose()[20] + df_total_by_date.transpose()[22],
-                                         'total_recycle_interest': df_total_by_date.transpose()[1] + df_total_by_date.transpose()[19] + df_total_by_date.transpose()[21] + df_total_by_date.transpose()[23],
+                                         
+                                         'ER_recycle_principal': df_total_by_date.transpose()[24],
+                                         'ER_recycle_interest': df_total_by_date.transpose()[25],                                        
+                                         
+                                         'total_recycle_principal': df_total_by_date.transpose()[0] + df_total_by_date.transpose()[18] + df_total_by_date.transpose()[20] + df_total_by_date.transpose()[22] + df_total_by_date.transpose()[24],
+                                         'total_recycle_interest': df_total_by_date.transpose()[1] + df_total_by_date.transpose()[19] + df_total_by_date.transpose()[21] + df_total_by_date.transpose()[23] + df_total_by_date.transpose()[25],
                                          })
     
         APCF_adjusted_save = pd.DataFrame({'date_recycle': self.dates_recycle_list,
@@ -344,13 +382,14 @@ class APCF_adjuster():
                                  'Overdue_1_30_recycle_principal': df_total_by_date.transpose()[18],
                                  'Overdue_31_60_recycle_principal': df_total_by_date.transpose()[20],
                                  'Overdue_61_90_recycle_principal': df_total_by_date.transpose()[22],
-                                 'total_recycle_principal': df_total_by_date.transpose()[0] + df_total_by_date.transpose()[18] + df_total_by_date.transpose()[20] + df_total_by_date.transpose()[22],
+                                 'ER_recycle_principal': df_total_by_date.transpose()[24],
+                                 'total_recycle_principal': df_total_by_date.transpose()[0] + df_total_by_date.transpose()[18] + df_total_by_date.transpose()[20] + df_total_by_date.transpose()[22] + df_total_by_date.transpose()[24],
                                  })
     
         #logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
         if OoR == 'R':pass
         else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
-        #save_to_excel(APCF_adjusted,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
+        #save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         
         #TOTAL_Principal = APCF_adjusted['principal_Normal'].sum()
         #APCF_adjusted['total_outstanding_principal'] = TOTAL_Principal - APCF_adjusted['principal_Normal'].cumsum()        
