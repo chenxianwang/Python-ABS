@@ -56,6 +56,8 @@ try:
 ########## Hom many revolving pools ###############
     nbr_revolving_pools = 6
     date_revolving_pools_cut = [dt_param['dt_first_calc'] + relativedelta(days = 1) + relativedelta(months= i) for i in range(nbr_revolving_pools)]
+    Redeem_or_Not = True
+    #Redeem_or_Not = False
 except(NameError):
     pass
 
@@ -72,10 +74,10 @@ fees = { 'tax':{'rate':0.032621359223},
 
 scenarios = {}
 scenarios['best'] = {'M0_2_ERM0':0.99,'M0_2_M1':0.03,'M1_2_M0M2':0.5,'M2_2_M0M3':0.8,'M3_2_M0L':0.85,'scenario_weight':0.1}
-scenarios['better'] = {'M0_2_ERM0':0.991,'M0_2_M1':0.033,'M1_2_M0M2':0.53,'M2_2_M0M3':0.83,'M3_2_M0L':0.87,'scenario_weight':0.15}
-scenarios['benchmark'] = {'M0_2_ERM0':0.992,'M0_2_M1':0.035,'M1_2_M0M2':0.55,'M2_2_M0M3':0.85,'M3_2_M0L':0.89,'scenario_weight':0.5}
-scenarios['worse'] = {'M0_2_ERM0':0.993,'M0_2_M1':0.037,'M1_2_M0M2':0.57,'M2_2_M0M3':0.87,'M3_2_M0L':0.91,'scenario_weight':0.15}
-scenarios['worst'] = {'M0_2_ERM0':0.995,'M0_2_M1':0.04,'M1_2_M0M2':0.6,'M2_2_M0M3':0.9,'M3_2_M0L':0.93,'scenario_weight':0.1}
+#scenarios['better'] = {'M0_2_ERM0':0.991,'M0_2_M1':0.033,'M1_2_M0M2':0.53,'M2_2_M0M3':0.83,'M3_2_M0L':0.87,'scenario_weight':0.15}
+#scenarios['benchmark'] = {'M0_2_ERM0':0.992,'M0_2_M1':0.035,'M1_2_M0M2':0.55,'M2_2_M0M3':0.85,'M3_2_M0L':0.89,'scenario_weight':0.5}
+#scenarios['worse'] = {'M0_2_ERM0':0.993,'M0_2_M1':0.037,'M1_2_M0M2':0.57,'M2_2_M0M3':0.87,'M3_2_M0L':0.91,'scenario_weight':0.15}
+#scenarios['worst'] = {'M0_2_ERM0':0.995,'M0_2_M1':0.04,'M1_2_M0M2':0.6,'M2_2_M0M3':0.9,'M3_2_M0L':0.93,'scenario_weight':0.1}
 #    
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
