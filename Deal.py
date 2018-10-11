@@ -213,7 +213,7 @@ class Deal():
         logger.info('get_adjust_oAPCF_simulation...')
         for scenario_id in self.scenarios.keys():
             logger.info('get_adjust_oAPCF_simulation for scenario_id {0}...'.format(scenario_id))
-            APCFa = APCF_adjuster(self.apcf_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,self.dates_recycle_list)
+            APCFa = APCF_adjuster(self.apcf_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,self.dates_recycle_list,dt_param['dt_pool_cut'])
             #self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O',self.dates_recycle_list))
             self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O'))
             #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
