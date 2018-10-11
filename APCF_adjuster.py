@@ -241,7 +241,7 @@ class APCF_adjuster():
         
         ppmt_this[FLAG + '_'+str(date_r_index)] = pd.DataFrame(deepcopy(list(bernoulli.rvs(size=len(ppmt_this),p= (1-transit_down)))),columns=['bernollio_col'])            
         
-        if FLAG == 'Overdue' and transition != 'D_2_RL':   
+        if FLAG == 'Overdue':# and transition != 'D_2_RL':   
             ppmt_this[FLAG + '_'+str(date_r_index)] = ppmt_this[FLAG + '_'+str(date_r_index)].where(ppmt_this[first_due_period] <= date_r_index,1)
         
         ipmt_this[FLAG + '_'+str(date_r_index)] = ppmt_this[FLAG + '_'+str(date_r_index)]
