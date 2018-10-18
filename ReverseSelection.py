@@ -76,10 +76,11 @@ class ReverseSelection():
                 Credit_Score_max_Helper = Assets['Credit_Score_maxHelper']
             
         Interest_Rate_min_Helper = Assets['Interest_Rate_minHelper']
-        Interest_Rate_max_Helper = Assets['Interest_Rate_maxHelper']
+        try:Interest_Rate_max_Helper = Assets['Interest_Rate_maxHelper']
+        except(KeyError):pass
         
-        if 'LoanRemainTerm' in self.group_d:
-            LoanRemainTermHelper = Assets['LoanRemainTerm']
+        if 'LoanTerm' in self.group_d:
+            LoanTermHelper = Assets['LoanTerm']
         
         P = range(len(Contracts))
         # Declare problem instance, maximization problem
@@ -98,14 +99,15 @@ class ReverseSelection():
             prob += sum(Credit_Score_max_Helper[p] * x[p] for p in P) * self.targets['Credit_Score_max']['object_sign'] >= 0
         
         prob += sum(Interest_Rate_min_Helper[p] * x[p] for p in P) * self.targets['Interest_Rate_min']['object_sign'] >= 0 
-        prob += sum(Interest_Rate_max_Helper[p] * x[p] for p in P) * self.targets['Interest_Rate_max']['object_sign'] >= 0 
+        if 'Interest_Rate_max' in self.targets.keys():    
+            prob += sum(Interest_Rate_max_Helper[p] * x[p] for p in P) * self.targets['Interest_Rate_max']['object_sign'] >= 0 
         
         if 'Amount_Outstanding_max' in self.targets.keys():           
             prob += sum(OutstandingPrincipal[p] * x[p] for p in P) <= self.targets['Amount_Outstanding_max']['object_value']
         if 'Amount_Outstanding_min' in self.targets.keys(): 
             prob += sum(OutstandingPrincipal[p] * x[p] for p in P) >= self.targets['Amount_Outstanding_min']['object_value']
-        if 'LoanRemainTerm' in self.targets.keys(): 
-            prob += sum(LoanRemainTermHelper[p] * x[p] for p in P) * self.targets['LoanRemainTerm']['object_sign'] >= 0
+        if 'LoanTerm' in self.targets.keys(): 
+            prob += sum(LoanTermHelper[p] * x[p] for p in P) * self.targets['LoanTerm']['object_sign'] >= 0
         
         logger.info('Start solving the problem instance')
         #prob.solve()
