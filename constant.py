@@ -33,7 +33,7 @@ Header_Rename = {'#合同号':'No_Contract','订单号':'No_Contract','合同编
                  '到期日':'Dt_Maturity','贷款到期日':'Dt_Maturity',                 
                  '合同本金':'Amount_Contract_yuan','合同本金(元)':'Amount_Contract_yuan','合同金额':'Amount_Contract_yuan',
                  '截至封包日剩余本金':'Amount_Outstanding_yuan','截至封包日剩余本金(元)':'Amount_Outstanding_yuan','剩余本金':'Amount_Outstanding_yuan',#'合同余额(元)':'Amount_Outstanding_yuan',
-                 'INTEREST_RATE':'Interest_Rate','INTEREST_RATE(%)':'Interest_Rate','合同贷款利率':'Interest_Rate',
+                 'INTEREST_RATE':'Interest_Rate','INTEREST_RATE(%)':'Interest_Rate','合同贷款利率':'Interest_Rate','Interest_Rate_S':'Interest_Rate',
                  '当期逾期天数':'Days_Overdue_Current','当前逾期天数':'Days_Overdue_Current',
                  '贷款发放时借款人年龄':'Age_Loan_Start','初始起算日借款人年龄':'Age_Project_Start','年龄':'Age_Project_Start','借款人年龄':'Age_Project_Start',
                  '出生日期':'出生日期',
@@ -44,7 +44,7 @@ Header_Rename = {'#合同号':'No_Contract','订单号':'No_Contract','合同编
                  '性别':'Gender','家庭状况':'Marriagestate','历史逾期次数':'Overdue_Times',#'综合费用率':'综合费用率',
                  'SERVICE_FEE_RATE':'SERVICE_FEE_RATE','IS_NEW_SERVICE_FEE_CALCULATION':'SERVICE_FEE_CALCULATION',
                  '信用评分':'Credit_Score_15','信用分数':'Credit_Score_15','CREDIT_SCORE':'Credit_Score_15',
-                 '初始还款日':'Dt_First_Pay','合同期限':'Term_Contract','剩余期数':'Term_Remain',
+                 '初始还款日':'Dt_First_Pay','合同期限':'Term_Contract','剩余期数':'Term_Remain','剩余期限':'Term_Remain',
                  '五级分类':'Type_Five_Category',
                  '最长逾期天数':'Days_Overdue_Max','历史最大逾期天数':'Days_Overdue_Max',
                  #'FLEXIBLE_PACKAGE_FLAG':'FLEXIBLE_PACKAGE_FLAG','FLEXIBLE_PACKAGE_NAME':'FLEXIBLE_PACKAGE_NAME'

@@ -45,10 +45,13 @@ class RevolvingDeal(Deal):
         self.apcf_revolving_adjusted_all = {}
         self.RevolvingPool_PurchaseAmount = {}
         
+        self.APCF_R_adjusted_save = {}
+        
         self.total_purchase_amount = 0
         
         for scenario_id in self.scenarios.keys():
             self.apcf_revolving_adjusted[scenario_id] = {}
+            self.APCF_R_adjusted_save[scenario_id] = {}
             self.apcf_revolving_adjusted_all[scenario_id] = pd.DataFrame()
             self.RevolvingPool_PurchaseAmount[scenario_id] = {}
         
@@ -97,10 +100,7 @@ class RevolvingDeal(Deal):
                     #save_to_excel(self.apcf_revolving[which_revolving_pool],'rAPCF_' + scenario_id + str(which_revolving_pool),wb_name)
     
                     APCFa = APCF_adjuster(apcf_revolving_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,dates_recycle_list_revolving,date_revolving_pools_cut[which_revolving_pool-1])
-                    #this_adjusted = deepcopy(APCFa.adjust_APCF('R',dates_recycle_list_revolving))
-                    this_adjusted = deepcopy(APCFa.adjust_APCF('R'))
-                    
-                    self.apcf_revolving_adjusted[scenario_id][which_revolving_pool] = deepcopy(this_adjusted)
+                    self.apcf_revolving_adjusted[scenario_id][which_revolving_pool],self.APCF_R_adjusted_save[scenario_id][which_revolving_pool] = APCFa.adjust_APCF('R')
                     
                     #save_to_excel(self.apcf_revolving_adjusted[scenario_id][which_revolving_pool],'rAPCFa_' + scenario_id + str(which_revolving_pool),wb_name)
                     
@@ -198,10 +198,17 @@ class RevolvingDeal(Deal):
                 #logger.info('self.AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]] on dates_recycle_list_revolving[-1] {0} is {1}'.format(dates_recycle_list_revolving[-1],self.AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]]))
                 #logger.info('sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])] is {0}'.format(sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])))
                     _CDR[scenario_id+'_R'+str(which_revolving_pool)] =  [_AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]] / sum([_AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
-                    logger.info("Check total principal from allTerm Data: {0:.4f} for {1} for Revolving Pool {2}".format(_AP_PAcc_overdue_1_30_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_31_60_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_61_90_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+sum([_AP_PAcc_actual[scenario_id][k] for k in dates_recycle]) - sum([_AP_PAcc_original[scenario_id][k] for k in dates_recycle]),scenario_id,which_revolving_pool))
-                    logger.info("Check total principal from currentTerm Data: {0:.4f} for {1} for Revolving Pool {2}".format(_AP_PAcc_overdue_1_30_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_31_60_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_61_90_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_loss_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+sum([_AP_PAcc_actual[scenario_id][k] for k in dates_recycle]) - sum([_AP_PAcc_original[scenario_id][k] for k in dates_recycle]),scenario_id,which_revolving_pool))
-                    logger.info("Check allTerm - currentTerm : {0:.4f}".format(_AP_PAcc_overdue_1_30_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_31_60_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_61_90_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]] - (_AP_PAcc_overdue_1_30_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_31_60_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_61_90_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_loss_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]),which_revolving_pool))
-                    logger.info('CDR for {0} is: {1:.4%} for Revolving Pool {2} '.format(scenario_id,_CDR[scenario_id+'_R'+str(which_revolving_pool)][0],which_revolving_pool))
+                    
+                    principal_R_allTerm = _AP_PAcc_overdue_1_30_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_31_60_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_61_90_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_loss_allTerm[scenario_id][dates_recycle_list_revolving[-1]]+sum([_AP_PAcc_actual[scenario_id][k] for k in dates_recycle])
+                    principal_R_currentlTerm = _AP_PAcc_overdue_1_30_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_31_60_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_overdue_61_90_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+_AP_PAcc_loss_currentTerm[scenario_id][dates_recycle_list_revolving[-1]]+sum([_AP_PAcc_actual[scenario_id][k] for k in dates_recycle])
+                    principal_R = sum([_AP_PAcc_original[scenario_id][k] for k in dates_recycle])
+                    if abs(principal_R_allTerm - principal_R)>0.0001:
+                        logger.info('!!!!!!!!! GAP in Revolving Pool !!!!!!!!!')
+                        logger.info("Check total principal from allTerm Data: {0:.4f} for {1} for Revolving Pool {2}".format(principal_R_allTerm - principal_R,scenario_id,which_revolving_pool))
+                        logger.info("Check total principal from currentTerm Data: {0:.4f} for {1} for Revolving Pool {2}".format(principal_R_allTerm - principal_R,scenario_id,which_revolving_pool))
+                        logger.info("Check allTerm - currentTerm : {0:.4f}".format(principal_R_allTerm - principal_R_currentlTerm ))
+                        logger.info('CDR for {0} is: {1:.4%} for Revolving Pool {2} '.format(scenario_id,_CDR[scenario_id+'_R'+str(which_revolving_pool)][0],which_revolving_pool))
+                        save_to_excel(self.APCF_R_adjusted_save[scenario_id][which_revolving_pool],'cf_R_adjusted_'+scenario_id + str(which_revolving_pool),wb_name)
                 save_to_excel(pd.DataFrame.from_dict(_CDR),'RnR&CDR',wb_name)
     
                 self.CDR_all[scenario_id+'_All'] =  [self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  

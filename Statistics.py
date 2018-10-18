@@ -104,6 +104,7 @@ class Statistics():
         df = self.asset_pool
         
         logger.info('Statistics Dimension Setting.....')
+        df['Credit'] = df['Amount_Contract_yuan']
         df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
         df['OutstandingPrincipal'] = df['Amount_Outstanding_yuan']
         df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']/10000

@@ -47,6 +47,7 @@ class Deal():
         self.apcf_original = pd.DataFrame()
         self.apcf_original_structure = pd.DataFrame()
         self.apcf_original_adjusted = {}
+        self.APCF_adjusted_save = {}
         
         self.AP_PAcc_original = {}
         self.AP_PAcc_actual = {}
@@ -121,8 +122,8 @@ class Deal():
             #AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str)
             #AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_new'})
             #[['#合同号','出生日期']]
-            logger.info('left Merging...')
-            self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号','出生日期']],left_on= left,right_on = right,how='left')
+            logger.info('outer Merging...')
+            self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号']],left_on= left,right_on = right,how='outer')
         #self.asset_pool = self.asset_pool[(~self.asset_pool['职业_信托'].isnull()) & (~self.asset_pool['购买商品_信托'].isnull())]
         logger.info('Columns added....')
         
@@ -193,7 +194,7 @@ class Deal():
         
     def get_rearranged_APCF_structure(self):
         
-        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain']],
+        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start']],
                              self.date_pool_cut
                              )
         return APCF.rearrange_APCF_Structure() 
@@ -201,11 +202,11 @@ class Deal():
     def get_adjust_oAPCF(self):
         
         #self.asset_pool['SERVICE_FEE_RATE'] = 0
-        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain']],
+        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start']],
                              self.date_pool_cut
                              )
 
-        self.apcf_original,self.apcf_structure,self.dates_recycle_list,df_ppmt,df_ipmt = APCF.calc_APCF(0)  #BackMonth  
+        self.apcf_original,self.apcf_original_structure,self.dates_recycle_list,df_ppmt,df_ipmt = APCF.calc_APCF(0)  #BackMonth  
         save_to_excel(self.apcf_original,'cf_o',wb_name)
         #save_to_excel(self.apcf_original_structure,'cf_o_structure',wb_name)
         #save_to_excel(df_ppmt,'df_ppmt',wb_name)
@@ -213,9 +214,9 @@ class Deal():
         logger.info('get_adjust_oAPCF_simulation...')
         for scenario_id in self.scenarios.keys():
             logger.info('get_adjust_oAPCF_simulation for scenario_id {0}...'.format(scenario_id))
-            APCFa = APCF_adjuster(self.apcf_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,self.dates_recycle_list,dt_param['dt_pool_cut'])
+            APCFa = APCF_adjuster(self.apcf_original_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,self.dates_recycle_list,dt_param['dt_pool_cut'])
             #self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O',self.dates_recycle_list))
-            self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O'))
+            self.apcf_original_adjusted[scenario_id],self.APCF_adjusted_save[scenario_id] = APCFa.adjust_APCF('O')
             #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
         
 
@@ -256,12 +257,17 @@ class Deal():
              self.AP_IAcc_loss_allTerm[scenario_id] = interest_available[11]
              
              self.CDR_original[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
-        
-             logger.info("Check total principal from allTerm Data: {0:.4f} for {1}".format(self.AP_PAcc_overdue_1_30_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]]+sum([self.AP_PAcc_actual[scenario_id][k] for k in dates_recycle]) - sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle]),scenario_id))
-             logger.info("Check total principal from currentTerm Data: {0:.4f} for {1}".format(self.AP_PAcc_overdue_1_30_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_currentTerm[scenario_id][self.dates_recycle_list[-1]]+sum([self.AP_PAcc_actual[scenario_id][k] for k in dates_recycle]) - sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle]),scenario_id))
-             logger.info("Check allTerm - currentTerm : {0:.4f}".format(self.AP_PAcc_overdue_1_30_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] - (self.AP_PAcc_overdue_1_30_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_currentTerm[scenario_id][self.dates_recycle_list[-1]])))
              
-             logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_original[scenario_id+'_O'][0]))
+             principal_allTerm = self.AP_PAcc_overdue_1_30_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]]+sum([self.AP_PAcc_actual[scenario_id][k] for k in dates_recycle])
+             principal_currentTerm = self.AP_PAcc_overdue_1_30_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_currentTerm[scenario_id][self.dates_recycle_list[-1]]+sum([self.AP_PAcc_actual[scenario_id][k] for k in dates_recycle])
+             principal = sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])
+             if abs(principal_allTerm - principal) > 0.0001:
+                 logger.info('!!!!!!!!! GAP in Original Pool !!!!!!!!!')
+                 logger.info("Check total principal from allTerm Data: {0:.4f} for {1}".format(principal_allTerm - principal ,scenario_id))
+                 logger.info("Check total principal from currentTerm Data: {0:.4f} for {1}".format(principal_currentTerm - principal,scenario_id))
+                 logger.info("Check allTerm - currentTerm : {0:.4f}".format(principal_allTerm-principal_currentTerm))
+                 logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_original[scenario_id+'_O'][0]))
+                 save_to_excel(self.APCF_adjusted_save[scenario_id],'cf_O_adjusted_'+scenario_id,wb_name)
         save_to_excel(pd.DataFrame.from_dict(self.CDR_original),'RnR&CDR',wb_name)
             
     def run_WaterFall(self):
@@ -274,10 +280,11 @@ class Deal():
                                       scenario_id,Bonds,self.RevolvingDeal,self.RevolvingPool_PurchaseAmount)
              
              self.waterfall[scenario_id] = deepcopy(waterfall)
-             self.wf_BasicInfo[scenario_id] = deepcopy(BasicInfo_calculator(waterfall,dt_param,Bonds))
-             self.wf_CoverRatio[scenario_id] = deepcopy(CR_calculator(waterfall,self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
-             self.wf_NPVs[scenario_id] = deepcopy(NPV_calculator(waterfall,self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
-         
+             try:
+                 self.wf_BasicInfo[scenario_id] = deepcopy(BasicInfo_calculator(waterfall,dt_param,Bonds))
+                 self.wf_CoverRatio[scenario_id] = deepcopy(CR_calculator(waterfall,self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
+                 self.wf_NPVs[scenario_id] = deepcopy(NPV_calculator(waterfall,self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
+             except(IndexError):pass
     def cal_RnR(self):
          
         scenarios_weight = [scenarios[scenario_id]['scenario_weight'] for scenario_id in self.scenarios.keys()]
