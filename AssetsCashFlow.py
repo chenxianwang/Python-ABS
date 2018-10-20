@@ -51,6 +51,7 @@ class AssetsCashFlow():
             self.apcf_structure[d_r] = 0
         
         #save_to_excel(self.apcf_structure,'Original_APCF_Structure',self.wb_save_results)
+        logger.info('cash_flow_collection...')
         self.apcf,df_ppmt,df_ipmt = cash_flow_collection(self.apcf_structure,self.dates_recycle_list,'first_due_period_O','Original',self.wb_save_results)
         
         return self.apcf,self.apcf_structure,self.dates_recycle_list,df_ppmt,df_ipmt        
@@ -81,12 +82,16 @@ class AssetsCashFlow():
         self.asset_pool['SERVICE_FEE_RATE'] = self.asset_pool['SERVICE_FEE_RATE'].where(self.asset_pool['SERVICE_FEE_RATE'] > 0,0)        
         self.asset_pool['PayDay'] = pd.to_datetime(self.asset_pool['first_due_date_after_pool_cut']).dt.day
         self.asset_pool['ActivateMonth'] = pd.to_datetime(self.asset_pool['Dt_Start']).dt.month
+        self.asset_pool['OutstandingPrincipal'] = self.asset_pool['Amount_Outstanding_yuan']
         #TODO: cut groups with OutstandingPrincipal_Proportion > 1%
-        apcf_structure = self.asset_pool.groupby([first_due_period_value,'Interest_Rate','SERVICE_FEE_RATE','Term_Remain','PayDay','ActivateMonth'])\
+        apcf_structure = self.asset_pool.groupby([first_due_period_value,'Interest_Rate','SERVICE_FEE_RATE','Term_Remain','PayDay'#,'ActivateMonth','Province'
+                                                  ])\
                                  .agg({'Amount_Outstanding_yuan':'sum'})\
                                  .reset_index()\
                                  .rename(columns = {'Amount_Outstanding_yuan':'OutstandingPrincipal'}
                                  )
+        logger.info('rows of apcf_structure is {0}'.format(len(apcf_structure)))                         
+        #apcf_structure = self.asset_pool[[first_due_period_value,'Interest_Rate','SERVICE_FEE_RATE','Term_Remain','PayDay','OutstandingPrincipal']]                         
                                  
         apcf_structure['Total_Fee_Rate'] = apcf_structure['Interest_Rate'] + apcf_structure['SERVICE_FEE_RATE']*12
         apcf_structure['Interest_Rate_Proportion'] = apcf_structure['Interest_Rate'] / apcf_structure['Total_Fee_Rate']

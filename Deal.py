@@ -194,7 +194,7 @@ class Deal():
         
     def get_rearranged_APCF_structure(self):
         
-        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start']],
+        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start','Province']],
                              self.date_pool_cut
                              )
         return APCF.rearrange_APCF_Structure() 
@@ -202,7 +202,7 @@ class Deal():
     def get_adjust_oAPCF(self):
         
         #self.asset_pool['SERVICE_FEE_RATE'] = 0
-        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start']],
+        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start','Province']],
                              self.date_pool_cut
                              )
 
@@ -224,7 +224,6 @@ class Deal():
         logger.info('init_oAP_Acc...')
         for scenario_id in self.scenarios.keys():
              #logger.info('scenario_id is {0}'.format(scenario_id))
-             #AP_Acc = AssetPoolAccount(self.apcf_adjusted[scenario_id] if self.RevolvingDeal == True else self.apcf_original_adjusted[scenario_id])
              AP_Acc = AssetPoolAccount(self.apcf_original,self.apcf_original_adjusted[scenario_id])
              
              principal_available = AP_Acc.available_principal()
