@@ -293,8 +293,8 @@ class APCF_adjuster():
                                             'principal_normal_allTerm']]
     
         #logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
-#        if OoR == 'R':pass
-#        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
+        if OoR == 'R':pass
+        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         #save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         
         return APCF_adjusted[['date_recycle',

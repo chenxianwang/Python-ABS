@@ -28,12 +28,10 @@ class FeesAccount():
     
     def pay(self,date_pay,basis):
         
-        if (self.name_fee == 'service') & (date_pay == dates_pay[0]):
-            previous_date_pay = dt_param['dt_pool_cut']
-        else:
-            previous_date_pay = date_pay + relativedelta(months= -1)
-        
-        period_range = (date_pay - previous_date_pay).days        
-        
+        period_range = (self.feeinfo['dates_to_calc'][dates_pay.index(date_pay)+1]  - self.feeinfo['dates_to_calc'][dates_pay.index(date_pay)]).days     
+        if (date_pay == dates_pay[0]) and (self.name_fee in ['trustee','custodian','servicer']): 
+            period_range += 1   
+        else:pass
+    
         self.receive[date_pay] = basis * self.feeinfo['rate'] * period_range / days_in_a_year
         return  self.receive[date_pay]        

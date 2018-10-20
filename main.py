@@ -80,17 +80,17 @@ def main():
     RD.get_rAPCF_structure()
     RD.forcast_Revolving_APCF()
 #    
-#    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
-#    for scenario_id in scenarios.keys():
-#        logger.info('Saving results for scenario {0} '.format(scenario_id))
-#        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
-#        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
-#        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
-#        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
-#    
-#    RnR = RD.cal_RnR()
-#    logger.info('RnR is: %s' % RnR)
-#    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR&CDR',wb_name)
+    RD.run_WaterFall()    # D.waterfall[scenario_id] is available
+    for scenario_id in scenarios.keys():
+        logger.info('Saving results for scenario {0} '.format(scenario_id))
+        save_to_excel(RD.waterfall[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
+    
+    RnR = RD.cal_RnR()
+    logger.info('RnR is: %s' % RnR)
+    save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR&CDR',wb_name)
 
 #    
 #    SR = ServiceReport(ProjectName,ADate,1)

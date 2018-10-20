@@ -25,7 +25,7 @@ if ProjectName == 'ABS9':
     Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.0719}
     Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
-    dt_param = {'dt_pool_cut':datetime.date(2018,4,16),'dt_effective':datetime.date(2018,7,20)}
+    dt_param = {'dt_pool_cut':datetime.date(2018,4,16),'dt_effective':datetime.date(2018,7,24)}
 
 elif ProjectName == 'ABS10':
     amount_total_issuance = 3014292721.30
@@ -61,23 +61,23 @@ try:
 except(NameError):
     pass
 
-fees = { 'tax':{'rate':0.032621359223},
-        'trustee':{'rate':0.0005},
-        'custodian':{'rate':0.000055},
-        'servicer':{'rate':0.001},
-        'pay_interest_service':{'rate':0.00005},
-         'pre_issue':{'amount':245797.32215745+500000},
-         'A':{'rate':0.058},
-         'B':{'rate':0.068},
-         'C':{'rate':0.0},
+fees = { 'tax':{'rate':0.032621359223},'pay_interest_service':{'rate':0.00005},'pre_issue':{'amount':245797.32215745+500000},
+        
+        'trustee':{'dates_to_calc':[dt_param['dt_effective']]+dates_recycle,'rate':0.0005},
+        'custodian':{'dates_to_calc':[dt_param['dt_effective']]+dates_recycle,'rate':0.000055},
+        'servicer':{'dates_to_calc':[dt_param['dt_pool_cut']]+dates_recycle,'rate':0.001},
+
+         'A':{'dates_to_calc':[dt_param['dt_effective']]+dates_pay,'rate':0.058},
+         'B':{'dates_to_calc':[dt_param['dt_effective']]+dates_pay,'rate':0.068},
+         'C':{'dates_to_calc':[dt_param['dt_effective']]+dates_pay,'rate':0.0},
          }
 
 scenarios = {}
 scenarios['best'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.03,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.8,'scenario_weight':0.1} #ER 1.95%, PD = 0.504% ,PDL = 80%
-scenarios['better'] = {'M0_2_ERM0':0.985,'M0_2_M1':0.04,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.75,'D_2_RL':0.85,'scenario_weight':0.15} #ER 1.5%, PD = 0.714% ,PDL = 85%
-scenarios['benchmark'] = {'M0_2_ERM0':0.99,'M0_2_M1':0.05,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.8,'D_2_RL':0.9,'scenario_weight':0.5} #ER 1%, PD = 0.945% ,PDL = 90%
-scenarios['worse'] = {'M0_2_ERM0':0.995,'M0_2_M1':0.06,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.85,'D_2_RL':0.95,'scenario_weight':0.15} #ER 0.5%, PD = 1.197% ,PDL = 95%
-scenarios['worst'] = {'M0_2_ERM0':1,'M0_2_M1':0.07,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.9,'D_2_RL':1,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
+#scenarios['better'] = {'M0_2_ERM0':0.985,'M0_2_M1':0.04,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.75,'D_2_RL':0.85,'scenario_weight':0.15} #ER 1.5%, PD = 0.714% ,PDL = 85%
+#scenarios['benchmark'] = {'M0_2_ERM0':0.99,'M0_2_M1':0.05,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.8,'D_2_RL':0.9,'scenario_weight':0.5} #ER 1%, PD = 0.945% ,PDL = 90%
+#scenarios['worse'] = {'M0_2_ERM0':0.995,'M0_2_M1':0.06,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.85,'D_2_RL':0.95,'scenario_weight':0.15} #ER 0.5%, PD = 1.197% ,PDL = 95%
+#scenarios['worst'] = {'M0_2_ERM0':1,'M0_2_M1':0.07,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.9,'D_2_RL':1,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
 #    
 #scenarios['stress'] = {'M0_2_ERM0':0.999,'M0_2_M1':0.35,'M1_2_M0M2':0.5,'M2_2_M0M3':0.6,'M3_2_M0D':0.7,'D_2_RL':0.99,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
 #    
