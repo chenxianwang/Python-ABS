@@ -60,7 +60,8 @@ def run_Accounts(princ_original,princ_actual,princ_pay,princ_buy,
 
     #preissue_FAcc
     for date_pay_index,date_pay in enumerate(dates_pay):
-        if principal_actual[dates_recycle[date_pay_index]] == 0:
+        if (principal_actual[dates_recycle[date_pay_index]] == 0) and (date_pay_index>0):
+            logger.info('date_pay is {0}'.format(date_pay))
             break
         else:
             #logger.info('calc bais for {0} is {1}'.format(date_pay,sum([principal_actual[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) - RevolvingPool_PurchaseAmount[date_pay_index+1]))
