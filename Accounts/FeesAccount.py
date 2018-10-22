@@ -32,6 +32,5 @@ class FeesAccount():
         if (date_pay == dates_pay[0]) and (self.name_fee in ['trustee','custodian','servicer']): 
             period_range += 1   
         else:pass
-    
         self.receive[date_pay] = basis * self.feeinfo['rate'] * period_range / days_in_a_year
         return  self.receive[date_pay]        
