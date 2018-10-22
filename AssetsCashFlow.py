@@ -84,13 +84,13 @@ class AssetsCashFlow():
         self.asset_pool['ActivateMonth'] = pd.to_datetime(self.asset_pool['Dt_Start']).dt.month
         self.asset_pool['OutstandingPrincipal'] = self.asset_pool['Amount_Outstanding_yuan']
         #TODO: cut groups with OutstandingPrincipal_Proportion > 1%
-        apcf_structure = self.asset_pool.groupby([first_due_period_value,'Interest_Rate','SERVICE_FEE_RATE','Term_Remain','PayDay'#,'ActivateMonth','Province'
+        apcf_structure = self.asset_pool.groupby([first_due_period_value,'Interest_Rate','SERVICE_FEE_RATE','Term_Remain','PayDay',#'ActivateMonth','Province'
                                                   ])\
                                  .agg({'Amount_Outstanding_yuan':'sum'})\
                                  .reset_index()\
                                  .rename(columns = {'Amount_Outstanding_yuan':'OutstandingPrincipal'}
                                  )
-        logger.info('rows of apcf_structure is {0}'.format(len(apcf_structure)))                         
+        #logger.info('rows of apcf_structure is {0}'.format(len(apcf_structure)))                         
         #apcf_structure = self.asset_pool[[first_due_period_value,'Interest_Rate','SERVICE_FEE_RATE','Term_Remain','PayDay','OutstandingPrincipal']]                         
                                  
         apcf_structure['Total_Fee_Rate'] = apcf_structure['Interest_Rate'] + apcf_structure['SERVICE_FEE_RATE']*12
