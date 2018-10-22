@@ -20,24 +20,20 @@ from Accounts.TaxAccount import TaxAccount
 
 logger = get_logger(__name__)
 
-def run_Accounts(princ_original,princ_actual,princ_pay,princ_buy,
+def run_Accounts(princ_original,princ_outstanding,
+                 princ_actual,princ_actual_o,princ_actual_r,
+                 princ_pay,princ_buy,
                  int_original,int_actual,int_pay,int_buy,
-                 scenario_id,Bonds,RevolvingDeal,RevolvingPool_PurchaseAmount = None): # Initalizing BondsCashFlow
+                 scenario_id,Bonds,RevolvingDeal,RevolvingPool_PurchaseAmount = None,
+                 ): # Initalizing BondsCashFlow
     
     logger.info('run_Accounts...')
-    
     principal_actual = deepcopy(princ_actual)
     principal_to_pay = deepcopy(princ_pay)
-#    principal_to_buy = deepcopy(princ_buy)
-#    principal_to_loss = deepcopy(princ_loss)
     principal_original = deepcopy(princ_original)
-    
+    principal_outstanding = deepcopy(princ_outstanding)
     interest_actual = deepcopy(int_actual)
     interest_to_pay = deepcopy(int_pay)
-#    interest_to_buy = deepcopy(int_buy)
-#    interest_to_loss = deepcopy(int_loss)
-#    interest_to_original = deepcopy(int_original)
-    
     #TODO:When to use deepcopy
     tranches_ABC = deepcopy(Bonds)
     
@@ -61,7 +57,7 @@ def run_Accounts(princ_original,princ_actual,princ_pay,princ_buy,
     #preissue_FAcc
     for date_pay_index,date_pay in enumerate(dates_pay):
         if (principal_actual[dates_recycle[date_pay_index]] == 0) and (date_pay_index>0):
-            logger.info('date_pay is {0}'.format(date_pay))
+            #logger.info('date_pay is {0}'.format(date_pay))
             break
         else:
             #logger.info('calc bais for {0} is {1}'.format(date_pay,sum([principal_actual[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) - RevolvingPool_PurchaseAmount[date_pay_index+1]))
@@ -69,22 +65,25 @@ def run_Accounts(princ_original,princ_actual,princ_pay,princ_buy,
             pay_for_fee = tax_Acc.pay(date_pay,interest_actual[dates_recycle[date_pay_index]])#,0][B_PAcc.iBalance(date_pay) == 0])
             #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
             #logger.info('principal_actual is {0}'.format(sum([principal_actual[k] for k in principal_actual.keys()])))
-            calc_basis_for_fee = sum([principal_original[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) 
-            #logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
-            #logger.info('purchase_RevolvingPool[date_pay_index+1] for {0} is {1}'.format(date_pay,purchase_RevolvingPool[date_pay_index+1]))
-            
-            #TODO: Add AP_Acc for every asset pool to simplify this block        
-            if RevolvingDeal is True:
-                purchase_RevolvingPool = deepcopy(RevolvingPool_PurchaseAmount[scenario_id])
-                if date_pay_index+1 <= max(purchase_RevolvingPool.keys()):
-                    calc_basis_for_fee -= sum([purchase_RevolvingPool[k] for k in range(date_pay_index+1,max(purchase_RevolvingPool.keys())+1)])# * (1-scenarios[scenario_id]['rate_default'])
-                else: pass
-        
-            #logger.info('calc_basis_for_fee for {0} is {1}'.format(date_pay,calc_basis_for_fee))
-            
-            pay_for_fee += trustee_FAcc.pay(date_pay,calc_basis_for_fee) # amount of outstanding principal of assetpool at the beginning of the month
-            pay_for_fee += custodian_FAcc.pay(date_pay,calc_basis_for_fee) #amount of outstanding principal of assetpool at the end of the month
-            pay_for_fee += servicer_FAcc.pay(date_pay,calc_basis_for_fee)
+            ########################################################################################
+            if date_pay_index==0 :
+                calc_basis_for_fee_trustee = amount_total_issuance
+            elif date_pay_index <= 6:
+                calc_basis_for_fee_trustee = principal_outstanding[dates_recycle[date_pay_index-1]]+purchase_RevolvingPool[date_pay_index]
+            else:
+                calc_basis_for_fee_trustee = principal_outstanding[dates_recycle[date_pay_index-1]]
+            #logger.info('')
+            pay_for_fee += trustee_FAcc.pay(date_pay,calc_basis_for_fee_trustee)
+            #######################################################################################
+            calc_basis_for_fee_custodian = principal_outstanding[dates_recycle[date_pay_index]]
+            pay_for_fee += custodian_FAcc.pay(date_pay,calc_basis_for_fee_custodian)
+            #######################################################################################
+            if date_pay_index==0 :
+                calc_basis_for_fee_servicer = amount_total_issuance
+            else:
+                calc_basis_for_fee_servicer = principal_outstanding[dates_recycle[date_pay_index-1]]            
+            pay_for_fee += servicer_FAcc.pay(date_pay,calc_basis_for_fee_servicer)
+            #######################################################################################
             #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
             pay_for_fee += A_IAcc.pay(date_pay,A_PAcc.iBalance(date_pay))
             pay_for_fee += B_IAcc.pay(date_pay,B_PAcc.iBalance(date_pay))
