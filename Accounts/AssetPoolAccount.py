@@ -50,7 +50,8 @@ class AssetPoolAccount():
         self.recylce_principal_loss_allTerm[dates_recycle[0]] = ACFa['principal_loss_allTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
 
         self.outstanding_principal = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['total_outstanding_principal'].sum() for k in dates_recycle}
-
+        self.RESERVE = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['ReserveAccount'].sum() for k in dates_recycle}
+        
         self.original_interest = {k:ACF[pd.to_datetime(ACF['date_recycle']) == k]['interest'].sum() for k in dates_recycle}
         self.original_interest[dates_recycle[0]] = ACF['interest'][pd.to_datetime(ACF['date_recycle']) <= dates_recycle[0]].sum()
         self.recylce_interest = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['total_recycle_interest'].sum() for k in dates_recycle}
@@ -125,7 +126,7 @@ class AssetPoolAccount():
                self.principal_overdue_31_60_currentTerm,self.principal_overdue_31_60_allTerm,\
                self.principal_overdue_61_90_currentTerm,self.principal_overdue_61_90_allTerm,\
                self.principal_loss_currentTerm,self.principal_loss_allTerm,\
-               self.outstanding_principal
+               self.outstanding_principal,self.RESERVE
                 
 
     def available_interest(self):

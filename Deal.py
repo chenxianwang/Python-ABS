@@ -62,6 +62,7 @@ class Deal():
         self.AP_IAcc_loss_currentTerm_O,self.AP_IAcc_loss_allTerm_O = {},{}
         
         self.AP_PAcc_O_outstanding,self.AP_IAcc_O_outstanding = {},{} 
+        self.AP_PAcc_O_reserve = {}
         
         self.waterfall = {}
         self.wf_BasicInfo = {}
@@ -70,6 +71,8 @@ class Deal():
         
         self.RnR = 0.0
         self.CDR_O = {}
+        self.CDR_O_amount = {}
+        self.reserveAccount_used = {}
      
     def get_AssetPool(self):
         #self.asset_pool = self.AP.get_AP()
@@ -228,6 +231,7 @@ class Deal():
              self.AP_PAcc_loss_currentTerm_O[scenario_id] = principal_available[10]
              self.AP_PAcc_loss_allTerm_O[scenario_id] = principal_available[11]             
              self.AP_PAcc_O_outstanding[scenario_id] = principal_available[12]
+             self.AP_PAcc_O_reserve[scenario_id] = principal_available[13]
              
              interest_available = AP_Acc.available_interest()
              self.AP_IAcc_original_O[scenario_id] = interest_available[0]
@@ -244,9 +248,13 @@ class Deal():
              self.AP_IAcc_loss_allTerm_O[scenario_id] = interest_available[11]
              self.AP_IAcc_O_outstanding[scenario_id] = interest_available[12]
              
-             self.CDR_O[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle])]  
-             logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_O[scenario_id+'_O'][0]))
-
+             self.CDR_O[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]],
+                                                sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle]),
+                                                self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]]/sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle])
+                                                ]  
+             logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_O[scenario_id+'_O'][2]))
+             self.CDR_O_amount[scenario_id] = deepcopy(self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]])
+             
         save_to_excel(pd.DataFrame.from_dict(self.CDR_O),'RnR&CDR',wb_name)
             
     def run_WaterFall(self):
@@ -254,7 +262,8 @@ class Deal():
          for scenario_id in self.scenarios.keys():
              logger.info('scenario_id is {0}'.format(scenario_id))
              #TODO: Add one more parameter - Custodian Fee Calc basis
-             self.waterfall[scenario_id] = run_Accounts(self.AP_PAcc_original[scenario_id],self.AP_PAcc_outstanding[scenario_id],
+             self.waterfall[scenario_id],self.reserveAccount_used[scenario_id] = run_Accounts(self.AP_PAcc_original[scenario_id],self.AP_PAcc_outstanding[scenario_id],
+                                                       self.AP_PAcc_reserve[scenario_id],#self.AP_PAcc_loss_allTerm[scenario_id],
                                                        self.AP_PAcc_actual[scenario_id],self.AP_PAcc_actual_O[scenario_id],self.AP_PAcc_actual_R[scenario_id],
                                                        self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],
                                                        self.AP_IAcc_original[scenario_id],self.AP_IAcc_actual[scenario_id],
@@ -265,7 +274,8 @@ class Deal():
              self.wf_BasicInfo[scenario_id] = deepcopy(BasicInfo_calculator(self.waterfall[scenario_id],dt_param,Bonds))
              self.wf_CoverRatio[scenario_id] = deepcopy(CR_calculator(self.waterfall[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
              self.wf_NPVs[scenario_id] = deepcopy(NPV_calculator(self.waterfall[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
-    
+             self.reserveAccount_used[scenario_id] = pd.DataFrame.from_dict(self.reserveAccount_used[scenario_id])
+             
     def cal_RnR(self):
          
         scenarios_weight = [scenarios[scenario_id]['scenario_weight'] for scenario_id in self.scenarios.keys()]

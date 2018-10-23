@@ -20,7 +20,7 @@ from Accounts.TaxAccount import TaxAccount
 
 logger = get_logger(__name__)
 
-def run_Accounts(princ_original,princ_outstanding,
+def run_Accounts(princ_original,princ_outstanding,princ_reserve,#princ_loss,
                  princ_actual,princ_actual_o,princ_actual_r,
                  princ_pay,princ_buy,
                  int_original,int_actual,int_pay,int_buy,
@@ -28,14 +28,14 @@ def run_Accounts(princ_original,princ_outstanding,
                  ): # Initalizing BondsCashFlow
     
     logger.info('run_Accounts...')
-    principal_actual = deepcopy(princ_actual)
     principal_to_pay = deepcopy(princ_pay)
-    principal_original = deepcopy(princ_original)
+    principal_reserve = deepcopy(princ_reserve)
     principal_outstanding = deepcopy(princ_outstanding)
     interest_actual = deepcopy(int_actual)
     interest_to_pay = deepcopy(int_pay)
     #TODO:When to use deepcopy
     tranches_ABC = deepcopy(Bonds)
+    reserveAccount_used = {}
     
     #preissue_FAcc = FeesAccount('pre_issue',fees)
     tax_Acc = TaxAccount('tax',fees)
@@ -56,10 +56,10 @@ def run_Accounts(princ_original,princ_outstanding,
 
     #preissue_FAcc
     for date_pay_index,date_pay in enumerate(dates_pay):
-        if (principal_actual[dates_recycle[date_pay_index]] == 0) and (date_pay_index>0):
-            #logger.info('date_pay is {0}'.format(date_pay))
-            break
-        else:
+#        if (principal_actual[dates_recycle[date_pay_index]] == 0) and (date_pay_index>0):
+#            #logger.info('date_pay is {0}'.format(date_pay))
+#            break
+#        else:
             #logger.info('calc bais for {0} is {1}'.format(date_pay,sum([principal_actual[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) - RevolvingPool_PurchaseAmount[date_pay_index+1]))
             #logger.info('calc tax bais for {0} is {1}'.format(date_pay,interest_actual[dates_recycle[date_pay_index]]))
             pay_for_fee = tax_Acc.pay(date_pay,interest_actual[dates_recycle[date_pay_index]])#,0][B_PAcc.iBalance(date_pay) == 0])
@@ -110,16 +110,23 @@ def run_Accounts(princ_original,princ_outstanding,
             
             principal_to_pay[dates_recycle[date_pay_index]] += interest_transfer_to_prin
             #logger.info('principal_to_pay[dates_recycle[date_pay_index]] on {0} is {1}'.format(date_pay,principal_to_pay[dates_recycle[date_pay_index]]))
-            amount_available_for_prin = principal_to_pay[dates_recycle[date_pay_index]]
-            amount_available_for_prin = A_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = B_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = C_PAcc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            amount_available_for_prin = EE_Acc.pay_then_ToNext(date_pay,amount_available_for_prin)
-            #logger.info('Loop Done for {0}'.format(date_pay))        
+            available_for_prin = deepcopy(principal_to_pay[dates_recycle[date_pay_index]])
+            reserved = deepcopy(principal_reserve[dates_recycle[date_pay_index]])
+            
+            available_for_prin,reserved = A_PAcc.pay_then_ToNext(date_pay,available_for_prin,reserved)
+            available_for_prin,reserved = B_PAcc.pay_then_ToNext(date_pay,available_for_prin,reserved)
+            available_for_prin,reserved = C_PAcc.pay_then_ToNext(date_pay,available_for_prin,reserved)
+            available_for_prin,reserved = EE_Acc.pay_then_ToNext(date_pay,available_for_prin,reserved)
+            #logger.info('Loop Done for {0}'.format(date_pay))    
+            if reserved < principal_reserve[dates_recycle[date_pay_index]]:
+                #logger.info('reserveAccount_used for {0},the amount used is {1}'.format(date_pay,principal_reserve[dates_recycle[date_pay_index]] - reserved)) 
+                reserveAccount_used[date_pay] = [principal_reserve[dates_recycle[date_pay_index]] - reserved]
+                principal_reserve[dates_recycle[date_pay_index]] = reserved
     
     AP_PAcc_actual_wf = pd.DataFrame(list(princ_actual.items()), columns=['date_recycle', 'principal_recycle_total'])
     AP_PAcc_pay_wf = pd.DataFrame(list(princ_pay.items()), columns=['date_recycle', 'principal_recycle_to_pay'])
     AP_PAcc_buy_wf = pd.DataFrame(list(princ_buy.items()), columns=['date_recycle', 'principal_recycle_to_buy'])
+    AP_PAcc_reserve_wf = pd.DataFrame(list(principal_reserve.items()), columns=['date_recycle', 'principal_reserve_remain'])
     #AP_PAcc_loss_wf = pd.DataFrame(list(princ_loss.items()), columns=['date_recycle', 'principal_recycle_loss'])
     
     AP_IAcc_actual_wf = pd.DataFrame(list(int_actual.items()), columns=['date_recycle', 'interest_recycle_total'])
@@ -150,8 +157,9 @@ def run_Accounts(princ_original,princ_outstanding,
                     .merge(AP_PAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
                     .merge(AP_IAcc_actual_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
                     .merge(AP_IAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
-                    .merge(AP_IAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')#\
-                    #.merge(AP_IAcc_loss_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
+                    .merge(AP_IAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
+                    .merge(AP_PAcc_reserve_wf,left_on='date_recycle',right_on='date_recycle',how='outer')#\
+                    #.merge(AP_PAcc_loss_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
                     
     AssetPool_wf['date_pay'] = dates_pay
     
@@ -174,13 +182,15 @@ def run_Accounts(princ_original,princ_outstanding,
                     
     
     #logger.info('actual principal payment is {0}'.format(sum(wf[['amount_pay_A_principal','amount_pay_B_principal','amount_pay_C_principal']].sum())))
-    
-    return wf[~wf['amount_pay_EE_principal'].isnull()]
+    #save_to_excel(wf,'wf',wb_name)
+
+    #return wf[wf['principal_recycle_total']>0],reserveAccount_used
+    return wf,reserveAccount_used
 
 def BasicInfo_calculator(waterfall,dt_param,tranches_ABC):
     
     #logger.info('BasicInfo_calculator...')
-    tranches_cf = waterfall
+    tranches_cf = deepcopy(waterfall)
     dt_param = dt_param
 
     tranches_cf['years_interest_calc_this_period'] = (tranches_cf['date_pay'] - (tranches_cf['date_pay']+relativedelta(months= -1))).dt.days/days_in_a_year
@@ -192,9 +202,15 @@ def BasicInfo_calculator(waterfall,dt_param,tranches_ABC):
     maturity_term = []
     
     for _tranche_index,_tranche_name in enumerate(name_tranche):
-        WA_term.append(sum(tranches_cf['amount_pay_' + _tranche_name + '_principal'] * tranches_cf['years_interest_calc_cumulative']) / sum(tranches_cf['amount_pay_' + _tranche_name + '_principal']))
-        date_maturity_predict.append(tranches_cf.iloc[tranches_cf['amount_outstanding_' + _tranche_name + '_principal'].idxmin()]['date_pay'])
-        maturity_term.append((date_maturity_predict[_tranche_index] - dt_param['dt_effective']).days / days_in_a_year )
+        if tranches_cf['amount_outstanding_' + _tranche_name + '_principal'].min() == 0:
+            WA_term.append(sum(tranches_cf['amount_pay_' + _tranche_name + '_principal'] * tranches_cf['years_interest_calc_cumulative']) / sum(tranches_cf['amount_pay_' + _tranche_name + '_principal']))
+            date_maturity_predict.append(tranches_cf.iloc[tranches_cf['amount_outstanding_' + _tranche_name + '_principal'].idxmin()]['date_pay'])
+            maturity_term.append((date_maturity_predict[_tranche_index] - dt_param['dt_effective']).days / days_in_a_year )
+        else:
+            logger.info('tranche_name {0} Default. '.format(_tranche_name))
+            WA_term.append('Default')
+            date_maturity_predict.append('Default')
+            maturity_term.append('Default')
     
     tranche_basic_info = pd.DataFrame({'name_tranche':name_tranche,
                                        'WA_term':WA_term,

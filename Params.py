@@ -15,6 +15,7 @@ Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minut
 
 days_in_a_year = 365
 rate_discount = 0.40
+amount_ReserveAcount = 1000000
 ADate = datetime.date(2018,8,1)
 
 
@@ -83,7 +84,7 @@ scenarios = {}
 #scenarios['worse'] = {'M0_2_ERM0':0.995,'M0_2_M1':0.06,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.85,'D_2_RL':0.95,'scenario_weight':0.15} #ER 0.5%, PD = 1.197% ,PDL = 95%
 #scenarios['worst'] = {'M0_2_ERM0':1,'M0_2_M1':0.07,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.9,'D_2_RL':1,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
 #    
-scenarios['stress'] = {'M0_2_ERM0':0.999,'M0_2_M1':0.33,'M1_2_M0M2':0.5,'M2_2_M0M3':0.6,'M3_2_M0D':0.7,'D_2_RL':1,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
+scenarios['stress'] = {'M0_2_ERM0':0.999,'M0_2_M1':0.22,'M1_2_M0M2':0.5,'M2_2_M0M3':0.6,'M3_2_M0D':0.7,'D_2_RL':1,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
 #    
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 

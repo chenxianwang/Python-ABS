@@ -292,7 +292,7 @@ class APCF_adjuster():
        
         APCF_adjusted['total_outstanding_principal'] = APCF_adjusted[['principal_overdue_1_30_allTerm','principal_overdue_31_60_allTerm','principal_overdue_61_90_allTerm','principal_loss_allTerm','principal_normal_allTerm']].sum(axis=1)
         APCF_adjusted['total_outstanding_interest'] = APCF_adjusted[['interest_overdue_1_30_allTerm','interest_overdue_31_60_allTerm','interest_overdue_61_90_allTerm','interest_loss_allTerm','interest_normal_allTerm']].sum(axis=1)
-        
+        APCF_adjusted['ReserveAccount'] = amount_ReserveAcount
         
         
         APCF_adjusted_save = APCF_adjusted[['date_recycle','total_recycle_principal',
@@ -310,9 +310,9 @@ class APCF_adjuster():
         
         
         #logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
-#        if OoR == 'R':pass
-#        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
-        save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
+        if OoR == 'R':pass
+        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
+        #save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         
         return APCF_adjusted[['date_recycle',
                               'total_recycle_principal','total_recycle_interest',
@@ -320,7 +320,7 @@ class APCF_adjuster():
                               'principal_overdue_61_90_currentTerm','interest_overdue_61_90_currentTerm','principal_loss_currentTerm','interest_loss_currentTerm',
                               'principal_overdue_1_30_allTerm','interest_overdue_1_30_allTerm','principal_overdue_31_60_allTerm','interest_overdue_31_60_allTerm',
                               'principal_overdue_61_90_allTerm','interest_overdue_61_90_allTerm','principal_loss_allTerm','interest_loss_allTerm',
-                              'total_outstanding_principal','total_outstanding_interest'
+                              'total_outstanding_principal','total_outstanding_interest','ReserveAccount'
                               ]],APCF_adjusted_save
         
     def cal_overdue_31_60(self,date_r_index,ppmt_MM,ipmt_MM):
