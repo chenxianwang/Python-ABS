@@ -49,6 +49,7 @@ class AssetPoolAccount():
         self.recylce_principal_loss_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['principal_loss_allTerm'].sum() for k in dates_recycle}
         self.recylce_principal_loss_allTerm[dates_recycle[0]] = ACFa['principal_loss_allTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
 
+        self.outstanding_principal = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['total_outstanding_principal'].sum() for k in dates_recycle}
 
         self.original_interest = {k:ACF[pd.to_datetime(ACF['date_recycle']) == k]['interest'].sum() for k in dates_recycle}
         self.original_interest[dates_recycle[0]] = ACF['interest'][pd.to_datetime(ACF['date_recycle']) <= dates_recycle[0]].sum()
@@ -75,6 +76,8 @@ class AssetPoolAccount():
         self.recylce_interest_loss_allTerm = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['interest_loss_allTerm'].sum() for k in dates_recycle}
         self.recylce_interest_loss_allTerm[dates_recycle[0]] = ACFa['interest_loss_allTerm'][pd.to_datetime(ACFa['date_recycle']) <= dates_recycle[0]].sum()
                 
+        self.outstanding_interest = {k:ACFa[pd.to_datetime(ACFa['date_recycle']) == k]['total_outstanding_interest'].sum() for k in dates_recycle}
+        
         self.principal_original = {}
         self.principal_actual = {}
         self.principal_to_pay = {}
@@ -121,7 +124,8 @@ class AssetPoolAccount():
                self.principal_overdue_1_30_currentTerm,self.principal_overdue_1_30_allTerm,\
                self.principal_overdue_31_60_currentTerm,self.principal_overdue_31_60_allTerm,\
                self.principal_overdue_61_90_currentTerm,self.principal_overdue_61_90_allTerm,\
-               self.principal_loss_currentTerm,self.principal_loss_allTerm
+               self.principal_loss_currentTerm,self.principal_loss_allTerm,\
+               self.outstanding_principal
                 
 
     def available_interest(self):
@@ -144,4 +148,5 @@ class AssetPoolAccount():
                self.interest_overdue_1_30_currentTerm,self.interest_overdue_1_30_allTerm,\
                self.interest_overdue_31_60_currentTerm,self.interest_overdue_31_60_allTerm,\
                self.interest_overdue_61_90_currentTerm,self.interest_overdue_61_90_allTerm,\
-               self.interest_loss_currentTerm,self.interest_loss_allTerm
+               self.interest_loss_currentTerm,self.interest_loss_allTerm,\
+               self.outstanding_interest
