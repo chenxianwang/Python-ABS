@@ -83,6 +83,7 @@ def main():
         save_to_excel(RD.wf_BasicInfo[scenario_id],scenario_id,wb_name)
         save_to_excel(RD.wf_CoverRatio[scenario_id],scenario_id,wb_name)
         save_to_excel(RD.wf_NPVs[scenario_id],scenario_id,wb_name)
+        save_to_excel(RD.reserveAccount_used[scenario_id],scenario_id,wb_name)
     
     RnR = RD.cal_RnR()
     logger.info('RnR is: %s' % RnR)
