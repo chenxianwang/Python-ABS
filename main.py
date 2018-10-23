@@ -30,12 +30,8 @@ def main():
       os.remove(wb_name)
 #
     asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']    
-    #asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2','OriginalPool_part3']  
-    #asset_pool_name_list = ['ABSSYSTEM_OriginalPool_part1','ABSSYSTEM_OriginalPool_part2','ABSSYSTEM_OriginalPool_part3','ABSSYSTEM_OriginalPool_part4'] 
+    #asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']  
     #asset_pool_name_list = ['Update_overduetimes_1_add_birthday','Update_overduetimes_2_add_birthday']
-    #asset_pool_name_list = ['abs9_rvg3_contract_list_0','abs9_rvg3_contract_list_1'] #['ABS9R3_to_hc cfc_20181015']
-    #asset_pool_name_list = ['R3_selected']
-    #asset_pool_name_list = ['ABS9R3_to_Trust']
     
     RD = RevolvingDeal(True,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
     #RD = RevolvingDeal(False,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)

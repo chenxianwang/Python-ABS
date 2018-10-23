@@ -44,36 +44,24 @@ class Deal():
         self.dates_recycle_list = []
         
         self.asset_pool = pd.DataFrame()  
-        self.apcf_original = pd.DataFrame()
-        self.apcf_original_structure = pd.DataFrame()
-        self.apcf_original_adjusted = {}
-        self.APCF_adjusted_save = {}
+        self.apcf_original,self.apcf_original_structure = pd.DataFrame(),pd.DataFrame()
+        self.apcf_original_adjusted,self.APCF_adjusted_save = {},{}
         
-        self.AP_PAcc_original = {}
-        self.AP_PAcc_actual = {}
-        self.AP_PAcc_pay = {}
-        self.AP_PAcc_buy = {}
-        self.AP_PAcc_overdue_1_30_currentTerm = {}
-        self.AP_PAcc_overdue_1_30_allTerm = {}
-        self.AP_PAcc_overdue_31_60_currentTerm = {}
-        self.AP_PAcc_overdue_31_60_allTerm = {}
-        self.AP_PAcc_overdue_61_90_currentTerm = {}
-        self.AP_PAcc_overdue_61_90_allTerm = {}
-        self.AP_PAcc_loss_currentTerm = {}
-        self.AP_PAcc_loss_allTerm = {}
+        self.AP_PAcc_original_O,self.AP_PAcc_actual_O = {},{}
+        self.AP_PAcc_pay_O,self.AP_PAcc_buy_O = {},{}
+        self.AP_PAcc_overdue_1_30_currentTerm_O,self.AP_PAcc_overdue_1_30_allTerm_O = {},{}
+        self.AP_PAcc_overdue_31_60_currentTerm_O,self.AP_PAcc_overdue_31_60_allTerm_O = {},{}
+        self.AP_PAcc_overdue_61_90_currentTerm_O,self.AP_PAcc_overdue_61_90_allTerm_O = {},{}
+        self.AP_PAcc_loss_currentTerm_O,self.AP_PAcc_loss_allTerm_O = {},{}
 
-        self.AP_IAcc_original = {}        
-        self.AP_IAcc_actual = {}
-        self.AP_IAcc_pay = {}
-        self.AP_IAcc_buy = {}
-        self.AP_IAcc_overdue_1_30_currentTerm = {}
-        self.AP_IAcc_overdue_1_30_allTerm = {}
-        self.AP_IAcc_overdue_31_60_currentTerm = {}
-        self.AP_IAcc_overdue_31_60_allTerm = {}
-        self.AP_IAcc_overdue_61_90_currentTerm = {}
-        self.AP_IAcc_overdue_61_90_allTerm = {}
-        self.AP_IAcc_loss_currentTerm = {}
-        self.AP_IAcc_loss_allTerm = {}
+        self.AP_IAcc_original_O,self.AP_IAcc_actual_O = {},{}
+        self.AP_IAcc_pay_O,self.AP_IAcc_buy_O = {},{}
+        self.AP_IAcc_overdue_1_30_currentTerm_O,self.AP_IAcc_overdue_1_30_allTerm_O = {},{}
+        self.AP_IAcc_overdue_31_60_currentTerm_O,self.AP_IAcc_overdue_31_60_allTerm_O = {},{}
+        self.AP_IAcc_overdue_61_90_currentTerm_O,self.AP_IAcc_overdue_61_90_allTerm_O = {},{}
+        self.AP_IAcc_loss_currentTerm_O,self.AP_IAcc_loss_allTerm_O = {},{}
+        
+        self.AP_PAcc_O_outstanding,self.AP_IAcc_O_outstanding = {},{} 
         
         self.waterfall = {}
         self.wf_BasicInfo = {}
@@ -81,7 +69,7 @@ class Deal():
         self.wf_NPVs = {}
         
         self.RnR = 0.0
-        self.CDR_original = {}
+        self.CDR_O = {}
      
     def get_AssetPool(self):
         #self.asset_pool = self.AP.get_AP()
@@ -227,63 +215,57 @@ class Deal():
              AP_Acc = AssetPoolAccount(self.apcf_original,self.apcf_original_adjusted[scenario_id])
              
              principal_available = AP_Acc.available_principal()
-             self.AP_PAcc_original[scenario_id] = principal_available[0]
-             self.AP_PAcc_actual[scenario_id] = principal_available[1]
-             self.AP_PAcc_pay[scenario_id] = principal_available[2]
-             self.AP_PAcc_buy[scenario_id] = principal_available[3]
-             self.AP_PAcc_overdue_1_30_currentTerm[scenario_id] = principal_available[4]
-             self.AP_PAcc_overdue_1_30_allTerm[scenario_id] = principal_available[5]
-             self.AP_PAcc_overdue_31_60_currentTerm[scenario_id] = principal_available[6]
-             self.AP_PAcc_overdue_31_60_allTerm[scenario_id] = principal_available[7]
-             self.AP_PAcc_overdue_61_90_currentTerm[scenario_id] = principal_available[8]
-             self.AP_PAcc_overdue_61_90_allTerm[scenario_id] = principal_available[9]
-             self.AP_PAcc_loss_currentTerm[scenario_id] = principal_available[10]
-             self.AP_PAcc_loss_allTerm[scenario_id] = principal_available[11]
-
+             self.AP_PAcc_original_O[scenario_id] = principal_available[0]
+             self.AP_PAcc_actual_O[scenario_id] = principal_available[1]
+             self.AP_PAcc_pay_O[scenario_id] = principal_available[2]
+             self.AP_PAcc_buy_O[scenario_id] = principal_available[3]
+             self.AP_PAcc_overdue_1_30_currentTerm_O[scenario_id] = principal_available[4]
+             self.AP_PAcc_overdue_1_30_allTerm_O[scenario_id] = principal_available[5]
+             self.AP_PAcc_overdue_31_60_currentTerm_O[scenario_id] = principal_available[6]
+             self.AP_PAcc_overdue_31_60_allTerm_O[scenario_id] = principal_available[7]
+             self.AP_PAcc_overdue_61_90_currentTerm_O[scenario_id] = principal_available[8]
+             self.AP_PAcc_overdue_61_90_allTerm_O[scenario_id] = principal_available[9]
+             self.AP_PAcc_loss_currentTerm_O[scenario_id] = principal_available[10]
+             self.AP_PAcc_loss_allTerm_O[scenario_id] = principal_available[11]             
+             self.AP_PAcc_O_outstanding[scenario_id] = principal_available[12]
              
              interest_available = AP_Acc.available_interest()
-             self.AP_IAcc_original[scenario_id] = interest_available[0]
-             self.AP_IAcc_actual[scenario_id] = interest_available[1]
-             self.AP_IAcc_pay[scenario_id] = interest_available[2]
-             self.AP_IAcc_buy[scenario_id] = interest_available[3]
-             self.AP_IAcc_overdue_1_30_currentTerm[scenario_id] = interest_available[4]
-             self.AP_IAcc_overdue_1_30_allTerm[scenario_id] = interest_available[5]
-             self.AP_IAcc_overdue_31_60_currentTerm[scenario_id] = interest_available[6]
-             self.AP_IAcc_overdue_31_60_allTerm[scenario_id] = interest_available[7]
-             self.AP_IAcc_overdue_61_90_currentTerm[scenario_id] = interest_available[8]
-             self.AP_IAcc_overdue_61_90_allTerm[scenario_id] = interest_available[9]
-             self.AP_IAcc_loss_currentTerm[scenario_id] = interest_available[10]
-             self.AP_IAcc_loss_allTerm[scenario_id] = interest_available[11]
+             self.AP_IAcc_original_O[scenario_id] = interest_available[0]
+             self.AP_IAcc_actual_O[scenario_id] = interest_available[1]
+             self.AP_IAcc_pay_O[scenario_id] = interest_available[2]
+             self.AP_IAcc_buy_O[scenario_id] = interest_available[3]
+             self.AP_IAcc_overdue_1_30_currentTerm_O[scenario_id] = interest_available[4]
+             self.AP_IAcc_overdue_1_30_allTerm_O[scenario_id] = interest_available[5]
+             self.AP_IAcc_overdue_31_60_currentTerm_O[scenario_id] = interest_available[6]
+             self.AP_IAcc_overdue_31_60_allTerm_O[scenario_id] = interest_available[7]
+             self.AP_IAcc_overdue_61_90_currentTerm_O[scenario_id] = interest_available[8]
+             self.AP_IAcc_overdue_61_90_allTerm_O[scenario_id] = interest_available[9]
+             self.AP_IAcc_loss_currentTerm_O[scenario_id] = interest_available[10]
+             self.AP_IAcc_loss_allTerm_O[scenario_id] = interest_available[11]
+             self.AP_IAcc_O_outstanding[scenario_id] = interest_available[12]
              
-             self.CDR_original[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])]  
-             
-             principal_allTerm = self.AP_PAcc_overdue_1_30_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_allTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_allTerm[scenario_id][self.dates_recycle_list[-1]]+sum([self.AP_PAcc_actual[scenario_id][k] for k in dates_recycle])
-             principal_currentTerm = self.AP_PAcc_overdue_1_30_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_31_60_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_overdue_61_90_currentTerm[scenario_id][self.dates_recycle_list[-1]]+self.AP_PAcc_loss_currentTerm[scenario_id][self.dates_recycle_list[-1]]+sum([self.AP_PAcc_actual[scenario_id][k] for k in dates_recycle])
-             principal = sum([self.AP_PAcc_original[scenario_id][k] for k in dates_recycle])
-             if abs(principal_allTerm - principal) > 0.0001:
-                 logger.info('!!!!!!!!! GAP in Original Pool !!!!!!!!!')
-                 logger.info("Check total principal from allTerm Data: {0:.4f} for {1}".format(principal_allTerm - principal ,scenario_id))
-                 logger.info("Check total principal from currentTerm Data: {0:.4f} for {1}".format(principal_currentTerm - principal,scenario_id))
-                 logger.info("Check allTerm - currentTerm : {0:.4f}".format(principal_allTerm-principal_currentTerm))
-                 logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_original[scenario_id+'_O'][0]))
-                 save_to_excel(self.APCF_adjusted_save[scenario_id],'cf_O_adjusted_'+scenario_id,wb_name)
-        save_to_excel(pd.DataFrame.from_dict(self.CDR_original),'RnR&CDR',wb_name)
+             self.CDR_O[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]] / sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle])]  
+             logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_O[scenario_id+'_O'][0]))
+
+        save_to_excel(pd.DataFrame.from_dict(self.CDR_O),'RnR&CDR',wb_name)
             
     def run_WaterFall(self):
          
          for scenario_id in self.scenarios.keys():
              logger.info('scenario_id is {0}'.format(scenario_id))
-             #WF = Waterfall(self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],self.AP_IAcc_pay[scenario_id],dt_param)
-             waterfall = run_Accounts(self.AP_PAcc_original[scenario_id],self.AP_PAcc_actual[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],
-                                      self.AP_IAcc_original[scenario_id],self.AP_IAcc_actual[scenario_id],self.AP_IAcc_pay[scenario_id],self.AP_IAcc_buy[scenario_id],
-                                      scenario_id,Bonds,self.RevolvingDeal,self.RevolvingPool_PurchaseAmount)
+             #TODO: Add one more parameter - Custodian Fee Calc basis
+             self.waterfall[scenario_id] = run_Accounts(self.AP_PAcc_original[scenario_id],self.AP_PAcc_outstanding[scenario_id],
+                                                       self.AP_PAcc_actual[scenario_id],self.AP_PAcc_actual_O[scenario_id],self.AP_PAcc_actual_R[scenario_id],
+                                                       self.AP_PAcc_pay[scenario_id],self.AP_PAcc_buy[scenario_id],
+                                                       self.AP_IAcc_original[scenario_id],self.AP_IAcc_actual[scenario_id],
+                                                       self.AP_IAcc_pay[scenario_id],self.AP_IAcc_buy[scenario_id],
+                                                       scenario_id,Bonds,self.RevolvingDeal,self.RevolvingPool_PurchaseAmount
+                                                       )
              
-             self.waterfall[scenario_id] = deepcopy(waterfall)
-             try:
-                 self.wf_BasicInfo[scenario_id] = deepcopy(BasicInfo_calculator(waterfall,dt_param,Bonds))
-                 self.wf_CoverRatio[scenario_id] = deepcopy(CR_calculator(waterfall,self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
-                 self.wf_NPVs[scenario_id] = deepcopy(NPV_calculator(waterfall,self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
-             except(IndexError):pass
+             self.wf_BasicInfo[scenario_id] = deepcopy(BasicInfo_calculator(self.waterfall[scenario_id],dt_param,Bonds))
+             self.wf_CoverRatio[scenario_id] = deepcopy(CR_calculator(self.waterfall[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
+             self.wf_NPVs[scenario_id] = deepcopy(NPV_calculator(self.waterfall[scenario_id],self.AP_PAcc_pay[scenario_id],self.AP_IAcc_pay[scenario_id]))
+    
     def cal_RnR(self):
          
         scenarios_weight = [scenarios[scenario_id]['scenario_weight'] for scenario_id in self.scenarios.keys()]
