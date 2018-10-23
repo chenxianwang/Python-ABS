@@ -145,8 +145,8 @@ class APCF_adjuster():
             
             self.principal_normal_currentTerm[date_r] = ppmt_M0[date_r].sum()
             self.interest_normal_currentTerm[date_r] = ipmt_M0[date_r].sum()   
-            self.principal_normal_allTerm[date_r] = sum(ppmt_M0[dates_recycle_list[date_r_index:]].sum())
-            self.interest_normal_allTerm[date_r] = sum(ipmt_M0[dates_recycle_list[date_r_index:]].sum())
+            self.principal_normal_allTerm[date_r] = sum(ppmt_M0[dates_recycle_list[date_r_index+1:]].sum())
+            self.interest_normal_allTerm[date_r] = sum(ipmt_M0[dates_recycle_list[date_r_index+1:]].sum())
             
             self.principal_overdue_1_30_currentTerm[date_r] = ppmt_M1[date_r].sum()
             self.interest_overdue_1_30_currentTerm[date_r] = ipmt_M1[date_r].sum()            
@@ -158,17 +158,20 @@ class APCF_adjuster():
                 #logger.info('Transition M1_2_M0M2...')
                 ppmt_M1_2_M0,ipmt_M1_2_M0,ppmt_M1_2_M2,ipmt_M1_2_M2 = self.transit_Status(ppmt_M1,ipmt_M1,OoR,date_r_index,'M1_2_M0M2','Overdue')#self.M1_2_M0M2(ppmt_M1,ipmt_M1)
                 #TODO: Adjust by redemption criteria and POOL_CUT_PERIOD for redemption
+                #self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
                 if  Redeem_or_Not == True :
                     if date_r_index == 2 and OoR == 'O' :#and POOL_CUT_PERIOD-date_r_index>=0 : CAPTURE M2 on first calculation date
                         # Capture assets whcih will become M2 before dt_effective
+                        #save_to_excel(ppmt_M1_2_M2,'pre_Redeem_part_3',wb_name)
                         self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]] += sum(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day][dates_recycle_list[date_r_index:]].sum())
                         self.interest_Redemption_recycle[dates_recycle_list[date_r_index+1]] += sum(ipmt_M1_2_M2[ipmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day][dates_recycle_list[date_r_index:]].sum())          
+                        #logger.info('self.principal_Redemption_recycle part 3 is {0} :'.format(sum(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day][dates_recycle_list[date_r_index:]].sum())))
+                        logger.info('self.principal_Redemption_recycle total is {0} :'.format(self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]]))
                         # Ignore assets which will become M2 after dt_effective
                         ppmt_M1_2_M2,ipmt_M1_2_M2 = deepcopy(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']>=dt_param['dt_effective'].day]),deepcopy(ipmt_M1_2_M2[ipmt_M1_2_M2['PayDay']>=dt_param['dt_effective'].day])
-                        #save_to_excel(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day],'Redeem_part_3',wb_name)
-                        logger.info('self.principal_Redemption_recycle is {0} :'.format(self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]]))
-                        #logger.info('ppmt_M1_2_M2 sum is {0} for assets which will become M2 after dt_effective'.format(ppmt_M1_2_M2['OutstandingPrincipal'].sum()))
-                        
+                        #Restore the un-captured ppmt_M1_2_M2
+                        self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
+                        #save_to_excel(ppmt_M1_2_M2,'post_Redeem_part_3',wb_name)
                     else: self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
                 else:self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
                     
@@ -181,6 +184,7 @@ class APCF_adjuster():
                         self.principal_Redemption_recycle[dates_recycle_list[date_r_index+2]] += sum(ppmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())
                         self.interest_Redemption_recycle[dates_recycle_list[date_r_index+2]] += sum(ipmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())          
                         #save_to_excel(ppmt_M2_2_M3,'Redeem_part_2',wb_name)
+                        #logger.info('self.principal_Redemption_recycle part 2 is {0} :'.format(sum(ppmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())))
                         ppmt_M2_2_M3,ipmt_M2_2_M3 = ppmt_M2_2_M3[0:0],ipmt_M2_2_M3[0:0]
                     else: self.cal_overdue_61_90(date_r_index,ppmt_M2_2_M3,ipmt_M2_2_M3)
                 else:self.cal_overdue_61_90(date_r_index,ppmt_M2_2_M3,ipmt_M2_2_M3)
@@ -194,6 +198,7 @@ class APCF_adjuster():
                         self.principal_Redemption_recycle[dates_recycle_list[date_r_index+3]] = sum(ppmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())
                         self.interest_Redemption_recycle[dates_recycle_list[date_r_index+3]] = sum(ipmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())  
                         #save_to_excel(ppmt_M3_2_D,'Redeem_part_1',wb_name)
+                        #logger.info('self.principal_Redemption_recycle part 1 is {0} :'.format(sum(ppmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())))
                         ppmt_M3_2_D,ipmt_M3_2_D = ppmt_M3_2_D[0:0],ipmt_M3_2_D[0:0]
                     else: self.cal_loss(OoR,date_r_index,ppmt_M3_2_D,ipmt_M3_2_D)
                 else: self.cal_loss(OoR,date_r_index,ppmt_M3_2_D,ipmt_M3_2_D)
@@ -284,25 +289,38 @@ class APCF_adjuster():
     
         APCF_adjusted['total_recycle_principal'] = APCF_adjusted[['ER_recycle_principal','Normal_recycle_principal','Redemption_recycle_principal','Overdue_1_30_recycle_principal','Overdue_31_60_recycle_principal','Overdue_61_90_recycle_principal','Recovery_recycle_principal']].sum(axis=1)
         APCF_adjusted['total_recycle_interest'] = APCF_adjusted[['ER_recycle_interest','Normal_recycle_interest','Redemption_recycle_interest','Overdue_1_30_recycle_interest','Overdue_31_60_recycle_interest','Overdue_61_90_recycle_interest','Recovery_recycle_interest']].sum(axis=1)
-            
+       
+        APCF_adjusted['total_outstanding_principal'] = APCF_adjusted[['principal_overdue_1_30_allTerm','principal_overdue_31_60_allTerm','principal_overdue_61_90_allTerm','principal_loss_allTerm','principal_normal_allTerm']].sum(axis=1)
+        APCF_adjusted['total_outstanding_interest'] = APCF_adjusted[['interest_overdue_1_30_allTerm','interest_overdue_31_60_allTerm','interest_overdue_61_90_allTerm','interest_loss_allTerm','interest_normal_allTerm']].sum(axis=1)
+        
+        
+        
         APCF_adjusted_save = APCF_adjusted[['date_recycle','total_recycle_principal',
                                             'Normal_recycle_principal','ER_recycle_principal','Redemption_recycle_principal','Recovery_recycle_principal',
                                             'Overdue_1_30_recycle_principal','Overdue_31_60_recycle_principal','Overdue_61_90_recycle_principal',
                                             'principal_overdue_1_30_currentTerm','principal_overdue_31_60_currentTerm','principal_overdue_61_90_currentTerm','principal_loss_currentTerm',
                                             'principal_overdue_1_30_allTerm','principal_overdue_31_60_allTerm','principal_overdue_61_90_allTerm','principal_loss_allTerm',
                                             'principal_normal_allTerm']]
-    
+        
+        APCF_adjusted_save['Check_Principal'] = APCF_adjusted_save['total_recycle_principal'].cumsum() + APCF_adjusted_save[['principal_overdue_1_30_allTerm','principal_overdue_31_60_allTerm','principal_overdue_61_90_allTerm','principal_loss_allTerm','principal_normal_allTerm']].sum(axis=1) - self.apcf['OutstandingPrincipal'].sum()
+        
+        if abs(APCF_adjusted_save['Check_Principal'].sum()) > 0.001:
+            logger.info('!!!!!!!!! Principal GAP in Pool !!!!!!!!!'+OoR)
+        else: pass #logger.info('Principal Check Passed for '+OoR)
+        
+        
         #logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
-        if OoR == 'R':pass
-        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
-        #save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
+#        if OoR == 'R':pass
+#        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
+        save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         
         return APCF_adjusted[['date_recycle',
                               'total_recycle_principal','total_recycle_interest',
                               'principal_overdue_1_30_currentTerm','interest_overdue_1_30_currentTerm','principal_overdue_31_60_currentTerm','interest_overdue_31_60_currentTerm',
                               'principal_overdue_61_90_currentTerm','interest_overdue_61_90_currentTerm','principal_loss_currentTerm','interest_loss_currentTerm',
                               'principal_overdue_1_30_allTerm','interest_overdue_1_30_allTerm','principal_overdue_31_60_allTerm','interest_overdue_31_60_allTerm',
-                              'principal_overdue_61_90_allTerm','interest_overdue_61_90_allTerm','principal_loss_allTerm','interest_loss_allTerm'
+                              'principal_overdue_61_90_allTerm','interest_overdue_61_90_allTerm','principal_loss_allTerm','interest_loss_allTerm',
+                              'total_outstanding_principal','total_outstanding_interest'
                               ]],APCF_adjusted_save
         
     def cal_overdue_31_60(self,date_r_index,ppmt_MM,ipmt_MM):
