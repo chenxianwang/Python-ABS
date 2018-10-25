@@ -14,7 +14,6 @@ from constant import *
 Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute)+str(datetime.datetime.now().second)
 
 days_in_a_year = 365
-rate_discount = 0.40
 amount_ReserveAcount = 1000000
 ADate = datetime.date(2018,8,1)
 
@@ -26,6 +25,7 @@ if ProjectName == 'ABS9':
     Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.07190}
     Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
+    rate_discount = 0.2
     dt_param = {'dt_pool_cut':datetime.date(2018,4,16),'dt_effective':datetime.date(2018,7,24)}
 
 elif ProjectName == 'ABS10':
@@ -35,6 +35,7 @@ elif ProjectName == 'ABS10':
     Bonds['B'] = {'ptg':0.1287,'amount':388000000,'rate':0.0720}
     Bonds['C'] = {'ptg':0.2211,'amount':666292721.30,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
+    rate_discount = 0.18
     dt_param = {'dt_pool_cut':datetime.date(2018,7,23),'dt_effective':datetime.date(2018,10,16)}
 
 elif ProjectName == 'ABS11':
@@ -44,6 +45,7 @@ elif ProjectName == 'ABS11':
     Bonds['B'] = {'ptg':0.12,'amount':300000000,'rate':0.07190}
     Bonds['C'] = {'ptg':0.2103,'amount':526010000.7,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
+    rate_discount = 0.185
     dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_effective':datetime.date(2018,11,30)}
     
 else: dt_param = {'dt_pool_cut':datetime.date(2018,8,1),'dt_effective':datetime.date(2018,8,8)}
@@ -57,8 +59,8 @@ try:
 ########## Hom many revolving pools ###############
     nbr_revolving_pools = 6
     date_revolving_pools_cut = [dt_param['dt_first_calc'] + relativedelta(days = 1) + relativedelta(months= i) for i in range(nbr_revolving_pools)]
-    Redeem_or_Not = True
-    #Redeem_or_Not = False
+    #Redeem_or_Not = True
+    Redeem_or_Not = False
 except(NameError):
     pass
 ############################################################
@@ -66,7 +68,7 @@ fees = { 'tax':{'rate':0.032621359223},
         'pay_interest_service':{'rate':0.00005},
         'pre_issue':{'amount':245797.32215745+500000},
         'trustee':{'dates_to_calc':[dt_param['dt_effective']]+dates_recycle,'rate':0.0005},
-        'custodian':{'dates_to_calc':[dt_param['dt_effective']]+dates_recycle,'rate':0.000055},
+        'custodian':{'dates_to_calc':[dt_param['dt_effective']]+dates_recycle,'rate':0.0000539},
         'servicer':{'dates_to_calc':[dt_param['dt_pool_cut']]+dates_recycle,'rate':0.001},
          'A':{'dates_to_calc':[dt_param['dt_effective']]+dates_pay},
          'B':{'dates_to_calc':[dt_param['dt_effective']]+dates_pay},
@@ -78,14 +80,11 @@ for name_Tranche in ['A','B','C']:
 
 
 scenarios = {}
-#scenarios['best'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.03,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.8,'scenario_weight':0.1} #ER 1.95%, PD = 0.504% ,PDL = 80%
-#scenarios['better'] = {'M0_2_ERM0':0.985,'M0_2_M1':0.04,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.75,'D_2_RL':0.85,'scenario_weight':0.15} #ER 1.5%, PD = 0.714% ,PDL = 85%
-#scenarios['benchmark'] = {'M0_2_ERM0':0.99,'M0_2_M1':0.05,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.8,'D_2_RL':0.9,'scenario_weight':0.5} #ER 1%, PD = 0.945% ,PDL = 90%
-#scenarios['worse'] = {'M0_2_ERM0':0.995,'M0_2_M1':0.06,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.85,'D_2_RL':0.95,'scenario_weight':0.15} #ER 0.5%, PD = 1.197% ,PDL = 95%
-#scenarios['worst'] = {'M0_2_ERM0':1,'M0_2_M1':0.07,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.9,'D_2_RL':1,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
-#    
-scenarios['stress'] = {'M0_2_ERM0':0.999,'M0_2_M1':0.22,'M1_2_M0M2':0.5,'M2_2_M0M3':0.6,'M3_2_M0D':0.7,'D_2_RL':1,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
-#    
+#scenarios['benchmark'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.0858,'M1_2_M0M2':0.3896,'M2_2_M0M3':0.7133,'M3_2_M0D':0.7310,'D_2_RL':0.7799,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
+
+scenarios['stress_A'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.429,'M1_2_M0M2':0.3896,'M2_2_M0M3':0.7133,'M3_2_M0D':0.7310,'D_2_RL':1,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
+scenarios['stress_B'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.3689,'M1_2_M0M2':0.3896,'M2_2_M0M3':0.7133,'M3_2_M0D':0.7310,'D_2_RL':0.8,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
+
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065

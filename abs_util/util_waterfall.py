@@ -207,7 +207,7 @@ def BasicInfo_calculator(waterfall,dt_param,tranches_ABC):
             date_maturity_predict.append(tranches_cf.iloc[tranches_cf['amount_outstanding_' + _tranche_name + '_principal'].idxmin()]['date_pay'])
             maturity_term.append((date_maturity_predict[_tranche_index] - dt_param['dt_effective']).days / days_in_a_year )
         else:
-            logger.info('tranche_name {0} Default. '.format(_tranche_name))
+            logger.info('tranche {0} Default. '.format(_tranche_name))
             WA_term.append('Default')
             date_maturity_predict.append('Default')
             maturity_term.append('Default')
