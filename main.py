@@ -30,8 +30,6 @@ def main():
       os.remove(wb_name)
 #
     asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']    
-    #asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']  
-    #asset_pool_name_list = ['Update_overduetimes_1_add_birthday','Update_overduetimes_2_add_birthday']
     
     RD = RevolvingDeal(True,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
     #RD = RevolvingDeal(False,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
@@ -75,7 +73,9 @@ def main():
 ####
     RD.get_rAPCF_structure()
     RD.forcast_Revolving_APCF()
-#    
+#   
+    print(RD.CDR_all)
+    
     RD.run_WaterFall()    # D.waterfall[scenario_id] is available
     for scenario_id in scenarios.keys():
         logger.info('Saving results for scenario {0} '.format(scenario_id))

@@ -266,8 +266,11 @@ class RevolvingDeal(Deal):
                     self.CDR_all_amount[scenario_id] += deepcopy(self.AP_PAcc_loss_allTerm_R[scenario_id][which_revolving_pool][dates_recycle_list_revolving[-1]])
                 save_to_excel(pd.DataFrame.from_dict(self.CDR_R[scenario_id]),'RnR&CDR',wb_name)
     
-                self.CDR_all[scenario_id+'_All'] =  [self.CDR_all_amount[scenario_id] / (amount_total_issuance+sum([self.RevolvingPool_PurchaseAmount[scenario_id][r] for r in range(1,nbr_revolving_pools+1)]))]  
-                logger.info('CDR_all for {0} is: {1:.4%} '.format(scenario_id,self.CDR_all[scenario_id+'_All'][0]))
+                self.CDR_all[scenario_id+'_All'] =  [self.CDR_all_amount[scenario_id],
+                                                     (amount_total_issuance+sum([self.RevolvingPool_PurchaseAmount[scenario_id][r] for r in range(1,nbr_revolving_pools+1)])),
+                                                     self.CDR_all_amount[scenario_id] / (amount_total_issuance+sum([self.RevolvingPool_PurchaseAmount[scenario_id][r] for r in range(1,nbr_revolving_pools+1)]))
+                                                     ]  
+                logger.info('CDR_all for {0} is: {1:.4%} '.format(scenario_id,self.CDR_all[scenario_id+'_All'][2]))
             save_to_excel(pd.DataFrame.from_dict(self.CDR_all),'RnR&CDR',wb_name)
             
     def prepare_PurchaseAmount(self,for_which_revolving_pool,scenario_id):

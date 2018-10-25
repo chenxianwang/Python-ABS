@@ -243,7 +243,10 @@ class APCF_adjuster():
         if transition == 'M0_2_M1' and date_r_index == 0:
             transit_down *= ((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
             #logger.info('transit_down is {0} for dates_recycle_list[date_r_index] {1} for M0_2_M1 '.format(transit_down,self.dates_recycle_list[date_r_index]))
-        
+        if transition == 'M0_2_ERM0' and date_r_index == 0:
+            transit_down = 1 - (1-transit_down)*((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
+            #logger.info('transit_down is {0} for dates_recycle_list[date_r_index] {1} for M0_2_ERM0 '.format(transit_down,self.dates_recycle_list[date_r_index]))
+            
         first_due_period = 'first_due_period_'+OoR
         
         ppmt_this,ipmt_this = ppmt_this.reset_index(drop=True),ipmt_this.reset_index(drop=True)
