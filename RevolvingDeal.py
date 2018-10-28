@@ -27,8 +27,8 @@ logger = get_logger(__name__)
 
 class RevolvingDeal(Deal):
     
-    def __init__(self,Revolving_or_not,name,PoolCutDate,AssetPoolName,date_revolving_pools_cut,date_trust_effective,scenarios):
-        super().__init__(name,PoolCutDate,AssetPoolName,date_trust_effective,scenarios)
+    def __init__(self,Revolving_or_not,name,PoolCutDate,date_revolving_pools_cut,date_trust_effective,scenarios):
+        super().__init__(name,PoolCutDate,date_trust_effective,scenarios)
         
         self.RevolvingDeal = Revolving_or_not
         self.RevolvingPool_PurchaseAmount = {}
@@ -169,7 +169,7 @@ class RevolvingDeal(Deal):
                     self.RevolvingPool_PurchaseAmount[scenario_id][which_revolving_pool] = purchase_amount
                     self.total_purchase_amount += purchase_amount
                     
-                    logger.info('purchase_amount for scenario_id {0} and Revolving pool {1} is :{2}'.format(scenario_id,which_revolving_pool,purchase_amount))
+                    logger.info('purchase_amount for scenario_id {0} and Revolving pool {1} is :{2:,.2f}'.format(scenario_id,which_revolving_pool,purchase_amount))
                     #logger.info('Total purchase_amount is {0}'.format(self.total_purchase_amount))
                     
                     apcf_revolving_structure['OutstandingPrincipal'] = purchase_amount * apcf_revolving_structure['OutstandingPrincipal_Proportion']
@@ -323,5 +323,5 @@ class RevolvingDeal(Deal):
         if (date_pay == dates_pay[0]) and (fee_name in ['trustee','custodian','servicer']): 
              period_range += 1   
         else:pass
-        amt_reserve = basis * fees[fee_name]['rate'] * period_range / days_in_a_year #* (1 + scenarios[scenario_id]['rate_default'])
+        amt_reserve = basis * fees[fee_name]['rate'] * period_range / days_in_a_year
         return  amt_reserve   

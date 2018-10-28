@@ -35,8 +35,9 @@ class BondPrinAccount():
             return amount_available,amount_reserve
         
         elif amount_available < -0.0001:
-            logger.info('self.bondinfo[amount] of {0} is {1}'.format(self.name_bond,self.bondinfo['amount']))
-            logger.info('amount_available for {0} on {1} is {2}: '.format(self.name_bond,date_pay,amount_available))
+            if self.name_bond != 'EE':
+                logger.info('self.bondinfo[amount] of {0} is {1}'.format(self.name_bond,self.bondinfo['amount']))
+                logger.info('amount_available for {0} on {1} is {2}: '.format(self.name_bond,date_pay,amount_available))
             #sys.exit("!!!!!!!!!    Can not cover payment      !!!!!!!")
             #self.bondinfo['amount'] -= amount_available
             self.balance[date_pay] = self.bondinfo['amount']

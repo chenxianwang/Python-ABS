@@ -13,11 +13,12 @@ from constant import *
 
 Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute)+str(datetime.datetime.now().second)
 
+simulation_times = 10
+
 days_in_a_year = 365
 amount_ReserveAcount = 1000000
 ADate = datetime.date(2018,8,1)
-
-
+    
 if ProjectName == 'ABS9':
     amount_total_issuance = 3015926877.69
     Bonds = {}
@@ -59,8 +60,8 @@ try:
 ########## Hom many revolving pools ###############
     nbr_revolving_pools = 6
     date_revolving_pools_cut = [dt_param['dt_first_calc'] + relativedelta(days = 1) + relativedelta(months= i) for i in range(nbr_revolving_pools)]
-    #Redeem_or_Not = True
-    Redeem_or_Not = False
+    Redeem_or_Not = True
+    #Redeem_or_Not = False
 except(NameError):
     pass
 ############################################################
@@ -80,23 +81,23 @@ for name_Tranche in ['A','B','C']:
 
 
 scenarios = {}
-#scenarios['benchmark'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.0858,'M1_2_M0M2':0.3896,'M2_2_M0M3':0.7133,'M3_2_M0D':0.7310,'D_2_RL':0.7799,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
+scenarios['benchmark'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.03,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.8,'scenario_weight':0.1} 
 
-scenarios['stress_A'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.429,'M1_2_M0M2':0.3896,'M2_2_M0M3':0.7133,'M3_2_M0D':0.7310,'D_2_RL':1,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
-scenarios['stress_B'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.3689,'M1_2_M0M2':0.3896,'M2_2_M0M3':0.7133,'M3_2_M0D':0.7310,'D_2_RL':0.8,'scenario_weight':0.1} #ER 0.01%, PD = 1.455% ,PDL = 99%
+#scenarios['stress_A'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.27755,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':1,'scenario_weight':0.1} 
+#scenarios['stress_B'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.23869,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.8,'scenario_weight':0.1} 
 
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065
-MinWAScore = 0.0645
+MinWAScore = 0.045
 
-MinWARate = 0.18
-MaxWARate = 0.185
+MinWARate = 0.19
+MaxWARate = 0.195
 
 MaxWALoanTerm = 450
 
-MaxIssueVolumn = 3000000000
-MinIssueVolumn = 0
+MaxIssueVolumn = 2000000000
+MinIssueVolumn = 2000000000/1.01
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
@@ -112,15 +113,14 @@ Targets_all = {
            'Amount_Outstanding_min':{'object':'GreaterThan','object_value':MinIssueVolumn},
            }
 
-Targets_keys = ['Credit_Score_max',#'Credit_Score_min',
-                'Interest_Rate_min',#'Interest_Rate_max',
+Targets_keys = ['Credit_Score_max','Credit_Score_min',
+                'Interest_Rate_min','Interest_Rate_max',
                 #'LoanTerm',#'',
-                #'Amount_Outstanding_max',
-                'Amount_Outstanding_min',
+                'Amount_Outstanding_min','Amount_Outstanding_max',                
                ]
 
 RS_Group_d = ['Credit_Score',
-              'Interest_Rate',#'Usage','LoanRemainTerm'#,'Province',#'Usage'
+              'Interest_Rate',#'LoanRemainTerm'#,'Province',#'Usage'
               #'LoanTerm',
               ]
 

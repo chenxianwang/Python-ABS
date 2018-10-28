@@ -166,7 +166,7 @@ class APCF_adjuster():
                         self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]] += sum(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day][dates_recycle_list[date_r_index:]].sum())
                         self.interest_Redemption_recycle[dates_recycle_list[date_r_index+1]] += sum(ipmt_M1_2_M2[ipmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day][dates_recycle_list[date_r_index:]].sum())          
                         #logger.info('self.principal_Redemption_recycle part 3 is {0} :'.format(sum(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day][dates_recycle_list[date_r_index:]].sum())))
-                        logger.info('self.principal_Redemption_recycle total is {0} :'.format(self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]]))
+                        logger.info('self.principal_Redemption_recycle total is {0:,.2f} :'.format(self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]]))
                         # Ignore assets which will become M2 after dt_effective
                         ppmt_M1_2_M2,ipmt_M1_2_M2 = deepcopy(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']>=dt_param['dt_effective'].day]),deepcopy(ipmt_M1_2_M2[ipmt_M1_2_M2['PayDay']>=dt_param['dt_effective'].day])
                         #Restore the un-captured ppmt_M1_2_M2
@@ -313,8 +313,8 @@ class APCF_adjuster():
         
         
         #logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
-        if OoR == 'R':pass
-        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
+#        if OoR == 'R':pass
+#        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         #save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         
         return APCF_adjusted[['date_recycle',
