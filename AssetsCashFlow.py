@@ -7,11 +7,11 @@ Created on Sat May 26 22:32:19 2018
 
 import sys
 import os
-from constant import *
+from constant import wb_name
 import pandas as pd
 import numpy as np
-from abs_util.util_general import *
-from abs_util.util_cf import *
+from abs_util.util_general import get_next_eom,get_logger
+from abs_util.util_cf import cash_flow_collection
 from dateutil.relativedelta import relativedelta
 import datetime
 

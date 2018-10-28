@@ -5,19 +5,16 @@ Created on Thu Jun 28 21:21:44 2018
 @author: Jonah.Chen
 """
 
-import sys
-import os
 from copy import deepcopy
-from constant import *
+from constant import path_project
 from Params import *
 import pandas as pd
 import numpy as np
-from abs_util.util_general import *
+from abs_util.util_general import get_logger,Condition_Satisfied_or_Not
 from abs_util.util_cf import *
 from abs_util.util_sr import *
 from abs_util.util_waterfall import *
 from dateutil.relativedelta import relativedelta
-import datetime
 from ReverseSelection import ReverseSelection
 from Statistics import Statistics
 from AssetsCashFlow import AssetsCashFlow
@@ -30,7 +27,7 @@ logger = get_logger(__name__)
 
 class Deal():
     
-    def __init__(self,name,PoolCutDate,AssetPoolName,date_trust_effective,scenarios):
+    def __init__(self,name,PoolCutDate,date_trust_effective,scenarios):
         
         self.RevolvingDeal = False
         self.RevolvingPool_PurchaseAmount = None
@@ -40,7 +37,6 @@ class Deal():
         self.date_trust_effective = date_trust_effective
         self.scenarios = scenarios
         
-        self.list_AssetPoolName = AssetPoolName
         self.dates_recycle_list = []
         
         self.asset_pool = pd.DataFrame()  
@@ -74,10 +70,10 @@ class Deal():
         self.CDR_O_amount = {}
         self.reserveAccount_used = {}
      
-    def get_AssetPool(self):
+    def get_AssetPool(self,AssetPoolName):
         #self.asset_pool = self.AP.get_AP()
         logger.info('get_OriginalAssetPool...')
-        for Pool_index,Pool_name in enumerate(self.list_AssetPoolName):
+        for Pool_index,Pool_name in enumerate(AssetPoolName):
             logger.info('Getting part ' + str(Pool_index+1) + '...')
             AssetPoolPath_this = path_project + '/AssetPoolList/' + Pool_name + '.csv'
             try:
@@ -85,11 +81,8 @@ class Deal():
             except:
                 AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
-        if 'ABSSYSTEM' in self.list_AssetPoolName[0]:
+        if 'ABSSYSTEM' in AssetPoolName[0]:
             self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)                
-        #self.asset_pool = self.asset_pool[list(Header_Rename.keys())] 
-        logger.info('Renaming header....')
-        self.asset_pool = self.asset_pool.rename(columns = Header_Rename) 
         logger.info('Original Asset Pool Gotten.')
         
         return self.asset_pool
@@ -123,7 +116,6 @@ class Deal():
         
     def select_by_ContractNO(self,exclude_or_focus,these_assets):
         assets_to_exclude_or_focus = pd.DataFrame()
-        #self.asset_pool = self.AP.exclude_or_focus_by_ContractNo(exclude_or_focus,these_assets)
         logger.info('Reading Assets_to_' + exclude_or_focus + '....')
         for these_asset in these_assets:
             path_assets = path_project + '/AssetPoolList/' + these_asset + '.csv'
@@ -144,8 +136,6 @@ class Deal():
         else:
             try:self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
             except(KeyError):self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['No_Contract'])]
-            #assets = self.asset_pool.rename(columns = DWH_header_REVERSE_rename) 
-            #assets.to_csv('1stRevolvingPool.csv')
         logger.info(exclude_or_focus +' assets is done.')
         
         
@@ -166,8 +156,6 @@ class Deal():
         for d in group_d:
             RS_results['ReverseSelection_Flag'] += RS_results[d].astype(str)    
         
-        RS_results.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/AssetsSelected_Final.csv',index=False)
-        
         logger.info('Selected Outstanding Principal is {0}'.format(sum(RS_results['Amount_Outstanding'])))
         logger.info('Selected Contracts Count is {0}'.format(len(RS_results.index)))
         
@@ -175,8 +163,10 @@ class Deal():
              Condition_Satisfied_or_Not(RS_results,target_d,iTarget)
         
         self.asset_pool = self.asset_pool[self.asset_pool['ReverseSelection_Flag'].isin(RS_results['ReverseSelection_Flag'])]
+        
+        return RS_results
 
-    def run_Stat(self):
+    def run_Stat(self,Distribution_By_Category,Distribution_By_Bins):
         
         S = Statistics(self.asset_pool)
         S.general_statistics_1()
@@ -190,23 +180,18 @@ class Deal():
                              )
         return APCF.rearrange_APCF_Structure() 
     
-    def get_adjust_oAPCF(self):
+    def get_adjust_oAPCF(self,BackMonth):
         
-        #self.asset_pool['SERVICE_FEE_RATE'] = 0
         APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start','Province']],
                              self.date_pool_cut
                              )
 
-        self.apcf_original,self.apcf_original_structure,self.dates_recycle_list,df_ppmt,df_ipmt = APCF.calc_APCF(0)  #BackMonth  
-        save_to_excel(self.apcf_original,'cf_o',wb_name)
-        #save_to_excel(self.apcf_original_structure,'cf_o_structure',wb_name)
-        #save_to_excel(df_ppmt,'df_ppmt',wb_name)
+        self.apcf_original,self.apcf_original_structure,self.dates_recycle_list,df_ppmt,df_ipmt = APCF.calc_APCF(BackMonth)  #BackMonth  
         
         logger.info('get_adjust_oAPCF_simulation...')
         for scenario_id in self.scenarios.keys():
             logger.info('get_adjust_oAPCF_simulation for scenario_id {0}...'.format(scenario_id))
             APCFa = APCF_adjuster(self.apcf_original_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,self.dates_recycle_list,dt_param['dt_pool_cut'])
-            #self.apcf_original_adjusted[scenario_id] = deepcopy(APCFa.adjust_APCF('O',self.dates_recycle_list))
             self.apcf_original_adjusted[scenario_id],self.APCF_adjusted_save[scenario_id] = APCFa.adjust_APCF('O')
             #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
         
@@ -255,8 +240,6 @@ class Deal():
              logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_O[scenario_id+'_O'][2]))
              self.CDR_O_amount[scenario_id] = deepcopy(self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]])
              
-        save_to_excel(pd.DataFrame.from_dict(self.CDR_O),'RnR&CDR',wb_name)
-            
     def run_WaterFall(self):
          
          for scenario_id in self.scenarios.keys():

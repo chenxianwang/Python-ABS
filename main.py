@@ -10,9 +10,11 @@ import os
 import pandas as pd
 import numpy as np
 import datetime
-from constant import *
-from Params import *
-from abs_util.util_general import *
+from constant import wb_name,Header_Rename,asset_pool_name_list,ProjectName
+from Params import dt_param,date_revolving_pools_cut,scenarios,\
+                   Targets,RS_Group_d,path_root,Distribution_By_Category,Distribution_By_Bins,\
+                   simulation_times
+from abs_util.util_general import save_to_excel,get_logger
 from Deal import Deal
 from RevolvingDeal import RevolvingDeal
 from Statistics import Statistics
@@ -29,15 +31,19 @@ def main():
     if os.path.isfile(wb_name):
       os.remove(wb_name)
 #
-    asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']    
+    RD = RevolvingDeal(True,ProjectName,dt_param['dt_pool_cut'],date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
+    #RD = RevolvingDeal(False,ProjectName,dt_param['dt_pool_cut'],date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
     
-    RD = RevolvingDeal(True,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
-    #RD = RevolvingDeal(False,ProjectName,dt_param['dt_pool_cut'],asset_pool_name_list,date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
+    RD.get_AssetPool(asset_pool_name_list)    # D.asset_pool is available
     
-    RD.get_AssetPool()    # D.asset_pool is available
-
-    #RD.select_by_ContractNO('exclude',['ABS9R3_to_hc cfc_20181015'])  
-    #RD.select_by_ContractNO('focus',['DD'])  
+    #self.asset_pool = self.asset_pool[list(Header_Rename.keys())] 
+    logger.info('Renaming header....')
+    RD.asset_pool = RD.asset_pool.rename(columns = Header_Rename) 
+    
+    #RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15'].round(3)
+        
+    #RD.select_by_ContractNO('exclude',[''])  
+    #RD.select_by_ContractNO('focus',[''])  
 #    
     #RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/Dt_Maturity.csv',index=False)    
 #    
@@ -45,37 +51,29 @@ def main():
 #                  [['R3_selected'],'No_Contract','#合同号'],
 #                  #[['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
 #                  #[['UsageTypeValueTransform'],'Usage','Usage_HC'],
-#                  #[['ABSSYSTEM_OriginalPool_part1','ABSSYSTEM_OriginalPool_part2','ABSSYSTEM_OriginalPool_part3','ABSSYSTEM_OriginalPool_part4','ABSSYSTEM_OriginalPool_part5','ABSSYSTEM_OriginalPool_part6'],'No_Contract','#合同号']
 #                  #[['check_assets'],'No_Contract','合同号'],
-#                  ]
-#                  )
+#                  ])
 # 
-    
-    try:RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15'].round(3)
-    except(KeyError):pass   
 
-    #RD.run_ReverseSelection(Targets,RS_Group_d)
+    #RS_results = RD.run_ReverseSelection(Targets,RS_Group_d)
+    #RS_results.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/AssetsSelected_Final.csv',index=False)
     #RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/R3_selected_jonah.csv',index=False)
     
-    #RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/outer_join.csv',index=False)    
-    #RD.asset_pool[(RD.asset_pool['LoanRemainTerm'] > 270)].rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/Update_overduetimes_2_add_birthday.csv',index=False)    
-    
-    #RD.run_Stat()
+    #RD.run_Stat(Distribution_By_Category,Distribution_By_Bins)
 #    
-#    RD.asset_pool = RD.asset_pool[#(RD.asset_pool['Interest_Rate'] == 0) & 
-#                                  (pd.to_datetime(RD.asset_pool['first_due_date_after_pool_cut']).dt.day == 31)
-#                                  #&(RD.asset_pool['Amount_Outstanding_yuan'] >= 4000)
-#                                  ]
-#    RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/foucus.csv',index=False)
-    
-    RD.get_adjust_oAPCF()    
+    #for _sim in range(simulation_times):
+    #logger.info('simulator index is {0}'.format(_sim))
+    RD.get_adjust_oAPCF(0) #BackMonth = 0  
+    #save_to_excel(RD.apcf_original,'cf_o',wb_name)
+    #save_to_excel(RD.apcf_original_structure,'cf_o_structure',wb_name)
+    #save_to_excel(df_ppmt,'df_ppmt',wb_name)
+
     RD.init_oAP_Acc()
-####
+    save_to_excel(pd.DataFrame.from_dict(RD.CDR_O),'RnR&CDR',wb_name)
+######
     RD.get_rAPCF_structure()
     RD.forcast_Revolving_APCF()
 #   
-    print(RD.CDR_all)
-    
     RD.run_WaterFall()    # D.waterfall[scenario_id] is available
     for scenario_id in scenarios.keys():
         logger.info('Saving results for scenario {0} '.format(scenario_id))

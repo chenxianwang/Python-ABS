@@ -5,10 +5,10 @@ Created on Thu May 24 17:02:56 2018
 @author: jonah.chen
 """
 import pandas as pd
-from constant import *
-from abs_util.util_general import *
+from constant import wb_name
+from abs_util.util_general import save_to_excel,get_logger,stastics_group_by_d,df_bins_result
 import datetime
-from Params import *
+from Params import Batch_ID
 
 
 logger = get_logger(__name__)
