@@ -105,7 +105,7 @@ def run_Accounts(princ_original,princ_outstanding,princ_reserve,#princ_loss,
             
             interest_transfer_to_prin = interest_to_pay[dates_recycle[date_pay_index]] - pay_for_fee
             #logger.info('interest_transfer_to_prin on {0} is {1}'.format(date_pay,interest_transfer_to_prin))
-            if interest_transfer_to_prin < -0.00001 :
+            if (A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay) + C_PAcc.iBalance(date_pay)>0) and (interest_transfer_to_prin < -0.00001) :
                 logger.info('interest_transfer_to_prin on {0} is less than 0: {1}'.format(date_pay,interest_transfer_to_prin))
             
             principal_to_pay[dates_recycle[date_pay_index]] += interest_transfer_to_prin
