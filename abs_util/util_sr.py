@@ -69,11 +69,11 @@ def cal_table_6(DetailList,calcDate,wb_name):
         DetailList_a_s = DetailList[DetailList['贷款状态'] == asset_status]
         if len(DetailList_a_s) >0:
             
-            ACF = AssetsCashFlow(DetailList_a_s[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain',]],
+            ACF = AssetsCashFlow(DetailList_a_s[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start','Province']],
                              asset_status_calcDate_BackMonth[asset_status]['calcDate']
                              )
     
-            acf_original,acf_structure = ACF.calc_APCF(asset_status_calcDate_BackMonth[asset_status]['BackMonth'])            
+            acf_original,acf_structure,dates_recycle_list,df_ppmt,df_ipmt = ACF.calc_APCF(asset_status_calcDate_BackMonth[asset_status]['BackMonth'])            
             
 #            cf_c_a_s_1 = _cf_c_a_s[_cf_c_a_s['date_recycle'] <= get_next_eom(calcDate,0)]
 #            cf_c_a_s_1 = pd.DataFrame(cf_c_a_s_1[['amount_interest','amount_principal','amount_total']].sum()).transpose()
