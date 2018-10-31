@@ -10,10 +10,10 @@ import os
 import pandas as pd
 import numpy as np
 import datetime
-from constant import wb_name,Header_Rename,asset_pool_name_list,ProjectName
+from constant import path_root,wb_name,Header_Rename,Header_Rename_REVERSE,asset_pool_name_list,cur_RevolvingPool,ProjectName,Flag_Revolving
 from Params import dt_param,date_revolving_pools_cut,scenarios,\
-                   Targets,RS_Group_d,path_root,Distribution_By_Category,Distribution_By_Bins,\
-                   simulation_times
+                   Targets,RS_Group_d,Distribution_By_Category,Distribution_By_Bins,\
+                   simulation_times,BackMonth,dates_recycle,asset_status_calcDate_BackMonth,calcDate
 from abs_util.util_general import save_to_excel,get_logger
 from Deal import Deal
 from RevolvingDeal import RevolvingDeal
@@ -31,21 +31,29 @@ def main():
     if os.path.isfile(wb_name):
       os.remove(wb_name)
 #
-    RD = RevolvingDeal(True,ProjectName,dt_param['dt_pool_cut'],date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
-    #RD = RevolvingDeal(False,ProjectName,dt_param['dt_pool_cut'],date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
+    RD = RevolvingDeal(Flag_Revolving,ProjectName,dt_param['dt_pool_cut'],date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
     
-    RD.get_AssetPool(asset_pool_name_list)    # D.asset_pool is available
+    RD.get_AssetPool(asset_pool_name_list) #
+    RD.get_AssetPool(cur_RevolvingPool)
+##    
+    all_asset_status = pd.unique(RD.asset_pool['Asset_Status'].ravel())
+    logger.info(all_asset_status)
     
-    #self.asset_pool = self.asset_pool[list(Header_Rename.keys())] 
-    logger.info('Renaming header....')
-    RD.asset_pool = RD.asset_pool.rename(columns = Header_Rename) 
+    #正常贷款 拖欠1-30天贷款 拖欠31-60天贷款 拖欠61-90天贷款 拖欠90天以上贷款
+    asset_status = all_asset_status[0]
+    RD.asset_pool = RD.asset_pool[(RD.asset_pool['Asset_Status'] == asset_status)&(RD.asset_pool['Amount_Outstanding_yuan']>0)]
+    #RD.asset_pool[(RD.asset_pool['贷款状态'] == asset_status)].to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/Overdue_1_30.csv',index=False)
     
+    RD.asset_pool['first_due_date_after_pool_cut'] = RD.asset_pool['first_due_date_after_pool_cut']\
+                                                        .where(RD.asset_pool['first_due_date_after_pool_cut'] != '3000/1/1',
+                                                               calcDate
+                                                               )
     #RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15'].round(3)
         
     #RD.select_by_ContractNO('exclude',[''])  
-    #RD.select_by_ContractNO('focus',[''])  
+    #RD.select_by_ContractNO('focus',['ABS9R3_to_hc cfc_20181015'])  
 #    
-    #RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/Dt_Maturity.csv',index=False)    
+    #RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/R3_Prepared.csv',index=False)    
 #    
 #    RD.add_Columns([
 #                  [['R3_selected'],'No_Contract','#合同号'],
@@ -63,12 +71,18 @@ def main():
 #    
     #for _sim in range(simulation_times):
     #logger.info('simulator index is {0}'.format(_sim))
-    RD.get_adjust_oAPCF(0) #BackMonth = 0  
-    #save_to_excel(RD.apcf_original,'cf_o',wb_name)
+    
+    RD.get_adjust_oAPCF(asset_status,
+                        asset_status_calcDate_BackMonth[asset_status]['BackMonth'],
+                        asset_status_calcDate_BackMonth[asset_status]['calcDate']
+                        )
+    
+    save_to_excel(RD.apcf_original,'cf_o',wb_name)
     #save_to_excel(RD.apcf_original_structure,'cf_o_structure',wb_name)
     #save_to_excel(df_ppmt,'df_ppmt',wb_name)
 
     RD.init_oAP_Acc()
+    RD.CDR_calc_O()
     save_to_excel(pd.DataFrame.from_dict(RD.CDR_O),'RnR&CDR',wb_name)
 ######
     RD.get_rAPCF_structure()
@@ -87,9 +101,9 @@ def main():
     logger.info('RnR is: %s' % RnR)
     save_to_excel(pd.DataFrame({'RnR':[RnR]}),'RnR&CDR',wb_name)
 
-#    
-#    SR = ServiceReport(ProjectName,ADate,1)
-#    SR.get_ServiceReportAssetsList('1stReportDate',
+############################################################################################    
+#    SR = ServiceReport(ProjectName,datetime.date(2018,10,1),1)
+#    SR.get_ServiceReportAssetsList('3rdReportDate',
 #                                   #['1_1','1_2'], #pre_AllAssetList
 #                                   '',
 #                                   ['1_1','1_2','1_3'], #AllAssetList
@@ -113,7 +127,7 @@ def main():
 #    S.general_statistics_1()
 #    S.loop_Ds_ret_province_profession(Distribution_By_Category,Distribution_By_Bins)
 #    S.cal_income2debt_by_ID()
-
+#
 #    OP_All,OP_Waived = SR.check_OutstandingPrincipal()
 #    #OP_All = SR.check_OutstandingPrincipal()
 #    #print(OP_BB[OP_BB['No_Contract'] == '3878739137002']['剩余本金_poolcutdate_calc'])
@@ -130,7 +144,7 @@ def main():
 #    #check = check[abs(check['Amount_Outstanding_yuan'] - check['剩余本金_poolcutdate_calc']) > 0.04]
 #    #check = check[(check['Amount_Outstanding_yuan']==check['Amount_Outstanding']) & (check['本金：正常回收'] + check['本金：账务处理'] == 0)]
 #    check.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName + '/check_OutstandingPrincipal_pre.csv')
-
+#
 #    Age_SR = SR.check_AgePoolCutDate()
 #    Age_PCD = SR.service_report_AllAssetList_pre[['No_Contract','Age_Project_Start']]
 #    check = Age_PCD.merge(Age_SR,left_on='No_Contract',right_on='No_Contract',how='left')
