@@ -6,7 +6,7 @@ Created on Thu Jun 28 21:21:44 2018
 """
 
 from copy import deepcopy
-from constant import path_project
+from constant import path_project,Header_Rename,Header_Rename_REVERSE
 from Params import *
 import pandas as pd
 import numpy as np
@@ -72,20 +72,28 @@ class Deal():
      
     def get_AssetPool(self,AssetPoolName):
         #self.asset_pool = self.AP.get_AP()
-        logger.info('get_OriginalAssetPool...')
         for Pool_index,Pool_name in enumerate(AssetPoolName):
-            logger.info('Getting part ' + str(Pool_index+1) + '...')
+            logger.info('Getting part ' + Pool_name + '...')
             AssetPoolPath_this = path_project + '/AssetPoolList/' + Pool_name + '.csv'
             try:
                 AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
             except:
                 AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
+            
+            if '贷款状态' not in list(AssetPool_this.columns.values):
+                AssetPool_this['贷款状态'] = '正常贷款'
+            if 'SERVICE_FEE_RATE' not in list(AssetPool_this.columns.values):
+                AssetPool_this['SERVICE_FEE_RATE'] = 0
+            
+            logger.info('Renaming header....')   
+            AssetPool_this = AssetPool_this.rename(columns = Header_Rename)
+            AssetPool_this = AssetPool_this[list(Header_Rename_REVERSE.keys())] 
+            
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
         if 'ABSSYSTEM' in AssetPoolName[0]:
             self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)                
-        logger.info('Original Asset Pool Gotten.')
+        logger.info('Asset Pool Gotten.')
         
-        return self.asset_pool
         
     def add_Columns(self,file_names_left_right):
         logger.info('Adding Columns...')
@@ -180,10 +188,10 @@ class Deal():
                              )
         return APCF.rearrange_APCF_Structure() 
     
-    def get_adjust_oAPCF(self,BackMonth):
+    def get_adjust_oAPCF(self,asset_status,BackMonth,dt_pool_cut):
         
         APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start','Province']],
-                             self.date_pool_cut
+                             dt_pool_cut
                              )
 
         self.apcf_original,self.apcf_original_structure,self.dates_recycle_list,df_ppmt,df_ipmt = APCF.calc_APCF(BackMonth)  #BackMonth  
@@ -191,7 +199,7 @@ class Deal():
         logger.info('get_adjust_oAPCF_simulation...')
         for scenario_id in self.scenarios.keys():
             logger.info('get_adjust_oAPCF_simulation for scenario_id {0}...'.format(scenario_id))
-            APCFa = APCF_adjuster(self.apcf_original_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,self.dates_recycle_list,dt_param['dt_pool_cut'])
+            APCFa = APCF_adjuster(self.apcf_original_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,self.dates_recycle_list,dt_pool_cut,asset_status) #self.date_pool_cut
             self.apcf_original_adjusted[scenario_id],self.APCF_adjusted_save[scenario_id] = APCFa.adjust_APCF('O')
             #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
         
@@ -233,6 +241,9 @@ class Deal():
              self.AP_IAcc_loss_allTerm_O[scenario_id] = interest_available[11]
              self.AP_IAcc_O_outstanding[scenario_id] = interest_available[12]
              
+    def CDR_calc_O(self):
+        logger.info('CDR_calc_O...')
+        for scenario_id in self.scenarios.keys():
              self.CDR_O[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]],
                                                 sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle]),
                                                 self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]]/sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle])

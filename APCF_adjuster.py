@@ -6,12 +6,12 @@ Created on Mon Jun 18 19:57:55 2018
 """
 import sys
 import os
-from constant import *
+from constant import wb_name
 from copy import deepcopy
-from Params import *
+from Params import scenarios,Redeem_or_Not,dt_param,amount_ReserveAcount,Batch_ID
 import pandas as pd
 import numpy as np
-from abs_util.util_general import *
+from abs_util.util_general import get_next_eom,save_to_excel
 from abs_util.util_cf import *
 from dateutil.relativedelta import relativedelta
 import datetime
@@ -21,9 +21,10 @@ logger = get_logger(__name__)
 
 class APCF_adjuster():
     
-    def __init__(self,apcf,scenario,scenario_id,df_ppmt,df_ipmt,dates_recycle_list,pool_cut_date):
+    def __init__(self,apcf_structure,scenario,scenario_id,df_ppmt,df_ipmt,dates_recycle_list,pool_cut_date,asset_status):
         
-        self.apcf = apcf
+        self.asset_status = asset_status
+        self.apcf_structure = apcf_structure
         self.df_ppmt,self.df_ipmt = df_ppmt,df_ipmt
         self.scenario_id = scenario_id
         self.scenario_params = scenarios[scenario_id]   
@@ -95,6 +96,7 @@ class APCF_adjuster():
         
         ppmt_M0,ipmt_M0 = df_ppmt,df_ipmt
         ppmt_M1,ipmt_M1 = pd.DataFrame(),pd.DataFrame() 
+        
         ppmt_M1_2_M0,ipmt_M1_2_M0,ppmt_M1_2_M2,ipmt_M1_2_M2 = pd.DataFrame(),pd.DataFrame(),pd.DataFrame(),pd.DataFrame()      
         ppmt_M2_2_M0,ipmt_M2_2_M0,ppmt_M2_2_M3,ipmt_M2_2_M3 = pd.DataFrame(),pd.DataFrame(),pd.DataFrame(),pd.DataFrame()    
         ppmt_M3_2_M0,ipmt_M3_2_M0,ppmt_M3_2_D,ipmt_M3_2_D = pd.DataFrame(),pd.DataFrame(),pd.DataFrame(),pd.DataFrame()
@@ -239,14 +241,8 @@ class APCF_adjuster():
     def transit_Status(self,ppmt_this,ipmt_this,OoR,date_r_index,transition,FLAG):
         
         transit_down = self.scenario_params[transition]
-        # First month after POOLCUT
-        if transition == 'M0_2_M1' and date_r_index == 0:
-            transit_down *= ((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
-            #logger.info('transit_down is {0} for dates_recycle_list[date_r_index] {1} for M0_2_M1 '.format(transit_down,self.dates_recycle_list[date_r_index]))
-        if transition == 'M0_2_ERM0' and date_r_index == 0:
-            transit_down = 1 - (1-transit_down)*((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
-            #logger.info('transit_down is {0} for dates_recycle_list[date_r_index] {1} for M0_2_ERM0 '.format(transit_down,self.dates_recycle_list[date_r_index]))
-            
+        transit_down = self.calc_transit_down(transit_down,transition,date_r_index)
+        
         first_due_period = 'first_due_period_'+OoR
         
         ppmt_this,ipmt_this = ppmt_this.reset_index(drop=True),ipmt_this.reset_index(drop=True)
@@ -266,6 +262,20 @@ class APCF_adjuster():
 
         return ppmt_pre,ipmt_pre,ppmt_next,ipmt_next      
     
+    def calc_transit_down(self,transit_down,transition,date_r_index):    
+        # First month after POOLCUT
+        if date_r_index > 0:
+            pass
+        else: 
+            if self.asset_status == '拖欠1-30天贷款':transit_down = 1
+            elif self.asset_status == '正常贷款' :
+                if transition == 'M0_2_M1':transit_down *= ((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
+                elif transition == 'M0_2_ERM0':transit_down = 1 - (1-transit_down)*((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
+            #logger.info('transit_down is {0} for dates_recycle_list[date_r_index] {1} for M0_2_M1 '.format(transit_down,self.dates_recycle_list[date_r_index]))
+        
+        return transit_down
+        
+        
     def gen_APCF_adjusted(self,OoR):
         #logger.info('Generating APCF_adjusted...' )
         df_total_by_date = pd.DataFrame(self.APCF_adjusted_dict)
@@ -305,16 +315,16 @@ class APCF_adjuster():
                                             'principal_overdue_1_30_allTerm','principal_overdue_31_60_allTerm','principal_overdue_61_90_allTerm','principal_loss_allTerm',
                                             'principal_normal_allTerm']]
         
-        APCF_adjusted_save['Check_Principal'] = APCF_adjusted_save['total_recycle_principal'].cumsum() + APCF_adjusted_save[['principal_overdue_1_30_allTerm','principal_overdue_31_60_allTerm','principal_overdue_61_90_allTerm','principal_loss_allTerm','principal_normal_allTerm']].sum(axis=1) - self.apcf['OutstandingPrincipal'].sum()
+        APCF_adjusted_save['Check_Principal'] = APCF_adjusted_save['total_recycle_principal'].cumsum() + APCF_adjusted_save[['principal_overdue_1_30_allTerm','principal_overdue_31_60_allTerm','principal_overdue_61_90_allTerm','principal_loss_allTerm','principal_normal_allTerm']].sum(axis=1) - self.apcf_structure['OutstandingPrincipal'].sum()
         
-        if abs(APCF_adjusted_save['Check_Principal'].sum()) > 0.001:
+        if abs(APCF_adjusted_save['Check_Principal'].sum()) > 0.01:
             logger.info('!!!!!!!!! Principal GAP in Pool !!!!!!!!!'+OoR)
         else: pass #logger.info('Principal Check Passed for '+OoR)
         
         
-        #logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
-#        if OoR == 'R':pass
-#        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
+        logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
+        if OoR == 'R':pass
+        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         #save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         
         return APCF_adjusted[['date_recycle',

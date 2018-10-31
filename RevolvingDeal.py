@@ -9,6 +9,7 @@ import sys
 import os
 from copy import deepcopy
 from constant import *
+from Params import *
 import pandas as pd
 import numpy as np
 from abs_util.util_general import *
@@ -166,6 +167,7 @@ class RevolvingDeal(Deal):
                     apcf_revolving_structure = deepcopy(self.apcf_revolving_structure)
                     
                     purchase_amount = self.prepare_PurchaseAmount(which_revolving_pool,scenario_id)
+                    
                     self.RevolvingPool_PurchaseAmount[scenario_id][which_revolving_pool] = purchase_amount
                     self.total_purchase_amount += purchase_amount
                     
@@ -182,7 +184,7 @@ class RevolvingDeal(Deal):
                     self.apcf_revolving[which_revolving_pool],df_ppmt,df_ipmt = cash_flow_collection(apcf_revolving_structure,dates_recycle_list_revolving,'first_due_period_R','Revolving'+str(which_revolving_pool),wb_name)
                     #save_to_excel(apcf_revolving_structure,'Revolving_APCF_Structure_' + str(which_revolving_pool),wb_name)
                     #save_to_excel(self.apcf_revolving[which_revolving_pool],'rAPCF_' + scenario_id + str(which_revolving_pool),wb_name)
-                    APCFa = APCF_adjuster(apcf_revolving_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,dates_recycle_list_revolving,date_revolving_pools_cut[which_revolving_pool-1])
+                    APCFa = APCF_adjuster(apcf_revolving_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,dates_recycle_list_revolving,date_revolving_pools_cut[which_revolving_pool-1],asset_status_for_revolving)
                     self.apcf_revolving_adjusted[scenario_id][which_revolving_pool],self.APCF_R_adjusted_save[scenario_id][which_revolving_pool] = APCFa.adjust_APCF('R')
                     #save_to_excel(self.apcf_revolving_adjusted[scenario_id][which_revolving_pool],'rAPCFa_' + scenario_id + str(which_revolving_pool),wb_name)
                     _AP_Acc = AssetPoolAccount(self.apcf_revolving[which_revolving_pool],self.apcf_revolving_adjusted[scenario_id][which_revolving_pool])
