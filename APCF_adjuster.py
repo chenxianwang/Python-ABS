@@ -11,7 +11,7 @@ from copy import deepcopy
 from Params import scenarios,Redeem_or_Not,dt_param,amount_ReserveAcount,Batch_ID
 import pandas as pd
 import numpy as np
-from abs_util.util_general import get_next_eom,save_to_excel
+from abs_util.util_general import get_next_eom,save_to_excel,get_logger
 from abs_util.util_cf import *
 from dateutil.relativedelta import relativedelta
 import datetime
@@ -240,8 +240,11 @@ class APCF_adjuster():
    
     def transit_Status(self,ppmt_this,ipmt_this,OoR,date_r_index,transition,FLAG):
         
-        transit_down = self.scenario_params[transition]
+        transit_down = deepcopy(self.scenario_params[transition])
+        #logger.info('date_r_index is {0},transit_down is {1}'.format(date_r_index,transit_down))
+        
         transit_down = self.calc_transit_down(transit_down,transition,date_r_index)
+        #logger.info('date_r_index is {0},transit_down is {1}'.format(date_r_index,transit_down))
         
         first_due_period = 'first_due_period_'+OoR
         
@@ -264,14 +267,32 @@ class APCF_adjuster():
     
     def calc_transit_down(self,transit_down,transition,date_r_index):    
         # First month after POOLCUT
-        if date_r_index > 0:
-            pass
-        else: 
-            if self.asset_status == '拖欠1-30天贷款':transit_down = 1
-            elif self.asset_status == '正常贷款' :
+        if self.asset_status == '拖欠1-30天贷款':
+            if date_r_index > 0:pass
+            else: 
+                if transition in ['M0_2_M1','M0_2_ERM0']: transit_down = 1
+                else: pass
+        elif self.asset_status == '拖欠31-60天贷款':
+            if date_r_index > 1:pass
+            else: 
+                if transition in ['M0_2_M1','M0_2_ERM0','M1_2_M0M2']: transit_down = 1
+                else: pass
+        elif self.asset_status == '拖欠61-90天贷款':
+            if date_r_index > 2:pass
+            else: 
+                if transition in ['M0_2_M1','M0_2_ERM0','M1_2_M0M2','M2_2_M0M3']: transit_down = 1
+                else: pass
+        elif self.asset_status == '拖欠90天以上贷款':
+            if date_r_index > 3:pass
+            else: 
+                if transition in ['M0_2_M1','M0_2_ERM0','M1_2_M0M2','M2_2_M0M3','M3_2_M0D','D_2_RL']: transit_down = 1
+                else: pass
+        elif self.asset_status == '正常贷款' :
+            if date_r_index > 0:pass
+            else: 
                 if transition == 'M0_2_M1':transit_down *= ((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
                 elif transition == 'M0_2_ERM0':transit_down = 1 - (1-transit_down)*((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
-            #logger.info('transit_down is {0} for dates_recycle_list[date_r_index] {1} for M0_2_M1 '.format(transit_down,self.dates_recycle_list[date_r_index]))
+        #logger.info('transit_down is {0} for dates_recycle_list[date_r_index] {1} for M0_2_M1 '.format(transit_down,self.dates_recycle_list[date_r_index]))
         
         return transit_down
         
@@ -320,12 +341,6 @@ class APCF_adjuster():
         if abs(APCF_adjusted_save['Check_Principal'].sum()) > 0.01:
             logger.info('!!!!!!!!! Principal GAP in Pool !!!!!!!!!'+OoR)
         else: pass #logger.info('Principal Check Passed for '+OoR)
-        
-        
-        logger.info('Saving adjusted new APCF for scenario {0}: '.format(self.scenario_id))
-        if OoR == 'R':pass
-        else:save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
-        #save_to_excel(APCF_adjusted_save,'cf_'+OoR+'_adjusted_simulation'+Batch_ID,wb_name)
         
         return APCF_adjusted[['date_recycle',
                               'total_recycle_principal','total_recycle_interest',
