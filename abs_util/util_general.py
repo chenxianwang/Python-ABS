@@ -26,7 +26,9 @@ def get_logger(logger_name):
     return logging.getLogger(logger_name)
 
 def save_to_excel(df,ws_name,wb_name):
-
+    
+    get_logger(__name__).info('Saving {0}'.format(ws_name))
+    
     if not os.path.isfile(wb_name):
             Workbook().save(wb_name)
         
