@@ -6,14 +6,14 @@ Created on Thu Jun 28 21:21:44 2018
 """
 
 from copy import deepcopy
-from constant import path_project,Header_Rename,Header_Rename_REVERSE
-from Params import *
+from constant import wb_name,path_project,Header_Rename,Header_Rename_REVERSE
+from Params import all_asset_status,dates_recycle,dt_param,Bonds,scenarios,amount_ReserveAcount
 import pandas as pd
 import numpy as np
-from abs_util.util_general import get_logger,Condition_Satisfied_or_Not
+from abs_util.util_general import get_logger,Condition_Satisfied_or_Not,save_to_excel,SD_with_weight
 from abs_util.util_cf import *
 from abs_util.util_sr import *
-from abs_util.util_waterfall import *
+from abs_util.util_waterfall import run_Accounts,BasicInfo_calculator,CR_calculator,NPV_calculator
 from dateutil.relativedelta import relativedelta
 from ReverseSelection import ReverseSelection
 from Statistics import Statistics
@@ -36,29 +36,16 @@ class Deal():
         self.date_pool_cut = PoolCutDate
         self.date_trust_effective = date_trust_effective
         self.scenarios = scenarios
-        
-        self.dates_recycle_list = []
+       
+        self.dates_recycle_list = {}
         
         self.asset_pool = pd.DataFrame()  
-        self.apcf_original,self.apcf_original_structure = pd.DataFrame(),pd.DataFrame()
+        self.apcf_original,self.apcf_original_structure = {},{}
+        self.df_ppmt,self.df_ipmt = {},{}
+        
         self.apcf_original_adjusted,self.APCF_adjusted_save = {},{}
-        
-        self.AP_PAcc_original_O,self.AP_PAcc_actual_O = {},{}
-        self.AP_PAcc_pay_O,self.AP_PAcc_buy_O = {},{}
-        self.AP_PAcc_overdue_1_30_currentTerm_O,self.AP_PAcc_overdue_1_30_allTerm_O = {},{}
-        self.AP_PAcc_overdue_31_60_currentTerm_O,self.AP_PAcc_overdue_31_60_allTerm_O = {},{}
-        self.AP_PAcc_overdue_61_90_currentTerm_O,self.AP_PAcc_overdue_61_90_allTerm_O = {},{}
-        self.AP_PAcc_loss_currentTerm_O,self.AP_PAcc_loss_allTerm_O = {},{}
-
-        self.AP_IAcc_original_O,self.AP_IAcc_actual_O = {},{}
-        self.AP_IAcc_pay_O,self.AP_IAcc_buy_O = {},{}
-        self.AP_IAcc_overdue_1_30_currentTerm_O,self.AP_IAcc_overdue_1_30_allTerm_O = {},{}
-        self.AP_IAcc_overdue_31_60_currentTerm_O,self.AP_IAcc_overdue_31_60_allTerm_O = {},{}
-        self.AP_IAcc_overdue_61_90_currentTerm_O,self.AP_IAcc_overdue_61_90_allTerm_O = {},{}
-        self.AP_IAcc_loss_currentTerm_O,self.AP_IAcc_loss_allTerm_O = {},{}
-        
-        self.AP_PAcc_O_outstanding,self.AP_IAcc_O_outstanding = {},{} 
-        self.AP_PAcc_O_reserve = {}
+        for asset_status in all_asset_status:
+            self.apcf_original_adjusted[asset_status],self.APCF_adjusted_save[asset_status] = {},{}
         
         self.waterfall = {}
         self.wf_BasicInfo = {}
@@ -114,8 +101,8 @@ class Deal():
             #AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str)
             #AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_new'})
             #[['#合同号','出生日期']]
-            logger.info('outer Merging...')
-            self.asset_pool = self.asset_pool.merge(AssetPool[['#合同号']],left_on= left,right_on = right,how='outer')
+            logger.info('Left Merging Columns...')
+            self.asset_pool = self.asset_pool.merge(AssetPool,left_on= left,right_on = right,how='left')
         #self.asset_pool = self.asset_pool[(~self.asset_pool['职业_信托'].isnull()) & (~self.asset_pool['购买商品_信托'].isnull())]
         logger.info('Columns added....')
         
@@ -188,68 +175,133 @@ class Deal():
                              )
         return APCF.rearrange_APCF_Structure() 
     
-    def get_adjust_oAPCF(self,asset_status,BackMonth,dt_pool_cut):
+    def get_oAPCF(self,asset_status,BackMonth,dt_pool_cut):
         
-        APCF = AssetsCashFlow(self.asset_pool[['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start','Province']],
+        APCF = AssetsCashFlow(self.asset_pool[(self.asset_pool['贷款状态'] == asset_status)][['No_Contract','Interest_Rate','SERVICE_FEE_RATE','Amount_Outstanding_yuan','first_due_date_after_pool_cut','Term_Remain','Dt_Start','Province']],
                              dt_pool_cut
                              )
 
-        self.apcf_original,self.apcf_original_structure,self.dates_recycle_list,df_ppmt,df_ipmt = APCF.calc_APCF(BackMonth)  #BackMonth  
-        
-        logger.info('get_adjust_oAPCF_simulation...')
-        for scenario_id in self.scenarios.keys():
-            logger.info('get_adjust_oAPCF_simulation for scenario_id {0}...'.format(scenario_id))
-            APCFa = APCF_adjuster(self.apcf_original_structure,self.scenarios,scenario_id,df_ppmt,df_ipmt,self.dates_recycle_list,dt_pool_cut,asset_status) #self.date_pool_cut
-            self.apcf_original_adjusted[scenario_id],self.APCF_adjusted_save[scenario_id] = APCFa.adjust_APCF('O')
-            #save_to_excel(self.apcf_original_adjusted[scenario_id],scenario_id+'_o_a',wb_name)
-        
+        self.apcf_original[asset_status],self.apcf_original_structure[asset_status],self.dates_recycle_list[asset_status],self.df_ppmt[asset_status],self.df_ipmt[asset_status] = APCF.calc_APCF(BackMonth)  #BackMonth  
+
+    def adjust_oAPCF(self,scenario_id,asset_status,dt_pool_cut):        
+        logger.info('get_adjust_oAPCF_simulation for scenario_id {0}...'.format(scenario_id))
+        APCFa = APCF_adjuster(self.apcf_original_structure[asset_status],self.scenarios,scenario_id,self.df_ppmt[asset_status],self.df_ipmt[asset_status],self.dates_recycle_list[asset_status],dt_pool_cut,asset_status) #
+        self.apcf_original_adjusted[asset_status][scenario_id],self.APCF_adjusted_save[asset_status][scenario_id] = APCFa.adjust_APCF('O')
 
     def init_oAP_Acc(self):
-        logger.info('init_oAP_Acc...')
+        
+        self.AP_PAcc_original_O,self.AP_PAcc_actual_O = {},{}
+        self.AP_PAcc_pay_O,self.AP_PAcc_buy_O= {},{}
+        self.AP_PAcc_overdue_1_30_currentTerm_O,self.AP_PAcc_overdue_1_30_allTerm_O= {},{}
+        self.AP_PAcc_overdue_31_60_currentTerm_O,self.AP_PAcc_overdue_31_60_allTerm_O = {},{}
+        self.AP_PAcc_overdue_61_90_currentTerm_O,self.AP_PAcc_overdue_61_90_allTerm_O = {},{}
+        self.AP_PAcc_loss_currentTerm_O,self.AP_PAcc_loss_allTerm_O = {},{}
+
+        self.AP_IAcc_original_O,self.AP_IAcc_actual_O = {},{}
+        self.AP_IAcc_pay_O,self.AP_IAcc_buy_O = {},{}
+        self.AP_IAcc_overdue_1_30_currentTerm_O,self.AP_IAcc_overdue_1_30_allTerm_O = {},{}
+        self.AP_IAcc_overdue_31_60_currentTerm_O,self.AP_IAcc_overdue_31_60_allTerm_O = {},{}
+        self.AP_IAcc_overdue_61_90_currentTerm_O,self.AP_IAcc_overdue_61_90_allTerm_O = {},{}
+        self.AP_IAcc_loss_currentTerm_O,self.AP_IAcc_loss_allTerm_O = {},{}
+        
+        self.AP_PAcc_outstanding_O,self.AP_IAcc_outstanding_O = {},{} 
+        self.AP_PAcc_reserve_O = {}
+            
         for scenario_id in self.scenarios.keys():
-             #logger.info('scenario_id is {0}'.format(scenario_id))
-             AP_Acc = AssetPoolAccount(self.apcf_original,self.apcf_original_adjusted[scenario_id])
-             
-             principal_available = AP_Acc.available_principal()
-             self.AP_PAcc_original_O[scenario_id] = principal_available[0]
-             self.AP_PAcc_actual_O[scenario_id] = principal_available[1]
-             self.AP_PAcc_pay_O[scenario_id] = principal_available[2]
-             self.AP_PAcc_buy_O[scenario_id] = principal_available[3]
-             self.AP_PAcc_overdue_1_30_currentTerm_O[scenario_id] = principal_available[4]
-             self.AP_PAcc_overdue_1_30_allTerm_O[scenario_id] = principal_available[5]
-             self.AP_PAcc_overdue_31_60_currentTerm_O[scenario_id] = principal_available[6]
-             self.AP_PAcc_overdue_31_60_allTerm_O[scenario_id] = principal_available[7]
-             self.AP_PAcc_overdue_61_90_currentTerm_O[scenario_id] = principal_available[8]
-             self.AP_PAcc_overdue_61_90_allTerm_O[scenario_id] = principal_available[9]
-             self.AP_PAcc_loss_currentTerm_O[scenario_id] = principal_available[10]
-             self.AP_PAcc_loss_allTerm_O[scenario_id] = principal_available[11]             
-             self.AP_PAcc_O_outstanding[scenario_id] = principal_available[12]
-             self.AP_PAcc_O_reserve[scenario_id] = principal_available[13]
-             
-             interest_available = AP_Acc.available_interest()
-             self.AP_IAcc_original_O[scenario_id] = interest_available[0]
-             self.AP_IAcc_actual_O[scenario_id] = interest_available[1]
-             self.AP_IAcc_pay_O[scenario_id] = interest_available[2]
-             self.AP_IAcc_buy_O[scenario_id] = interest_available[3]
-             self.AP_IAcc_overdue_1_30_currentTerm_O[scenario_id] = interest_available[4]
-             self.AP_IAcc_overdue_1_30_allTerm_O[scenario_id] = interest_available[5]
-             self.AP_IAcc_overdue_31_60_currentTerm_O[scenario_id] = interest_available[6]
-             self.AP_IAcc_overdue_31_60_allTerm_O[scenario_id] = interest_available[7]
-             self.AP_IAcc_overdue_61_90_currentTerm_O[scenario_id] = interest_available[8]
-             self.AP_IAcc_overdue_61_90_allTerm_O[scenario_id] = interest_available[9]
-             self.AP_IAcc_loss_currentTerm_O[scenario_id] = interest_available[10]
-             self.AP_IAcc_loss_allTerm_O[scenario_id] = interest_available[11]
-             self.AP_IAcc_O_outstanding[scenario_id] = interest_available[12]
-             
-    def CDR_calc_O(self):
-        logger.info('CDR_calc_O...')
+            self.AP_PAcc_original_O[scenario_id],self.AP_PAcc_actual_O[scenario_id] = {},{}
+            self.AP_PAcc_pay_O[scenario_id],self.AP_PAcc_buy_O[scenario_id] = {},{}
+            self.AP_PAcc_overdue_1_30_currentTerm_O[scenario_id],self.AP_PAcc_overdue_1_30_allTerm_O[scenario_id] = {},{}
+            self.AP_PAcc_overdue_31_60_currentTerm_O[scenario_id],self.AP_PAcc_overdue_31_60_allTerm_O[scenario_id] = {},{}
+            self.AP_PAcc_overdue_61_90_currentTerm_O[scenario_id],self.AP_PAcc_overdue_61_90_allTerm_O[scenario_id] = {},{}
+            self.AP_PAcc_loss_currentTerm_O[scenario_id],self.AP_PAcc_loss_allTerm_O[scenario_id] = {},{}
+    
+            self.AP_IAcc_original_O[scenario_id],self.AP_IAcc_actual_O[scenario_id] = {},{}
+            self.AP_IAcc_pay_O[scenario_id],self.AP_IAcc_buy_O[scenario_id] = {},{}
+            self.AP_IAcc_overdue_1_30_currentTerm_O[scenario_id],self.AP_IAcc_overdue_1_30_allTerm_O[scenario_id] = {},{}
+            self.AP_IAcc_overdue_31_60_currentTerm_O[scenario_id],self.AP_IAcc_overdue_31_60_allTerm_O[scenario_id] = {},{}
+            self.AP_IAcc_overdue_61_90_currentTerm_O[scenario_id],self.AP_IAcc_overdue_61_90_allTerm_O[scenario_id] = {},{}
+            self.AP_IAcc_loss_currentTerm_O[scenario_id],self.AP_IAcc_loss_allTerm_O[scenario_id] = {},{}
+            
+            self.AP_PAcc_outstanding_O[scenario_id],self.AP_IAcc_outstanding_O[scenario_id] = {},{} 
+            self.AP_PAcc_reserve_O[scenario_id] = {}
+            
         for scenario_id in self.scenarios.keys():
-             self.CDR_O[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]],
-                                                sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle]),
-                                                self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]]/sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle])
-                                                ]  
-             logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_O[scenario_id+'_O'][2]))
-             self.CDR_O_amount[scenario_id] = deepcopy(self.AP_PAcc_loss_allTerm_O[scenario_id][self.dates_recycle_list[-1]])
+            for k in dates_recycle:
+                self.AP_PAcc_original_O[scenario_id][k] = 0
+                self.AP_PAcc_actual_O[scenario_id][k] = 0
+                self.AP_PAcc_pay_O[scenario_id][k] = 0
+                self.AP_PAcc_buy_O[scenario_id][k] = 0
+                self.AP_PAcc_overdue_1_30_currentTerm_O[scenario_id][k] = 0
+                self.AP_PAcc_overdue_1_30_allTerm_O[scenario_id][k] = 0
+                self.AP_PAcc_overdue_31_60_currentTerm_O[scenario_id][k] = 0
+                self.AP_PAcc_overdue_31_60_allTerm_O[scenario_id][k] = 0
+                self.AP_PAcc_overdue_61_90_currentTerm_O[scenario_id][k] = 0
+                self.AP_PAcc_overdue_61_90_allTerm_O[scenario_id][k] = 0
+                self.AP_PAcc_loss_currentTerm_O[scenario_id][k] = 0
+                self.AP_PAcc_loss_allTerm_O[scenario_id][k] = 0
+                self.AP_PAcc_outstanding_O[scenario_id][k] = 0
+                
+                self.AP_PAcc_reserve_O[scenario_id][k] = amount_ReserveAcount
+    
+                self.AP_IAcc_original_O[scenario_id][k] = 0                   
+                self.AP_IAcc_actual_O[scenario_id][k] = 0
+                self.AP_IAcc_pay_O[scenario_id][k] = 0
+                self.AP_IAcc_buy_O[scenario_id][k] = 0
+                self.AP_IAcc_overdue_1_30_currentTerm_O[scenario_id][k] = 0
+                self.AP_IAcc_overdue_1_30_allTerm_O[scenario_id][k] = 0
+                self.AP_IAcc_overdue_31_60_currentTerm_O[scenario_id][k] = 0
+                self.AP_IAcc_overdue_31_60_allTerm_O[scenario_id][k] = 0
+                self.AP_IAcc_overdue_61_90_currentTerm_O[scenario_id][k] = 0
+                self.AP_IAcc_overdue_61_90_allTerm_O[scenario_id][k] = 0
+                self.AP_IAcc_loss_currentTerm_O[scenario_id][k] = 0
+                self.AP_IAcc_loss_allTerm_O[scenario_id][k] = 0
+                self.AP_IAcc_outstanding_O[scenario_id][k] = 0
+    
+    def update_oAP_Acc(self,scenario_id,asset_status):
+         #logger.info('scenario_id is {0}'.format(scenario_id))
+         AP_Acc = AssetPoolAccount(self.apcf_original[asset_status],self.apcf_original_adjusted[asset_status][scenario_id])
+         
+         principal_available = AP_Acc.available_principal()
+         interest_available = AP_Acc.available_interest()
+         
+         for k in dates_recycle:
+             self.AP_PAcc_original_O[scenario_id][k] += principal_available[0][k]
+             self.AP_PAcc_actual_O[scenario_id][k] += principal_available[1][k]
+             self.AP_PAcc_pay_O[scenario_id][k] += principal_available[2][k]
+             self.AP_PAcc_buy_O[scenario_id][k] += principal_available[3][k]
+             self.AP_PAcc_overdue_1_30_currentTerm_O[scenario_id][k] += principal_available[4][k]
+             self.AP_PAcc_overdue_1_30_allTerm_O[scenario_id][k] += principal_available[5][k]
+             self.AP_PAcc_overdue_31_60_currentTerm_O[scenario_id][k] += principal_available[6][k]
+             self.AP_PAcc_overdue_31_60_allTerm_O[scenario_id][k] += principal_available[7][k]
+             self.AP_PAcc_overdue_61_90_currentTerm_O[scenario_id][k] += principal_available[8][k]
+             self.AP_PAcc_overdue_61_90_allTerm_O[scenario_id][k] += principal_available[9][k]
+             self.AP_PAcc_loss_currentTerm_O[scenario_id][k] += principal_available[10][k]
+             self.AP_PAcc_loss_allTerm_O[scenario_id][k] += principal_available[11][k]  
+             self.AP_PAcc_outstanding_O[scenario_id][k] += principal_available[12][k]
+             self.AP_PAcc_reserve_O[scenario_id][k] += principal_available[13][k]
+         
+             self.AP_IAcc_original_O[scenario_id][k] += interest_available[0][k]
+             self.AP_IAcc_actual_O[scenario_id][k] += interest_available[1][k]
+             self.AP_IAcc_pay_O[scenario_id][k] += interest_available[2][k]
+             self.AP_IAcc_buy_O[scenario_id][k] += interest_available[3][k]
+             self.AP_IAcc_overdue_1_30_currentTerm_O[scenario_id][k] += interest_available[4][k]
+             self.AP_IAcc_overdue_1_30_allTerm_O[scenario_id][k] += interest_available[5][k]
+             self.AP_IAcc_overdue_31_60_currentTerm_O[scenario_id][k] += interest_available[6][k]
+             self.AP_IAcc_overdue_31_60_allTerm_O[scenario_id][k] += interest_available[7][k]
+             self.AP_IAcc_overdue_61_90_currentTerm_O[scenario_id][k] += interest_available[8][k]
+             self.AP_IAcc_overdue_61_90_allTerm_O[scenario_id][k] += interest_available[9][k]
+             self.AP_IAcc_loss_currentTerm_O[scenario_id][k] += interest_available[10][k]
+             self.AP_IAcc_loss_allTerm_O[scenario_id][k] += interest_available[11][k]
+             self.AP_IAcc_outstanding_O[scenario_id][k] += interest_available[12][k]
+             
+    def CDR_calc_O(self,scenario_id):
+
+         self.CDR_O[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm_O[scenario_id][dates_recycle[-1]],
+                                            sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle]),
+                                            self.AP_PAcc_loss_allTerm_O[scenario_id][dates_recycle[-1]]/sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle])
+                                            ]  
+         logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_O[scenario_id+'_O'][2]))
+         self.CDR_O_amount[scenario_id] = deepcopy(self.AP_PAcc_loss_allTerm_O[scenario_id][dates_recycle[-1]])
              
     def run_WaterFall(self):
          

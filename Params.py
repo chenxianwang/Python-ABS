@@ -12,7 +12,7 @@ from constant import ProjectName
 
 Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute)+str(datetime.datetime.now().second)
 
-simulation_times = 10
+simulation_times = 100
 
 days_in_a_year = 365
 amount_ReserveAcount = 1000000
@@ -40,8 +40,8 @@ elif ProjectName == 'ABS9_following':
 elif ProjectName == 'ABS10':
     amount_total_issuance = 3014292721.30
     Bonds = {}
-    Bonds['A'] = {'ptg':0.6502,'amount':1960000000, 'rate':0.0550}
-    Bonds['B'] = {'ptg':0.1287,'amount':388000000,'rate':0.0720}
+    Bonds['A'] = {'ptg':0.6502,'amount':1960000000, 'rate':0.0510}
+    Bonds['B'] = {'ptg':0.1287,'amount':388000000,'rate':0.060}
     Bonds['C'] = {'ptg':0.2211,'amount':666292721.30,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
     rate_discount = 0.18
@@ -100,6 +100,7 @@ asset_status_calcDate_BackMonth = {'正常贷款':{'calcDate':calcDate,'BackMont
                 '拖欠90天以上贷款': {'calcDate':calcDate + relativedelta(months=-4),'BackMonth':4}
                 }
 asset_status_for_revolving = '正常贷款'
+all_asset_status = ['正常贷款','拖欠1-30天贷款','拖欠31-60天贷款','拖欠61-90天贷款','拖欠90天以上贷款']
 ############################################################
 fees = { 'tax':{'rate':0.032621359223},
         'pay_interest_service':{'rate':0.00005},
@@ -115,26 +116,28 @@ for name_Tranche in ['A','B','C']:
     fees[name_Tranche]['rate'] = Bonds[name_Tranche]['rate']
 ################################################################
 
-
 scenarios = {}
-scenarios['benchmark'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.035,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.8,'scenario_weight':0.1} 
+scenarios['best'] = {'M0_2_ERM0':0.98,'M0_2_M1':0.03,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.8,'scenario_weight':0.3} 
+scenarios['better'] = {'M0_2_ERM0':0.982,'M0_2_M1':0.035,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.85,'scenario_weight':0.2} 
+scenarios['benchmark'] = {'M0_2_ERM0':0.985,'M0_2_M1':0.04,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.9,'scenario_weight':0.2} 
+scenarios['worse'] = {'M0_2_ERM0':0.987,'M0_2_M1':0.045,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.95,'scenario_weight':0.2} 
+scenarios['worst'] = {'M0_2_ERM0':0.99,'M0_2_M1':0.05,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.99,'scenario_weight':0.1} 
 #scenarios['IDEAL'] = {'M0_2_ERM0':1,'M0_2_M1':0,'M1_2_M0M2':0,'M2_2_M0M3':0,'M3_2_M0D':0,'D_2_RL':0,'scenario_weight':0.1} 
-
 #scenarios['stress_A'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.27755,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':1,'scenario_weight':0.1} 
 #scenarios['stress_B'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.23869,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.8,'scenario_weight':0.1} 
 
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065
-MinWAScore = 0.045
+MinWAScore = 0.04
 
-MinWARate = 0.19
-MaxWARate = 0.195
+MinWARate = 0.18
+MaxWARate = 0.18*1.005
 
 MaxWALoanTerm = 450
 
-MaxIssueVolumn = 2000000000
-MinIssueVolumn = 2000000000/1.01
+MaxIssueVolumn = 657413588.9*1.2*1.0001
+MinIssueVolumn = 657413588.9*1.2
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 

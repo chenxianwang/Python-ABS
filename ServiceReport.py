@@ -53,6 +53,7 @@ class ServiceReport():
                 
                 self.service_report_AllAssetList_pre = self.service_report_AllAssetList_pre.append(AssetPool_all_pre,ignore_index=True)
             self.service_report_AllAssetList_pre = self.service_report_AllAssetList_pre.rename(columns = Header_Rename) 
+            logger.info('SR.service_report_AllAssetList_pre[[Amount_Outstanding_yuan]].sum() is {0}'.format(self.service_report_AllAssetList_pre['Amount_Outstanding_yuan'].sum()))
             
         for Pool_index,Pool_name in enumerate(AllAssetList):
             logger.info('Getting AllAssetList part ' + str(Pool_index+1) + '...')
@@ -64,6 +65,8 @@ class ServiceReport():
             AssetPool_all['订单号'] = '#' + AssetPool_all['订单号'].astype(str)
             self.service_report_AllAssetList = self.service_report_AllAssetList.append(AssetPool_all,ignore_index=True)
         self.service_report_AllAssetList = self.service_report_AllAssetList.rename(columns = Header_Rename)
+        logger.info('SR.service_report_AllAssetList[[Amount_Outstanding_yuan]].sum() is {0}'.format(self.service_report_AllAssetList['Amount_Outstanding_yuan'].sum()))
+
             
         if DefaultAssetList != '':
             logger.info('Getting DefaultAssetList...')
@@ -218,9 +221,9 @@ class ServiceReport():
     def service_report_cal(self):
         logger.info('service_report_cal...')
         
-        self.service_report_AllAssetList = self.service_report_AllAssetList[(self.service_report_AllAssetList['贷款是否已结清'] == 'N') 
-                                                  #&(self.service_report_AllAssetList['入池时间'] == '2018/8/1')
-                                                  ]
+#        self.service_report_AllAssetList = self.service_report_AllAssetList[(self.service_report_AllAssetList['贷款是否已结清'] == 'N') 
+#                                                  #&(self.service_report_AllAssetList['入池时间'] == '2018/8/1')
+#                                                  ]
         
         cal_table_4_1(self.service_report_AllAssetList,wb_name_sr)
         #cal_table_4_2(self.service_report_DefaultAssetList,self.wb_save_results)
@@ -231,7 +234,7 @@ class ServiceReport():
 #        _calcDate = self.trust_effective_date + relativedelta(months=self.report_period-1)
 #        calcDate = date(_calcDate.year,_calcDate.month,1)
         
-        cal_table_6(self.service_report_AllAssetList,self.trust_effective_date,wb_name_sr)
+        #cal_table_6(self.service_report_AllAssetList,self.trust_effective_date,wb_name_sr)
         
         cal_table_7(self.service_report_AllAssetList,wb_name_sr)
         #cal_table_10(self.for_report,self.wb_save_results)    

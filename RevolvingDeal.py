@@ -149,8 +149,8 @@ class RevolvingDeal(Deal):
             self.AP_IAcc_loss_currentTerm[scenario_id] = deepcopy(self.AP_IAcc_loss_currentTerm_O[scenario_id])
             self.AP_IAcc_loss_allTerm[scenario_id] = deepcopy(self.AP_IAcc_loss_allTerm_O[scenario_id])
                         
-            self.AP_PAcc_outstanding,self.AP_IAcc_outstanding = deepcopy(self.AP_PAcc_O_outstanding),deepcopy(self.AP_IAcc_O_outstanding)
-            self.AP_PAcc_reserve = deepcopy(self.AP_PAcc_O_reserve)
+            self.AP_PAcc_outstanding,self.AP_IAcc_outstanding = deepcopy(self.AP_PAcc_outstanding_O),deepcopy(self.AP_IAcc_outstanding_O)
+            self.AP_PAcc_reserve = deepcopy(self.AP_PAcc_reserve_O)
             self.CDR_all_amount = deepcopy(self.CDR_O_amount)
             
     def forcast_Revolving_APCF(self):
