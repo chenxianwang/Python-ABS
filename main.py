@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 import numpy as np
 import datetime
-from constant import path_root,wb_name,Header_Rename,Header_Rename_REVERSE,asset_pool_name_list,cur_RevolvingPool,ProjectName,Flag_Revolving
+from constant import path_root,wb_name,Header_Rename,Header_Rename_REVERSE,asset_pool_name_list,ProjectName,Flag_Revolving
 from Params import dt_param,date_revolving_pools_cut,scenarios,\
                    Targets,RS_Group_d,Distribution_By_Category,Distribution_By_Bins,\
                    simulation_times,BackMonth,dates_recycle,asset_status_calcDate_BackMonth,calcDate,all_asset_status
@@ -35,20 +35,18 @@ def main():
     RD = RevolvingDeal(Flag_Revolving,ProjectName,dt_param['dt_pool_cut'],date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
 #    
     RD.get_AssetPool(asset_pool_name_list) #asset_pool_name_list
-    RD.get_AssetPool(['R3_Prepared'])
+    #RD.get_AssetPool(['ABS9_R4_selected'])
 
 #    RD.select_by_ContractNO('exclude',['ABS9_R4_selected'])   #ABS10_R1_selected
-    #RD.select_by_ContractNO('focus',['calc_CF'])  
+    #RD.select_by_ContractNO('focus',['all_except_abs9r4'])  
 
 #    RD.add_Columns([
 #                  [['ProfessionTypeValueTransform'],'Profession','Profession_HC'],
 #                  [['UsageTypeValueTransform'],'Usage','Usage_HC'],
 #                  ])
         
-    RD.asset_pool['first_due_date_after_pool_cut'] = RD.asset_pool['first_due_date_after_pool_cut'].where(RD.asset_pool['first_due_date_after_pool_cut'] != '3000/1/1',RD.date_pool_cut)
-    RD.asset_pool = RD.asset_pool[RD.asset_pool['Amount_Outstanding_yuan']>0]
     #RD.asset_pool['Credit_Score'] = RD.asset_pool['Credit_Score_15'].round(3)
-    #RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/all_except_abs9r4.csv',index=False)    
+    #RD.asset_pool.rename(columns = Header_Rename_REVERSE).to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/check_all_except_abs9r4.csv',index=False)    
 #    
 #    RS_results = RD.run_ReverseSelection(Targets,RS_Group_d)
 #    RS_results.to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/AssetsSelected_Final.csv',index=False)
@@ -56,42 +54,53 @@ def main():
     
     #RD.run_Stat(Distribution_By_Category,Distribution_By_Bins)
     #
+    RD.asset_pool['first_due_date_after_pool_cut'] = RD.asset_pool['first_due_date_after_pool_cut'].where(RD.asset_pool['first_due_date_after_pool_cut'] != '3000/1/1',RD.date_pool_cut)
+    RD.asset_pool = RD.asset_pool[RD.asset_pool['Amount_Outstanding_yuan']>0]
+    
     RD.init_oAP_Acc()
     
     for asset_status in all_asset_status:
-        #asset_status = all_asset_status[1]
-        logger.info('Collecting CF for asset_status {0}'.format(asset_status))   
-        #RD.asset_pool[(RD.asset_pool['贷款状态'] == asset_status)].to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/Overdue_1_30.csv',index=False)
-        RD.get_oAPCF(asset_status,
-                     asset_status_calcDate_BackMonth[asset_status]['BackMonth'],
-                     asset_status_calcDate_BackMonth[asset_status]['calcDate']
-                     )
-        
-        save_to_excel(RD.apcf_original[asset_status],'cf_o',wb_name)
-        #save_to_excel(RD.df_ppmt[asset_status],'df_ppmt',wb_name)
-        #save_to_excel(RD.apcf_original_structure[asset_status],'cf_o_structure',wb_name)
-        
-#        for _sim in range(1):
-#            logger.info('simulator index is {0}'.format(_sim))
-        for scenario_id in scenarios.keys():
+        if len(RD.asset_pool[(RD.asset_pool['贷款状态'] == asset_status)]) == 0:
+            logger.info('No Assets to calc for {0}'.format(asset_status))
+            continue
+        else:
+            #asset_status = all_asset_status[1]
+            logger.info('Collecting CF for asset_status {0}'.format(asset_status))   
+            #RD.asset_pool[(RD.asset_pool['贷款状态'] == asset_status)].to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/Overdue_1_30.csv',index=False)
+            RD.get_oAPCF(asset_status,
+                         asset_status_calcDate_BackMonth[asset_status]['BackMonth'],
+                         asset_status_calcDate_BackMonth[asset_status]['calcDate']
+                         )
             
-            logger.info('get_adjust_oAPCF_simulation for {0}...'.format(scenario_id))
-            RD.adjust_oAPCF(scenario_id,asset_status,asset_status_calcDate_BackMonth[asset_status]['calcDate'])
-            save_to_excel(RD.APCF_adjusted_save[asset_status][scenario_id],'cf_O_adjusted_'+scenario_id,wb_name)
+            save_to_excel(RD.apcf_original[asset_status],'cf_o',wb_name)
+            #save_to_excel(RD.df_ppmt[asset_status],'df_ppmt',wb_name)
+            #save_to_excel(RD.apcf_original_structure[asset_status],'cf_o_structure',wb_name)
             
-            logger.info('init_oAP_Acc... for {0}...'.format(scenario_id))            
-            RD.update_oAP_Acc(scenario_id,asset_status)
-            
-#            logger.info('CDR_calc_O...for {0}...'.format(scenario_id))
-#            RD.CDR_calc_O(scenario_id,asset_status)
-#            save_to_excel(pd.DataFrame.from_dict(RD.CDR_O),'RnR&CDR',wb_name)
+            for scenario_id in scenarios.keys():
+                logger.info('get_adjust_oAPCF_simulation for {0}...'.format(scenario_id))
+                
+                for _sim in range(simulation_times):#
+                    logger.info('simulator index is {0}'.format(_sim))
+                    RD.adjust_oAPCF(scenario_id,asset_status,asset_status_calcDate_BackMonth[asset_status]['calcDate'])
+                    save_to_excel(RD.APCF_adjusted_save[asset_status][scenario_id],'cf_O_adjusted_'+scenario_id,wb_name)
+                    
+                    RD.update_oAP_Acc(scenario_id,asset_status)
+                
+                
+    #            logger.info('CDR_calc_O...for {0}...'.format(scenario_id))
+    #            RD.CDR_calc_O(scenario_id,asset_status)
+    #            save_to_excel(pd.DataFrame.from_dict(RD.CDR_O),'RnR&CDR',wb_name)
     
     for scenario_id in scenarios.keys():
+        
+        RD.oAP_Acc_DeSimulation(scenario_id,simulation_times)
+        save_to_excel(RD.df_AP_PAcc_DeSimu,'De-Sim_'+scenario_id,wb_name)
+        
         logger.info('CDR_calc_O...for {0}...'.format(scenario_id))
         RD.CDR_calc_O(scenario_id)
     save_to_excel(pd.DataFrame.from_dict(RD.CDR_O),'RnR&CDR',wb_name)
-            
-#######
+#            
+########
     RD.get_rAPCF_structure()
     RD.forcast_Revolving_APCF()
 #   

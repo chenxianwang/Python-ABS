@@ -90,7 +90,7 @@ class APCF_adjuster():
             self.Transition_principal_M3_2_M0[date_r],self.Transition_interest_M3_2_M0[date_r] = pd.DataFrame(),pd.DataFrame()
         
     def adjust_APCF(self,OoR):
-        
+        logger.info('adjust_APCF...')
         df_ppmt,df_ipmt = deepcopy(self.df_ppmt),deepcopy(self.df_ipmt)
         dates_recycle_list = self.dates_recycle_list
         

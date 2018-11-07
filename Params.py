@@ -12,7 +12,7 @@ from constant import ProjectName
 
 Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute)+str(datetime.datetime.now().second)
 
-simulation_times = 100
+simulation_times = 2
 
 days_in_a_year = 365
 amount_ReserveAcount = 1000000
@@ -118,10 +118,11 @@ for name_Tranche in ['A','B','C']:
 
 scenarios = {}
 scenarios['best'] = {'M0_2_ERM0':0.98,'M0_2_M1':0.03,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.8,'scenario_weight':0.3} 
-scenarios['better'] = {'M0_2_ERM0':0.982,'M0_2_M1':0.035,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.85,'scenario_weight':0.2} 
-scenarios['benchmark'] = {'M0_2_ERM0':0.985,'M0_2_M1':0.04,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.9,'scenario_weight':0.2} 
-scenarios['worse'] = {'M0_2_ERM0':0.987,'M0_2_M1':0.045,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.95,'scenario_weight':0.2} 
-scenarios['worst'] = {'M0_2_ERM0':0.99,'M0_2_M1':0.05,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.99,'scenario_weight':0.1} 
+#scenarios['better'] = {'M0_2_ERM0':0.982,'M0_2_M1':0.035,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.85,'scenario_weight':0.2} 
+#scenarios['benchmark'] = {'M0_2_ERM0':0.985,'M0_2_M1':0.04,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.9,'scenario_weight':0.2} 
+#scenarios['worse'] = {'M0_2_ERM0':0.987,'M0_2_M1':0.045,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.95,'scenario_weight':0.2} 
+#scenarios['worst'] = {'M0_2_ERM0':0.99,'M0_2_M1':0.05,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.99,'scenario_weight':0.1} 
+
 #scenarios['IDEAL'] = {'M0_2_ERM0':1,'M0_2_M1':0,'M1_2_M0M2':0,'M2_2_M0M3':0,'M3_2_M0D':0,'D_2_RL':0,'scenario_weight':0.1} 
 #scenarios['stress_A'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.27755,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':1,'scenario_weight':0.1} 
 #scenarios['stress_B'] = {'M0_2_ERM0':0.9805,'M0_2_M1':0.23869,'M1_2_M0M2':0.5,'M2_2_M0M3':0.7,'M3_2_M0D':0.7,'D_2_RL':0.8,'scenario_weight':0.1} 
