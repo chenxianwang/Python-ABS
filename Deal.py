@@ -43,6 +43,9 @@ class Deal():
         self.apcf_original,self.apcf_original_structure = {},{}
         self.df_ppmt,self.df_ipmt = {},{}
         
+        self.df_AP_PAcc_DeSimu = pd.DataFrame() 
+        self.df_AP_PAcc_actual_O = pd.DataFrame() 
+        
         self.apcf_original_adjusted,self.APCF_adjusted_save = {},{}
         for asset_status in all_asset_status:
             self.apcf_original_adjusted[asset_status],self.APCF_adjusted_save[asset_status] = {},{}
@@ -189,6 +192,7 @@ class Deal():
         self.apcf_original_adjusted[asset_status][scenario_id],self.APCF_adjusted_save[asset_status][scenario_id] = APCFa.adjust_APCF('O')
 
     def init_oAP_Acc(self):
+        logger.info('init_oAP_Acc....')
         
         self.AP_PAcc_original_O,self.AP_PAcc_actual_O = {},{}
         self.AP_PAcc_pay_O,self.AP_PAcc_buy_O= {},{}
@@ -258,7 +262,7 @@ class Deal():
                 self.AP_IAcc_outstanding_O[scenario_id][k] = 0
     
     def update_oAP_Acc(self,scenario_id,asset_status):
-         #logger.info('scenario_id is {0}'.format(scenario_id))
+         logger.info('update_oAP_Acc for scenario_id {0}'.format(scenario_id))
          AP_Acc = AssetPoolAccount(self.apcf_original[asset_status],self.apcf_original_adjusted[asset_status][scenario_id])
          
          principal_available = AP_Acc.available_principal()
@@ -294,6 +298,42 @@ class Deal():
              self.AP_IAcc_loss_allTerm_O[scenario_id][k] += interest_available[11][k]
              self.AP_IAcc_outstanding_O[scenario_id][k] += interest_available[12][k]
              
+    def oAP_Acc_DeSimulation(self,scenario_id,simulation_times):
+        
+        for k in dates_recycle:
+             self.AP_PAcc_original_O[scenario_id][k] = self.AP_PAcc_original_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_actual_O[scenario_id][k] = self.AP_PAcc_actual_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_pay_O[scenario_id][k] = self.AP_PAcc_pay_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_buy_O[scenario_id][k] = self.AP_PAcc_buy_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_overdue_1_30_currentTerm_O[scenario_id][k] = self.AP_PAcc_overdue_1_30_currentTerm_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_overdue_1_30_allTerm_O[scenario_id][k] = self.AP_PAcc_overdue_1_30_allTerm_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_overdue_31_60_currentTerm_O[scenario_id][k] = self.AP_PAcc_overdue_31_60_currentTerm_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_overdue_31_60_allTerm_O[scenario_id][k] = self.AP_PAcc_overdue_31_60_allTerm_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_overdue_61_90_currentTerm_O[scenario_id][k] = self.AP_PAcc_overdue_61_90_currentTerm_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_overdue_61_90_allTerm_O[scenario_id][k] = self.AP_PAcc_overdue_61_90_allTerm_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_loss_currentTerm_O[scenario_id][k] = self.AP_PAcc_loss_currentTerm_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_loss_allTerm_O[scenario_id][k] = self.AP_PAcc_loss_allTerm_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_outstanding_O[scenario_id][k] = self.AP_PAcc_outstanding_O[scenario_id][k] / simulation_times
+             self.AP_PAcc_reserve_O[scenario_id][k] = self.AP_PAcc_reserve_O[scenario_id][k] / simulation_times
+         
+             self.AP_IAcc_original_O[scenario_id][k] = self.AP_IAcc_original_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_actual_O[scenario_id][k] = self.AP_IAcc_actual_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_pay_O[scenario_id][k] = self.AP_IAcc_pay_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_buy_O[scenario_id][k] = self.AP_IAcc_buy_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_overdue_1_30_currentTerm_O[scenario_id][k] = self.AP_IAcc_overdue_1_30_currentTerm_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_overdue_1_30_allTerm_O[scenario_id][k] = self.AP_IAcc_overdue_1_30_allTerm_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_overdue_31_60_currentTerm_O[scenario_id][k] = self.AP_IAcc_overdue_31_60_currentTerm_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_overdue_31_60_allTerm_O[scenario_id][k] = self.AP_IAcc_overdue_31_60_allTerm_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_overdue_61_90_currentTerm_O[scenario_id][k] = self.AP_IAcc_overdue_61_90_currentTerm_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_overdue_61_90_allTerm_O[scenario_id][k] = self.AP_IAcc_overdue_61_90_allTerm_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_loss_currentTerm_O[scenario_id][k] = self.AP_IAcc_loss_currentTerm_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_loss_allTerm_O[scenario_id][k] = self.AP_IAcc_loss_allTerm_O[scenario_id][k] / simulation_times
+             self.AP_IAcc_outstanding_O[scenario_id][k] = self.AP_IAcc_outstanding_O[scenario_id][k] / simulation_times
+        
+        self.df_AP_PAcc_actual_O = pd.DataFrame(list(self.AP_PAcc_actual_O[scenario_id].items()), columns=['date_recycle', 'principal_recycle_total'])
+        
+        self.df_AP_PAcc_DeSimu = self.df_AP_PAcc_actual_O
+        
     def CDR_calc_O(self,scenario_id):
 
          self.CDR_O[scenario_id+'_O'] =  [self.AP_PAcc_loss_allTerm_O[scenario_id][dates_recycle[-1]],

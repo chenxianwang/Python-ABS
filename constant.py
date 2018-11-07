@@ -10,12 +10,9 @@ import datetime
 
 path_root = os.path.dirname(os.path.realpath(__file__))
 #
-ProjectName = 'ABS9_following'
-asset_pool_name_list = ['ServiceDate_1','ServiceDate_2','ServiceDate_3']
-cur_RevolvingPool = ['R3_Prepared']
-
-#ProjectName = 'ABS11'
-#asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']
+ProjectName = 'ABS11'#_following'
+#asset_pool_name_list = ['ServiceDate_1','ServiceDate_2','ServiceDate_3']
+asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']
 
 Flag_Revolving = True
 
