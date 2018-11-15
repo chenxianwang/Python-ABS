@@ -12,7 +12,7 @@ from constant import ProjectName
 
 Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute)+str(datetime.datetime.now().second)
 
-simulation_times = 2
+simulation_times = 10
 
 days_in_a_year = 365
 amount_ReserveAcount = 1000000
@@ -55,7 +55,7 @@ elif ProjectName == 'ABS11':
     Bonds['C'] = {'ptg':0.2103,'amount':526010000.7,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
     rate_discount = 0.185
-    dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_effective':datetime.date(2018,11,30)}
+    dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_effective':datetime.date(2018,12,7)}
     
 elif ProjectName == 'ABS8':
     amount_total_issuance = 3599052985.68
