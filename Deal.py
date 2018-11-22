@@ -27,28 +27,33 @@ logger = get_logger(__name__)
 
 class Deal():
     
-    def __init__(self,name,PoolCutDate,date_trust_effective,scenarios):
+    def __init__(self,name,date_pool_cut,date_trust_effective,scenarios):
         
         self.RevolvingDeal = False
         self.RevolvingPool_PurchaseAmount = None
         
         self.name = name
-        self.date_pool_cut = PoolCutDate
+        self.date_pool_cut = date_pool_cut
         self.date_trust_effective = date_trust_effective
         self.scenarios = scenarios
        
         self.dates_recycle_list = {}
         
         self.asset_pool = pd.DataFrame()  
+        
+        #for each asset status
         self.apcf_original,self.apcf_original_structure = {},{}
         self.df_ppmt,self.df_ipmt = {},{}
         
-        self.df_AP_PAcc_DeSimu = pd.DataFrame() 
-        self.df_AP_PAcc_actual_O = pd.DataFrame() 
+        self.df_AP_PAcc_actual_O_DeSimu = pd.DataFrame() 
         
+        #for each asset status and each scenario
         self.apcf_original_adjusted,self.APCF_adjusted_save = {},{}
         for asset_status in all_asset_status:
             self.apcf_original_adjusted[asset_status],self.APCF_adjusted_save[asset_status] = {},{}
+        
+        self.CDR_O = {}
+        self.amount_default_O = {}
         
         self.waterfall = {}
         self.wf_BasicInfo = {}
@@ -56,32 +61,24 @@ class Deal():
         self.wf_NPVs = {}
         
         self.RnR = 0.0
-        self.CDR_O = {}
-        self.CDR_O_amount = {}
         self.reserveAccount_used = {}
      
     def get_AssetPool(self,AssetPoolName):
-        #self.asset_pool = self.AP.get_AP()
         for Pool_index,Pool_name in enumerate(AssetPoolName):
             logger.info('Getting part ' + Pool_name + '...')
             AssetPoolPath_this = path_project + '/AssetPoolList/' + Pool_name + '.csv'
-            try:
-                AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
-            except:
-                AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
+            try:AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
+            except:AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
             
-            if '贷款状态' not in list(AssetPool_this.columns.values):
-                AssetPool_this['贷款状态'] = '正常贷款'
-            if 'SERVICE_FEE_RATE' not in list(AssetPool_this.columns.values):
-                AssetPool_this['SERVICE_FEE_RATE'] = 0
+            if '贷款状态' not in list(AssetPool_this.columns.values): AssetPool_this['贷款状态'] = '正常贷款'
+            if 'SERVICE_FEE_RATE' not in list(AssetPool_this.columns.values):AssetPool_this['SERVICE_FEE_RATE'] = 0
             
             logger.info('Renaming header....')   
             AssetPool_this = AssetPool_this.rename(columns = Header_Rename)
             AssetPool_this = AssetPool_this[list(Header_Rename_REVERSE.keys())] 
             
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
-        if 'ABSSYSTEM' in AssetPoolName[0]:
-            self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)                
+        if 'ABSSYSTEM' in AssetPoolName[0]:self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)                
         logger.info('Asset Pool Gotten.')
         
         
@@ -96,14 +93,11 @@ class Deal():
             for Pool_index,Pool_name in enumerate(list_NewColumns_Files):
                 logger.info('Getting Adding part ' + str(Pool_index+1) + '...')
                 AssetPoolPath_this = path_project + '/AssetPoolList/' + Pool_name + '.csv'
-                try:
-                    AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
-                except:
-                    AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
+                try:AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
+                except: AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
                 AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
             #AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str)
             #AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_new'})
-            #[['#合同号','出生日期']]
             logger.info('Left Merging Columns...')
             self.asset_pool = self.asset_pool.merge(AssetPool,left_on= left,right_on = right,how='left')
         #self.asset_pool = self.asset_pool[(~self.asset_pool['职业_信托'].isnull()) & (~self.asset_pool['购买商品_信托'].isnull())]
@@ -117,20 +111,14 @@ class Deal():
         logger.info('Reading Assets_to_' + exclude_or_focus + '....')
         for these_asset in these_assets:
             path_assets = path_project + '/AssetPoolList/' + these_asset + '.csv'
-            try:
-                assets_to_exclude_or_focus_this = pd.read_csv(path_assets,encoding = 'utf-8') 
-            except:
-                assets_to_exclude_or_focus_this = pd.read_csv(path_assets,encoding = 'gbk') 
+            try:  assets_to_exclude_or_focus_this = pd.read_csv(path_assets,encoding = 'utf-8') 
+            except: assets_to_exclude_or_focus_this = pd.read_csv(path_assets,encoding = 'gbk') 
             assets_to_exclude_or_focus = assets_to_exclude_or_focus.append(assets_to_exclude_or_focus_this,ignore_index=True)
         
         logger.info(exclude_or_focus + 'ing ...') 
         if exclude_or_focus == 'exclude':
-            try:
-                self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
-            except(KeyError):
-                self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['No_Contract'])]
-        #assets = self.asset_pool[self.asset_pool['ReverseSelection_Flag'].isin(assets_to_exclude_or_focus['ReverseSelection_Flag'])]
-        #assets_to_exclude_or_focus['#合同号'] = '#' + assets_to_exclude_or_focus['合同号'].astype(str)       
+            try:self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
+            except(KeyError):self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['No_Contract'])]
         else:
             try:self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
             except(KeyError):self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['No_Contract'])]
@@ -143,8 +131,7 @@ class Deal():
         for d in group_d:
             self.asset_pool['ReverseSelection_Flag'] += self.asset_pool[d].astype(str)
             
-        RS = ReverseSelection(self.asset_pool[['No_Contract','Amount_Outstanding_yuan'#,'Province','Usage'
-                                               ] + group_d],
+        RS = ReverseSelection(self.asset_pool[['No_Contract','Amount_Outstanding_yuan'] + group_d],
                               iTarget,group_d
                               )
         RS.cal_OriginalStat()
@@ -282,6 +269,7 @@ class Deal():
              self.AP_PAcc_loss_currentTerm_O[scenario_id][k] += principal_available[10][k]
              self.AP_PAcc_loss_allTerm_O[scenario_id][k] += principal_available[11][k]  
              self.AP_PAcc_outstanding_O[scenario_id][k] += principal_available[12][k]
+             
              self.AP_PAcc_reserve_O[scenario_id][k] += principal_available[13][k]
          
              self.AP_IAcc_original_O[scenario_id][k] += interest_available[0][k]
@@ -330,9 +318,7 @@ class Deal():
              self.AP_IAcc_loss_allTerm_O[scenario_id][k] = self.AP_IAcc_loss_allTerm_O[scenario_id][k] / simulation_times
              self.AP_IAcc_outstanding_O[scenario_id][k] = self.AP_IAcc_outstanding_O[scenario_id][k] / simulation_times
         
-        self.df_AP_PAcc_actual_O = pd.DataFrame(list(self.AP_PAcc_actual_O[scenario_id].items()), columns=['date_recycle', 'principal_recycle_total'])
-        
-        self.df_AP_PAcc_DeSimu = self.df_AP_PAcc_actual_O
+        self.df_AP_PAcc_actual_O_DeSimu = pd.DataFrame(list(self.AP_PAcc_actual_O[scenario_id].items()), columns=['date_recycle', 'principal_recycle_total'])
         
     def CDR_calc_O(self,scenario_id):
 
@@ -341,13 +327,12 @@ class Deal():
                                             self.AP_PAcc_loss_allTerm_O[scenario_id][dates_recycle[-1]]/sum([self.AP_PAcc_original_O[scenario_id][k] for k in dates_recycle])
                                             ]  
          logger.info('CDR for {0} is: {1:.4%} '.format(scenario_id,self.CDR_O[scenario_id+'_O'][2]))
-         self.CDR_O_amount[scenario_id] = deepcopy(self.AP_PAcc_loss_allTerm_O[scenario_id][dates_recycle[-1]])
+         self.amount_default_O[scenario_id] = deepcopy(self.AP_PAcc_loss_allTerm_O[scenario_id][dates_recycle[-1]])
              
     def run_WaterFall(self):
          
          for scenario_id in self.scenarios.keys():
              logger.info('scenario_id is {0}'.format(scenario_id))
-             #TODO: Add one more parameter - Custodian Fee Calc basis
              self.waterfall[scenario_id],self.reserveAccount_used[scenario_id] = run_Accounts(self.AP_PAcc_original[scenario_id],self.AP_PAcc_outstanding[scenario_id],
                                                        self.AP_PAcc_reserve[scenario_id],#self.AP_PAcc_loss_allTerm[scenario_id],
                                                        self.AP_PAcc_actual[scenario_id],self.AP_PAcc_actual_O[scenario_id],self.AP_PAcc_actual_R[scenario_id],

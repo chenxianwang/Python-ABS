@@ -10,11 +10,9 @@ import datetime
 
 path_root = os.path.dirname(os.path.realpath(__file__))
 #
-ProjectName = 'ABS11'#_following'
+ProjectName = 'ABS9'#ABS9_following'
 #asset_pool_name_list = ['ServiceDate_1','ServiceDate_2','ServiceDate_3']
 asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']
-
-Flag_Revolving = True
 
 path_project = path_root  + '/../CheckTheseProjects/' + ProjectName
 

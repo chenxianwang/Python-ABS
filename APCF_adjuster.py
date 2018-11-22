@@ -8,7 +8,7 @@ import sys
 import os
 from constant import wb_name
 from copy import deepcopy
-from Params import scenarios,Redeem_or_Not,dt_param,amount_ReserveAcount,Batch_ID
+from Params import scenarios,Redeem_or_Not,dt_param,amount_ReserveAcount,Batch_ID,POOL_CUT_PERIOD
 import pandas as pd
 import numpy as np
 from abs_util.util_general import get_next_eom,save_to_excel,get_logger
@@ -155,55 +155,50 @@ class APCF_adjuster():
             self.principal_overdue_1_30_allTerm[date_r] = sum(ppmt_M1[dates_recycle_list[date_r_index:]].sum())
             self.interest_overdue_1_30_allTerm[date_r] = sum(ipmt_M1[dates_recycle_list[date_r_index:]].sum())
             
+            ppmt_M1_2_M0,ipmt_M1_2_M0,ppmt_M1_2_M2,ipmt_M1_2_M2 = self.transit_Status(ppmt_M1,ipmt_M1,OoR,date_r_index,'M1_2_M0M2','Overdue')#self.M1_2_M0M2(ppmt_M1,ipmt_M1)
             #Transition M1_2_M0M2
-            if date_r_index < len(dates_recycle_list)-1:
-                #logger.info('Transition M1_2_M0M2...')
-                ppmt_M1_2_M0,ipmt_M1_2_M0,ppmt_M1_2_M2,ipmt_M1_2_M2 = self.transit_Status(ppmt_M1,ipmt_M1,OoR,date_r_index,'M1_2_M0M2','Overdue')#self.M1_2_M0M2(ppmt_M1,ipmt_M1)
-                #TODO: Adjust by redemption criteria and POOL_CUT_PERIOD for redemption
-                #self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
-                if  Redeem_or_Not == True :
-                    if date_r_index == 2 and OoR == 'O' :#and POOL_CUT_PERIOD-date_r_index>=0 : CAPTURE M2 on first calculation date
-                        # Capture assets whcih will become M2 before dt_effective
-                        #save_to_excel(ppmt_M1_2_M2,'pre_Redeem_part_3',wb_name)
-                        self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]] += sum(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day][dates_recycle_list[date_r_index:]].sum())
-                        self.interest_Redemption_recycle[dates_recycle_list[date_r_index+1]] += sum(ipmt_M1_2_M2[ipmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day][dates_recycle_list[date_r_index:]].sum())          
-                        #logger.info('self.principal_Redemption_recycle part 3 is {0} :'.format(sum(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']<dt_param['dt_effective'].day][dates_recycle_list[date_r_index:]].sum())))
-                        logger.info('self.principal_Redemption_recycle total is {0:,.2f} :'.format(self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]]))
-                        # Ignore assets which will become M2 after dt_effective
-                        ppmt_M1_2_M2,ipmt_M1_2_M2 = deepcopy(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']>=dt_param['dt_effective'].day]),deepcopy(ipmt_M1_2_M2[ipmt_M1_2_M2['PayDay']>=dt_param['dt_effective'].day])
-                        #Restore the un-captured ppmt_M1_2_M2
-                        self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
-                        #save_to_excel(ppmt_M1_2_M2,'post_Redeem_part_3',wb_name)
-                    else: self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
-                else:self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
+            if  Redeem_or_Not == True :
+                if date_r_index == POOL_CUT_PERIOD-1 and OoR == 'O' :#and POOL_CUT_PERIOD-date_r_index>=0 : CAPTURE M2 on first calculation date
+                    # Capture assets whcih will become M2 before dt_trust_effective
+                    self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]] += sum(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']<dt_param['dt_trust_effective'].day][dates_recycle_list[date_r_index:]].sum())
+                    self.interest_Redemption_recycle[dates_recycle_list[date_r_index+1]] += sum(ipmt_M1_2_M2[ipmt_M1_2_M2['PayDay']<dt_param['dt_trust_effective'].day][dates_recycle_list[date_r_index:]].sum())          
+                    #logger.info('self.principal_Redemption_recycle part 3 is {0} :'.format(sum(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']<dt_param['dt_trust_effective'].day][dates_recycle_list[date_r_index:]].sum())))
+                    logger.info('self.principal_Redemption_recycle total is {0:,.2f} :'.format(self.principal_Redemption_recycle[dates_recycle_list[date_r_index+1]]))
+                    # Ignore assets which will become M2 after dt_trust_effective
+                    ppmt_M1_2_M2,ipmt_M1_2_M2 = deepcopy(ppmt_M1_2_M2[ppmt_M1_2_M2['PayDay']>=dt_param['dt_trust_effective'].day]),deepcopy(ipmt_M1_2_M2[ipmt_M1_2_M2['PayDay']>=dt_param['dt_trust_effective'].day])
+                    #Restore the un-captured ppmt_M1_2_M2
+                    self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
+                    #save_to_excel(ppmt_M1_2_M2,'post_Redeem_part_3',wb_name)
+                else: self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
+            else:self.cal_overdue_31_60(date_r_index,ppmt_M1_2_M2,ipmt_M1_2_M2)
                     
+            #logger.info('Transition M2_2_M0M3...')
+            ppmt_M2_2_M0,ipmt_M2_2_M0,ppmt_M2_2_M3,ipmt_M2_2_M3 = self.transit_Status(ppmt_M1_2_M2,ipmt_M1_2_M2,OoR,date_r_index,'M2_2_M0M3','Overdue')
             #Transition M2_2_M0M3
-            if date_r_index < len(dates_recycle_list)-2:
-                #logger.info('Transition M2_2_M0M3...')
-                ppmt_M2_2_M0,ipmt_M2_2_M0,ppmt_M2_2_M3,ipmt_M2_2_M3 = self.transit_Status(ppmt_M1_2_M2,ipmt_M1_2_M2,OoR,date_r_index,'M2_2_M0M3','Overdue')
-                if  Redeem_or_Not == True :
-                    if date_r_index == 1 and OoR == 'O':# and POOL_CUT_PERIOD-date_r_index>=0 :CAPTURE M3 on first calculation date
-                        self.principal_Redemption_recycle[dates_recycle_list[date_r_index+2]] += sum(ppmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())
-                        self.interest_Redemption_recycle[dates_recycle_list[date_r_index+2]] += sum(ipmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())          
-                        #save_to_excel(ppmt_M2_2_M3,'Redeem_part_2',wb_name)
-                        #logger.info('self.principal_Redemption_recycle part 2 is {0} :'.format(sum(ppmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())))
-                        ppmt_M2_2_M3,ipmt_M2_2_M3 = ppmt_M2_2_M3[0:0],ipmt_M2_2_M3[0:0]
-                    else: self.cal_overdue_61_90(date_r_index,ppmt_M2_2_M3,ipmt_M2_2_M3)
-                else:self.cal_overdue_61_90(date_r_index,ppmt_M2_2_M3,ipmt_M2_2_M3)
+            if  Redeem_or_Not == True :
+                if date_r_index == POOL_CUT_PERIOD-2 and OoR == 'O':# and POOL_CUT_PERIOD-date_r_index>=0 :CAPTURE M3 on first calculation date
+                    self.principal_Redemption_recycle[dates_recycle_list[date_r_index+2]] += sum(ppmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())
+                    self.interest_Redemption_recycle[dates_recycle_list[date_r_index+2]] += sum(ipmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())          
+                    #save_to_excel(ppmt_M2_2_M3,'Redeem_part_2',wb_name)
+                    #logger.info('self.principal_Redemption_recycle part 2 is {0} :'.format(sum(ppmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())))
+                    ppmt_M2_2_M3,ipmt_M2_2_M3 = ppmt_M2_2_M3[0:0],ipmt_M2_2_M3[0:0]
+                else: self.cal_overdue_61_90(date_r_index,ppmt_M2_2_M3,ipmt_M2_2_M3)
+            else:self.cal_overdue_61_90(date_r_index,ppmt_M2_2_M3,ipmt_M2_2_M3)
             
+            #logger.info('Transition M3_2_M0L...')
+            ppmt_M3_2_M0,ipmt_M3_2_M0,ppmt_M3_2_D,ipmt_M3_2_D = self.transit_Status(ppmt_M2_2_M3,ipmt_M2_2_M3,OoR,date_r_index,'M3_2_M0D','Overdue')     
             #Transition M3_2_M0L
-            if date_r_index < len(dates_recycle_list)-3:
-                #logger.info('Transition M3_2_M0L...')
-                ppmt_M3_2_M0,ipmt_M3_2_M0,ppmt_M3_2_D,ipmt_M3_2_D = self.transit_Status(ppmt_M2_2_M3,ipmt_M2_2_M3,OoR,date_r_index,'M3_2_M0D','Overdue')     
-                if  Redeem_or_Not == True :
-                    if date_r_index == 0 and OoR == 'O':# and POOL_CUT_PERIOD-date_r_index>=0  :CAPTURE ML on first calculation date
-                        self.principal_Redemption_recycle[dates_recycle_list[date_r_index+3]] = sum(ppmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())
-                        self.interest_Redemption_recycle[dates_recycle_list[date_r_index+3]] = sum(ipmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())  
-                        #save_to_excel(ppmt_M3_2_D,'Redeem_part_1',wb_name)
-                        #logger.info('self.principal_Redemption_recycle part 1 is {0} :'.format(sum(ppmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())))
-                        ppmt_M3_2_D,ipmt_M3_2_D = ppmt_M3_2_D[0:0],ipmt_M3_2_D[0:0]
-                    else: self.cal_loss(OoR,date_r_index,ppmt_M3_2_D,ipmt_M3_2_D)
+            if  Redeem_or_Not == True :
+                if date_r_index == POOL_CUT_PERIOD-3 and OoR == 'O':# and POOL_CUT_PERIOD-date_r_index>=0  :CAPTURE ML on first calculation date
+                    self.principal_Redemption_recycle[dates_recycle_list[date_r_index+3]] = sum(ppmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())
+                    self.interest_Redemption_recycle[dates_recycle_list[date_r_index+3]] = sum(ipmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())  
+                    ppmt_M3_2_D,ipmt_M3_2_D = ppmt_M3_2_D[0:0],ipmt_M3_2_D[0:0]
+                elif date_r_index == POOL_CUT_PERIOD-4 and OoR == 'O':
+                    self.principal_Redemption_recycle[dates_recycle_list[date_r_index+4]] = sum(ppmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())
+                    self.interest_Redemption_recycle[dates_recycle_list[date_r_index+4]] = sum(ipmt_M3_2_D[dates_recycle_list[date_r_index:]].sum())  
+                    ppmt_M3_2_D,ipmt_M3_2_D = ppmt_M3_2_D[0:0],ipmt_M3_2_D[0:0]
                 else: self.cal_loss(OoR,date_r_index,ppmt_M3_2_D,ipmt_M3_2_D)
+            else: self.cal_loss(OoR,date_r_index,ppmt_M3_2_D,ipmt_M3_2_D)
                 
             self.Transition_principal_M1_2_M0[date_r],self.Transition_interest_M1_2_M0[date_r] = deepcopy(ppmt_M1_2_M0),deepcopy(ipmt_M1_2_M0)
             self.Transition_principal_M2_2_M0[date_r],self.Transition_interest_M2_2_M0[date_r] = deepcopy(ppmt_M2_2_M0),deepcopy(ipmt_M2_2_M0)
@@ -239,7 +234,7 @@ class APCF_adjuster():
         return self.gen_APCF_adjusted(OoR)
    
     def transit_Status(self,ppmt_this,ipmt_this,OoR,date_r_index,transition,FLAG):
-        
+        #logger.info('Transition'+transition +'...')
         transit_down = deepcopy(self.scenario_params[transition])
         #logger.info('date_r_index is {0},transit_down is {1}'.format(date_r_index,transit_down))
         
@@ -353,53 +348,58 @@ class APCF_adjuster():
         
     def cal_overdue_31_60(self,date_r_index,ppmt_MM,ipmt_MM):
         #logger.info('len(ppmt_M1_2_M0) is {0},len(ipmt_M1_2_M0) is {1}'.format(len(ppmt_M1_2_M0),len(ipmt_M1_2_M0)))
-        dates_recycle_list = self.dates_recycle_list
-        ppmt_M1_2_M2,ipmt_M1_2_M2 = ppmt_MM,ipmt_MM
-        
-        for k in self.dates_recycle_list:
-            self.principal_overdue_31_60_currentTerm_helper[k] = 0
-            self.interest_overdue_31_60_currentTerm_helper[k] = 0
-        for overdue_date in dates_recycle_list[date_r_index:]:
-            self.principal_overdue_31_60_currentTerm_helper[overdue_date] = ppmt_M1_2_M2[overdue_date].sum()
-            self.interest_overdue_31_60_currentTerm_helper[overdue_date] = ipmt_M1_2_M2[overdue_date].sum()
-        self.principal_overdue_31_60_currentTerm[dates_recycle_list[date_r_index+1]] = self.principal_overdue_31_60_currentTerm_helper[dates_recycle_list[date_r_index]]+self.principal_overdue_31_60_currentTerm_helper[dates_recycle_list[date_r_index+1]]
-        self.interest_overdue_31_60_currentTerm[dates_recycle_list[date_r_index+1]] = self.interest_overdue_31_60_currentTerm_helper[dates_recycle_list[date_r_index]]+self.interest_overdue_31_60_currentTerm_helper[dates_recycle_list[date_r_index+1]]
-        self.principal_overdue_31_60_allTerm[dates_recycle_list[date_r_index+1]] = sum(ppmt_M1_2_M2[dates_recycle_list[date_r_index:]].sum())
-        self.interest_overdue_31_60_allTerm[dates_recycle_list[date_r_index+1]] = sum(ipmt_M1_2_M2[dates_recycle_list[date_r_index:]].sum())
+        if date_r_index >= len(self.dates_recycle_list)-1:pass
+        else:
+            dates_recycle_list = self.dates_recycle_list
+            ppmt_M1_2_M2,ipmt_M1_2_M2 = ppmt_MM,ipmt_MM
+            
+            for k in self.dates_recycle_list:
+                self.principal_overdue_31_60_currentTerm_helper[k] = 0
+                self.interest_overdue_31_60_currentTerm_helper[k] = 0
+            for overdue_date in dates_recycle_list[date_r_index:]:
+                self.principal_overdue_31_60_currentTerm_helper[overdue_date] = ppmt_M1_2_M2[overdue_date].sum()
+                self.interest_overdue_31_60_currentTerm_helper[overdue_date] = ipmt_M1_2_M2[overdue_date].sum()
+            self.principal_overdue_31_60_currentTerm[dates_recycle_list[date_r_index+1]] = self.principal_overdue_31_60_currentTerm_helper[dates_recycle_list[date_r_index]]+self.principal_overdue_31_60_currentTerm_helper[dates_recycle_list[date_r_index+1]]
+            self.interest_overdue_31_60_currentTerm[dates_recycle_list[date_r_index+1]] = self.interest_overdue_31_60_currentTerm_helper[dates_recycle_list[date_r_index]]+self.interest_overdue_31_60_currentTerm_helper[dates_recycle_list[date_r_index+1]]
+            self.principal_overdue_31_60_allTerm[dates_recycle_list[date_r_index+1]] = sum(ppmt_M1_2_M2[dates_recycle_list[date_r_index:]].sum())
+            self.interest_overdue_31_60_allTerm[dates_recycle_list[date_r_index+1]] = sum(ipmt_M1_2_M2[dates_recycle_list[date_r_index:]].sum())
 
     def cal_overdue_61_90(self,date_r_index,ppmt_MM,ipmt_MM):
         #logger.info('len(ppmt_M2_2_M0) is {0},len(ipmt_M2_2_M0) is {1}'.format(len(ppmt_M2_2_M0),len(ipmt_M2_2_M0)))
-        dates_recycle_list = self.dates_recycle_list
-        ppmt_M2_2_M3,ipmt_M2_2_M3 = ppmt_MM,ipmt_MM
-        
-        for k in self.dates_recycle_list:
-            self.principal_overdue_61_90_currentTerm_helper[k] = 0
-            self.interest_overdue_61_90_currentTerm_helper[k] = 0
-        for overdue_date in dates_recycle_list[date_r_index:]:
-            self.principal_overdue_61_90_currentTerm_helper[overdue_date] = ppmt_M2_2_M3[overdue_date].sum()
-            self.interest_overdue_61_90_currentTerm_helper[overdue_date] = ipmt_M2_2_M3[overdue_date].sum()
-        self.principal_overdue_61_90_currentTerm[dates_recycle_list[date_r_index+2]] = sum(self.principal_overdue_61_90_currentTerm_helper[overdue_date] for overdue_date in dates_recycle_list[date_r_index:date_r_index+2])+self.principal_overdue_61_90_currentTerm_helper[dates_recycle_list[date_r_index+2]]
-        self.interest_overdue_61_90_currentTerm[dates_recycle_list[date_r_index+2]] = sum(self.interest_overdue_61_90_currentTerm_helper[overdue_date] for overdue_date in dates_recycle_list[date_r_index:date_r_index+2])+self.interest_overdue_61_90_currentTerm_helper[dates_recycle_list[date_r_index+2]]
-        self.principal_overdue_61_90_allTerm[dates_recycle_list[date_r_index+2]] = sum(ppmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())
-        self.interest_overdue_61_90_allTerm[dates_recycle_list[date_r_index+2]] = sum(ipmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())
+        if date_r_index >= len(self.dates_recycle_list)-2:pass
+        else:
+            dates_recycle_list = self.dates_recycle_list
+            ppmt_M2_2_M3,ipmt_M2_2_M3 = ppmt_MM,ipmt_MM
+            
+            for k in self.dates_recycle_list:
+                self.principal_overdue_61_90_currentTerm_helper[k] = 0
+                self.interest_overdue_61_90_currentTerm_helper[k] = 0
+            for overdue_date in dates_recycle_list[date_r_index:]:
+                self.principal_overdue_61_90_currentTerm_helper[overdue_date] = ppmt_M2_2_M3[overdue_date].sum()
+                self.interest_overdue_61_90_currentTerm_helper[overdue_date] = ipmt_M2_2_M3[overdue_date].sum()
+            self.principal_overdue_61_90_currentTerm[dates_recycle_list[date_r_index+2]] = sum(self.principal_overdue_61_90_currentTerm_helper[overdue_date] for overdue_date in dates_recycle_list[date_r_index:date_r_index+2])+self.principal_overdue_61_90_currentTerm_helper[dates_recycle_list[date_r_index+2]]
+            self.interest_overdue_61_90_currentTerm[dates_recycle_list[date_r_index+2]] = sum(self.interest_overdue_61_90_currentTerm_helper[overdue_date] for overdue_date in dates_recycle_list[date_r_index:date_r_index+2])+self.interest_overdue_61_90_currentTerm_helper[dates_recycle_list[date_r_index+2]]
+            self.principal_overdue_61_90_allTerm[dates_recycle_list[date_r_index+2]] = sum(ppmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())
+            self.interest_overdue_61_90_allTerm[dates_recycle_list[date_r_index+2]] = sum(ipmt_M2_2_M3[dates_recycle_list[date_r_index:]].sum())
   
     def cal_loss(self,OoR,date_r_index,ppmt_MM,ipmt_MM):
         #logger.info('len(ppmt_M3_2_D) is {0},len(ipmt_M3_2_D) is {1}'.format(len(ppmt_M3_2_D),len(ipmt_M3_2_D)))
-        dates_recycle_list = self.dates_recycle_list
-        ppmt_M3_2_D,ipmt_M3_2_D = ppmt_MM,ipmt_MM
-        
-        ppmt_D_2_R,ipmt_D_2_R,ppmt_D_2_L,ipmt_D_2_L = self.transit_Status(ppmt_M3_2_D,ipmt_M3_2_D,OoR,date_r_index,'D_2_RL','Overdue')  
-
-        #TODO: to check why sometimes several assets will be missing
-        # Recovery
-        self.principal_recovery_recycle[dates_recycle_list[date_r_index+3]] = sum(ppmt_D_2_R[dates_recycle_list[date_r_index:]].sum())
-        self.interest_recovery_recycle[dates_recycle_list[date_r_index+3]] = sum(ipmt_D_2_R[dates_recycle_list[date_r_index:]].sum())  
-        
-        # Loss
-        for overdue_date in dates_recycle_list[date_r_index:]:
-            self.principal_loss_currentTerm_helper[overdue_date] += ppmt_D_2_L[overdue_date].sum()
-            self.interest_loss_currentTerm_helper[overdue_date] += ipmt_D_2_L[overdue_date].sum()
-        self.principal_loss_currentTerm[dates_recycle_list[date_r_index+3]] = sum(self.principal_loss_currentTerm_helper[overdue_date] for overdue_date in dates_recycle_list[0:date_r_index+3])+self.principal_loss_currentTerm_helper[dates_recycle_list[date_r_index+3]]
-        self.interest_loss_currentTerm[dates_recycle_list[date_r_index+3]] = sum(self.interest_loss_currentTerm_helper[overdue_date] for overdue_date in dates_recycle_list[0:date_r_index+3])+self.interest_loss_currentTerm_helper[dates_recycle_list[date_r_index+3]]
-        self.principal_loss_allTerm[dates_recycle_list[date_r_index+3]] = self.principal_loss_allTerm[dates_recycle_list[date_r_index+2]] + sum(ppmt_D_2_L[dates_recycle_list[date_r_index:]].sum())
-        self.interest_loss_allTerm[dates_recycle_list[date_r_index+3]] = self.interest_loss_allTerm[dates_recycle_list[date_r_index+2]] + sum(ipmt_D_2_L[dates_recycle_list[date_r_index:]].sum())          
+        if date_r_index >= len(self.dates_recycle_list)-3:pass
+        else:
+            dates_recycle_list = self.dates_recycle_list
+            ppmt_M3_2_D,ipmt_M3_2_D = ppmt_MM,ipmt_MM
+            
+            ppmt_D_2_R,ipmt_D_2_R,ppmt_D_2_L,ipmt_D_2_L = self.transit_Status(ppmt_M3_2_D,ipmt_M3_2_D,OoR,date_r_index,'D_2_RL','Overdue')  
+    
+            # Recovery
+            self.principal_recovery_recycle[dates_recycle_list[date_r_index+3]] = sum(ppmt_D_2_R[dates_recycle_list[date_r_index:]].sum())
+            self.interest_recovery_recycle[dates_recycle_list[date_r_index+3]] = sum(ipmt_D_2_R[dates_recycle_list[date_r_index:]].sum())  
+            
+            # Loss
+            for overdue_date in dates_recycle_list[date_r_index:]:
+                self.principal_loss_currentTerm_helper[overdue_date] += ppmt_D_2_L[overdue_date].sum()
+                self.interest_loss_currentTerm_helper[overdue_date] += ipmt_D_2_L[overdue_date].sum()
+            self.principal_loss_currentTerm[dates_recycle_list[date_r_index+3]] = sum(self.principal_loss_currentTerm_helper[overdue_date] for overdue_date in dates_recycle_list[0:date_r_index+3])+self.principal_loss_currentTerm_helper[dates_recycle_list[date_r_index+3]]
+            self.interest_loss_currentTerm[dates_recycle_list[date_r_index+3]] = sum(self.interest_loss_currentTerm_helper[overdue_date] for overdue_date in dates_recycle_list[0:date_r_index+3])+self.interest_loss_currentTerm_helper[dates_recycle_list[date_r_index+3]]
+            self.principal_loss_allTerm[dates_recycle_list[date_r_index+3]] = self.principal_loss_allTerm[dates_recycle_list[date_r_index+2]] + sum(ppmt_D_2_L[dates_recycle_list[date_r_index:]].sum())
+            self.interest_loss_allTerm[dates_recycle_list[date_r_index+3]] = self.interest_loss_allTerm[dates_recycle_list[date_r_index+2]] + sum(ipmt_D_2_L[dates_recycle_list[date_r_index:]].sum())          
