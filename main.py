@@ -11,11 +11,9 @@ from dateutil.relativedelta import relativedelta
 import pandas as pd
 import numpy as np
 import datetime
-from constant import path_root,wb_name,Header_Rename,Header_Rename_REVERSE,asset_pool_name_list,ProjectName,Flag_Revolving
-from Params import dt_param,date_revolving_pools_cut,scenarios,\
-                   Targets,RS_Group_d,Distribution_By_Category,Distribution_By_Bins,\
-                   simulation_times,BackMonth,dates_recycle,asset_status_calcDate_BackMonth,calcDate,all_asset_status
-from abs_util.util_general import save_to_excel,get_logger
+from constant import *
+from Params import *
+from abs_util.util_general import *
 from Deal import Deal
 from RevolvingDeal import RevolvingDeal
 from Statistics import Statistics
@@ -32,12 +30,12 @@ def main():
     if os.path.isfile(wb_name):
       os.remove(wb_name)
 
-    RD = RevolvingDeal(Flag_Revolving,ProjectName,dt_param['dt_pool_cut'],date_revolving_pools_cut,dt_param['dt_effective'],scenarios)
+    RD = RevolvingDeal(ProjectName,dt_param['dt_pool_cut'],dt_param['dt_trust_effective'],Flag_RevolvingDeal,date_revolving_pools_cut,scenarios)
 #    
     RD.get_AssetPool(asset_pool_name_list) #asset_pool_name_list
     #RD.get_AssetPool(['ABS9_R4_selected'])
 
-#    RD.select_by_ContractNO('exclude',['ABS9_R4_selected'])   #ABS10_R1_selected
+    #RD.select_by_ContractNO('exclude',['ABS9_R4_selected'])   #ABS10_R1_selected
     #RD.select_by_ContractNO('focus',['all_except_abs9r4'])  
 
 #    RD.add_Columns([
@@ -64,9 +62,7 @@ def main():
             logger.info('No Assets to calc for {0}'.format(asset_status))
             continue
         else:
-            #asset_status = all_asset_status[1]
             logger.info('Collecting CF for asset_status {0}'.format(asset_status))   
-            #RD.asset_pool[(RD.asset_pool['贷款状态'] == asset_status)].to_csv(path_root  + '/../CheckTheseProjects/' +ProjectName+'/Overdue_1_30.csv',index=False)
             RD.get_oAPCF(asset_status,
                          asset_status_calcDate_BackMonth[asset_status]['BackMonth'],
                          asset_status_calcDate_BackMonth[asset_status]['calcDate']
@@ -85,8 +81,6 @@ def main():
                     save_to_excel(RD.APCF_adjusted_save[asset_status][scenario_id],'cf_O_adjusted_'+scenario_id,wb_name)
                     
                     RD.update_oAP_Acc(scenario_id,asset_status)
-                
-                
     #            logger.info('CDR_calc_O...for {0}...'.format(scenario_id))
     #            RD.CDR_calc_O(scenario_id,asset_status)
     #            save_to_excel(pd.DataFrame.from_dict(RD.CDR_O),'RnR&CDR',wb_name)
@@ -94,7 +88,7 @@ def main():
     for scenario_id in scenarios.keys():
         
         RD.oAP_Acc_DeSimulation(scenario_id,simulation_times)
-        save_to_excel(RD.df_AP_PAcc_DeSimu,'De-Sim_'+scenario_id,wb_name)
+        save_to_excel(RD.df_AP_PAcc_actual_O_DeSimu,'De-Sim_'+scenario_id,wb_name)
         
         logger.info('CDR_calc_O...for {0}...'.format(scenario_id))
         RD.CDR_calc_O(scenario_id)
