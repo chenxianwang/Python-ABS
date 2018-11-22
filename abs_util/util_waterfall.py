@@ -56,72 +56,62 @@ def run_Accounts(princ_original,princ_outstanding,princ_reserve,#princ_loss,
 
     #preissue_FAcc
     for date_pay_index,date_pay in enumerate(dates_pay):
-#        if (principal_actual[dates_recycle[date_pay_index]] == 0) and (date_pay_index>0):
-#            #logger.info('date_pay is {0}'.format(date_pay))
-#            break
-#        else:
-            #logger.info('calc bais for {0} is {1}'.format(date_pay,sum([principal_actual[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) - RevolvingPool_PurchaseAmount[date_pay_index+1]))
-            #logger.info('calc tax bais for {0} is {1}'.format(date_pay,interest_actual[dates_recycle[date_pay_index]]))
-            pay_for_fee = tax_Acc.pay(date_pay,interest_actual[dates_recycle[date_pay_index]])#,0][B_PAcc.iBalance(date_pay) == 0])
-            #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
-            #logger.info('principal_actual is {0}'.format(sum([principal_actual[k] for k in principal_actual.keys()])))
+        
+        #logger.info('calc bais for {0} is {1}'.format(date_pay,sum([principal_actual[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) - RevolvingPool_PurchaseAmount[date_pay_index+1]))
+        #logger.info('calc tax bais for {0} is {1}'.format(date_pay,interest_actual[dates_recycle[date_pay_index]]))
+        pay_for_fee = tax_Acc.pay(date_pay,interest_actual[dates_recycle[date_pay_index]])#,0][B_PAcc.iBalance(date_pay) == 0])
+        #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
+        #logger.info('principal_actual is {0}'.format(sum([principal_actual[k] for k in principal_actual.keys()])))
 
-#            calc_basis_for_fee = sum([principal_original[k] for k in principal_actual.keys() if k > date_pay + relativedelta(months= -1)]) 
-#            if RevolvingDeal is True:
-#                purchase_RevolvingPool = deepcopy(RevolvingPool_PurchaseAmount[scenario_id])
-#                if date_pay_index+1 <= max(purchase_RevolvingPool.keys()):
-#                    calc_basis_for_fee -= sum([purchase_RevolvingPool[k] for k in range(date_pay_index+1,max(purchase_RevolvingPool.keys())+1)])
-#                else: pass
-
-            ########################################################################################
-            if date_pay_index==0 :
-                calc_basis_for_fee_trustee = amount_total_issuance
-            elif date_pay_index <= nbr_revolving_pools:
-                if RevolvingDeal is True:
-                    purchase_RevolvingPool = deepcopy(RevolvingPool_PurchaseAmount[scenario_id])
-                    calc_basis_for_fee_trustee = principal_outstanding[dates_recycle[date_pay_index-1]]+purchase_RevolvingPool[date_pay_index]
-                else:calc_basis_for_fee_trustee = principal_outstanding[dates_recycle[date_pay_index-1]]
-            else:
-                calc_basis_for_fee_trustee = principal_outstanding[dates_recycle[date_pay_index-1]]
-            #logger.info('')
-            pay_for_fee += trustee_FAcc.pay(date_pay,calc_basis_for_fee_trustee)
-            #######################################################################################
-            calc_basis_for_fee_custodian = principal_outstanding[dates_recycle[date_pay_index]]
-            pay_for_fee += custodian_FAcc.pay(date_pay,calc_basis_for_fee_custodian)
-            #######################################################################################
-            if date_pay_index==0 :
-                calc_basis_for_fee_servicer = amount_total_issuance
-            else:
-                calc_basis_for_fee_servicer = principal_outstanding[dates_recycle[date_pay_index-1]]            
-            pay_for_fee += servicer_FAcc.pay(date_pay,calc_basis_for_fee_servicer)
-            #######################################################################################
-            #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
-            pay_for_fee += A_IAcc.pay(date_pay,A_PAcc.iBalance(date_pay))
-            pay_for_fee += B_IAcc.pay(date_pay,B_PAcc.iBalance(date_pay))
-            pay_for_fee += C_IAcc.pay(date_pay,C_PAcc.iBalance(date_pay))
-            
-            #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
-            #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,interest_actual[dates_recycle[date_pay_index]]))
-            
-            interest_transfer_to_prin = interest_to_pay[dates_recycle[date_pay_index]] - pay_for_fee
-            #logger.info('interest_transfer_to_prin on {0} is {1}'.format(date_pay,interest_transfer_to_prin))
-            if (A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay) + C_PAcc.iBalance(date_pay)>0) and (interest_transfer_to_prin < -0.00001) :
-                logger.info('interest_transfer_to_prin on {0} is less than 0: {1}'.format(date_pay,interest_transfer_to_prin))
-            
-            principal_to_pay[dates_recycle[date_pay_index]] += interest_transfer_to_prin
-            #logger.info('principal_to_pay[dates_recycle[date_pay_index]] on {0} is {1}'.format(date_pay,principal_to_pay[dates_recycle[date_pay_index]]))
-            available_for_prin = deepcopy(principal_to_pay[dates_recycle[date_pay_index]])
-            reserved = deepcopy(principal_reserve[dates_recycle[date_pay_index]])
-            
-            available_for_prin,reserved = A_PAcc.pay_then_ToNext(date_pay,available_for_prin,reserved)
-            available_for_prin,reserved = B_PAcc.pay_then_ToNext(date_pay,available_for_prin,reserved)
-            available_for_prin,reserved = C_PAcc.pay_then_ToNext(date_pay,available_for_prin,reserved)
-            available_for_prin,reserved = EE_Acc.pay_then_ToNext(date_pay,available_for_prin,reserved)
-            #logger.info('Loop Done for {0}'.format(date_pay))    
-            if reserved < principal_reserve[dates_recycle[date_pay_index]]:
-                #logger.info('reserveAccount_used for {0},the amount used is {1}'.format(date_pay,principal_reserve[dates_recycle[date_pay_index]] - reserved)) 
-                reserveAccount_used[date_pay] = [principal_reserve[dates_recycle[date_pay_index]] - reserved]
-                principal_reserve[dates_recycle[date_pay_index]] = reserved
+        ########################################################################################
+        if date_pay_index==0 :
+            calc_basis_for_fee_trustee = amount_total_issuance
+        elif date_pay_index <= nbr_revolving_pools:
+            if RevolvingDeal is True:
+                purchase_RevolvingPool = deepcopy(RevolvingPool_PurchaseAmount[scenario_id])
+                calc_basis_for_fee_trustee = principal_outstanding[dates_recycle[date_pay_index-1]]+purchase_RevolvingPool[date_pay_index]
+            else:calc_basis_for_fee_trustee = principal_outstanding[dates_recycle[date_pay_index-1]]
+        else:
+            calc_basis_for_fee_trustee = principal_outstanding[dates_recycle[date_pay_index-1]]
+        #logger.info('')
+        pay_for_fee += trustee_FAcc.pay(date_pay,calc_basis_for_fee_trustee)
+        #######################################################################################
+        calc_basis_for_fee_custodian = principal_outstanding[dates_recycle[date_pay_index]]
+        pay_for_fee += custodian_FAcc.pay(date_pay,calc_basis_for_fee_custodian)
+        #######################################################################################
+        if date_pay_index==0 :
+            calc_basis_for_fee_servicer = amount_total_issuance
+        else:
+            calc_basis_for_fee_servicer = principal_outstanding[dates_recycle[date_pay_index-1]]            
+        pay_for_fee += servicer_FAcc.pay(date_pay,calc_basis_for_fee_servicer)
+        #######################################################################################
+        #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
+        pay_for_fee += A_IAcc.pay(date_pay,A_PAcc.iBalance(date_pay))
+        pay_for_fee += B_IAcc.pay(date_pay,B_PAcc.iBalance(date_pay))
+        pay_for_fee += C_IAcc.pay(date_pay,C_PAcc.iBalance(date_pay))
+        
+        #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,pay_for_fee))
+        #logger.info('pay_for_fee for {0} is {1}'.format(date_pay,interest_actual[dates_recycle[date_pay_index]]))
+        
+        interest_transfer_to_prin = interest_to_pay[dates_recycle[date_pay_index]] - pay_for_fee
+        #logger.info('interest_transfer_to_prin on {0} is {1}'.format(date_pay,interest_transfer_to_prin))
+        if (A_PAcc.iBalance(date_pay) + B_PAcc.iBalance(date_pay) + C_PAcc.iBalance(date_pay)>0) and (interest_transfer_to_prin < -0.00001) :
+            logger.info('interest_transfer_to_prin on {0} is less than 0: {1}'.format(date_pay,interest_transfer_to_prin))
+        
+        principal_to_pay[dates_recycle[date_pay_index]] += interest_transfer_to_prin
+        #logger.info('principal_to_pay[dates_recycle[date_pay_index]] on {0} is {1}'.format(date_pay,principal_to_pay[dates_recycle[date_pay_index]]))
+        available_for_prin = deepcopy(principal_to_pay[dates_recycle[date_pay_index]])
+        reserved = deepcopy(principal_reserve[dates_recycle[date_pay_index]])
+        
+        available_for_prin,reserved = A_PAcc.pay_then_ToNext(date_pay,available_for_prin,reserved)
+        available_for_prin,reserved = B_PAcc.pay_then_ToNext(date_pay,available_for_prin,reserved)
+        available_for_prin,reserved = C_PAcc.pay_then_ToNext(date_pay,available_for_prin,reserved)
+        available_for_prin,reserved = EE_Acc.pay_then_ToNext(date_pay,available_for_prin,reserved)
+        #logger.info('Loop Done for {0}'.format(date_pay))    
+        if reserved < principal_reserve[dates_recycle[date_pay_index]]:
+            #logger.info('reserveAccount_used for {0},the amount used is {1}'.format(date_pay,principal_reserve[dates_recycle[date_pay_index]] - reserved)) 
+            reserveAccount_used[date_pay] = [principal_reserve[dates_recycle[date_pay_index]] - reserved]
+            principal_reserve[dates_recycle[date_pay_index]] = reserved
     
     AP_PAcc_actual_wf = pd.DataFrame(list(princ_actual.items()), columns=['date_recycle', 'principal_recycle_total'])
     AP_PAcc_pay_wf = pd.DataFrame(list(princ_pay.items()), columns=['date_recycle', 'principal_recycle_to_pay'])
@@ -205,7 +195,7 @@ def BasicInfo_calculator(waterfall,dt_param,tranches_ABC):
         if tranches_cf['amount_outstanding_' + _tranche_name + '_principal'].min() == 0:
             WA_term.append(sum(tranches_cf['amount_pay_' + _tranche_name + '_principal'] * tranches_cf['years_interest_calc_cumulative']) / sum(tranches_cf['amount_pay_' + _tranche_name + '_principal']))
             date_maturity_predict.append(tranches_cf.iloc[tranches_cf['amount_outstanding_' + _tranche_name + '_principal'].idxmin()]['date_pay'])
-            maturity_term.append((date_maturity_predict[_tranche_index] - dt_param['dt_effective']).days / days_in_a_year )
+            maturity_term.append((date_maturity_predict[_tranche_index] - dt_param['dt_trust_effective']).days / days_in_a_year )
         else:
             logger.info('tranche {0} Default. '.format(_tranche_name))
             WA_term.append('Default')
