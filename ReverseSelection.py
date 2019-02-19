@@ -53,6 +53,7 @@ class ReverseSelection():
         
         logger.info('Rows of GroupedBy is {0}'.format(len(Assets['Interest_Rate'])))
         Assets['No_Contract'] = range(1,len(Assets['Interest_Rate'])+1)
+        
         Assets['Interest_Rate_min'] = Assets['Interest_Rate']
         Assets['Interest_Rate_max'] = Assets['Interest_Rate']
         try:
@@ -60,6 +61,9 @@ class ReverseSelection():
             Assets['Credit_Score_max'] = Assets['Credit_Score']
         except(KeyError):
             pass
+        
+        if 'LoanRemainTerm' in self.group_d:
+            Assets['LoanRemainTerm_min'] = Assets['LoanRemainTerm']
         
         for target_d in self.targets.keys() :
             if 'Amount_Outstanding' not in target_d:
@@ -79,8 +83,8 @@ class ReverseSelection():
         try:Interest_Rate_max_Helper = Assets['Interest_Rate_maxHelper']
         except(KeyError):pass
         
-        if 'LoanTerm' in self.group_d:
-            LoanTermHelper = Assets['LoanTerm']
+        if 'LoanRemainTerm' in self.group_d:
+            LoanTermHelper = Assets['LoanRemainTerm_minHelper']
         
         P = range(len(Contracts))
         # Declare problem instance, maximization problem
@@ -106,8 +110,9 @@ class ReverseSelection():
             prob += sum(OutstandingPrincipal[p] * x[p] for p in P) <= self.targets['Amount_Outstanding_max']['object_value']
         if 'Amount_Outstanding_min' in self.targets.keys(): 
             prob += sum(OutstandingPrincipal[p] * x[p] for p in P) >= self.targets['Amount_Outstanding_min']['object_value']
-        if 'LoanTerm' in self.targets.keys(): 
-            prob += sum(LoanTermHelper[p] * x[p] for p in P) * self.targets['LoanTerm']['object_sign'] >= 0
+        
+        if 'LoanRemainTerm_min' in self.targets.keys(): 
+            prob += sum(LoanTermHelper[p] * x[p] for p in P) * self.targets['LoanRemainTerm_min']['object_sign'] >= 0
         
         logger.info('Start solving the problem instance')
         #prob.solve()

@@ -26,9 +26,9 @@ class Statistics():
         df = self.asset_pool
         
         logger.info('Statistics Dimension Setting.....')
-        df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
+        df['Amount_Contract'] = df['Amount_Contract_yuan']#/10000
         df['OutstandingPrincipal'] = df['Amount_Outstanding_yuan']
-        df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']/10000
+        df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']#/10000
         df['No_Contract_helper'] = df['No_Contract']
         
         df_unique_ID = df.groupby('ID')\
@@ -79,13 +79,15 @@ class Statistics():
                  }
         
         
-        b_s_4 = {
+        try:
+            b_s_4 = {
                 '借款人加权平均年龄':(df['Age_Project_Start']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum(),
                  '30-40岁借款人贷款余额占比（%）':df[(df['Age_Project_Start']>30) & (df['Age_Project_Start']<=40)]\
                                                   ['Amount_Outstanding'].sum() / df['Amount_Outstanding'].sum() * 100,                
                  
                  '借款人加权平均年收入（万元）':(df['Income']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum() / 10000 ,
                 }
+        except(KeyError):b_s_4 = {}
 #    
         df_b_s_list = []
         for b_s_dict in [b_s_1,b_s_2,b_s_3,b_s_4]:
@@ -105,9 +107,9 @@ class Statistics():
         
         logger.info('Statistics Dimension Setting.....')
         df['Credit'] = df['Amount_Contract_yuan']
-        df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
+        df['Amount_Contract'] = df['Amount_Contract_yuan']#/10000
         df['OutstandingPrincipal'] = df['Amount_Outstanding_yuan']
-        df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']/10000
+        df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']#/10000
         
         dimension_category_list = []
         max_province_profession = {}
@@ -162,9 +164,9 @@ class Statistics():
         df = self.asset_pool
                 
         logger.info('WA_Income2Debt_by_ID.....')
-        df['Amount_Contract'] = df['Amount_Contract_yuan']/10000
+        df['Amount_Contract'] = df['Amount_Contract_yuan']#/10000
         df['OutstandingPrincipal'] = df['Amount_Outstanding_yuan']
-        df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']/10000
+        df['Amount_Outstanding'] = df['Amount_Outstanding_yuan']#/10000
         
         df['weight'] = df['Amount_Outstanding'] / df.groupby('ID')['Amount_Outstanding'].transform('sum')
         df['wa_Term_Remain'] = df['Term_Remain'] * df['weight']

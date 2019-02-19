@@ -6,6 +6,7 @@ Created on Thu Jun 28 21:21:44 2018
 """
 
 from copy import deepcopy
+import numpy
 from constant import wb_name,path_project,Header_Rename,Header_Rename_REVERSE
 from Params import all_asset_status,dates_recycle,dt_param,Bonds,scenarios,amount_ReserveAcount
 import pandas as pd
@@ -75,10 +76,17 @@ class Deal():
             
             logger.info('Renaming header....')   
             AssetPool_this = AssetPool_this.rename(columns = Header_Rename)
-            AssetPool_this = AssetPool_this[list(Header_Rename_REVERSE.keys())] 
+            #AssetPool_this = AssetPool_this[list(Header_Rename_REVERSE.keys())] 
+            
+            #print(list(AssetPool_this.columns.values))
             
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
-        if 'ABSSYSTEM' in AssetPoolName[0]:self.asset_pool['#合同号'] = '#' + self.asset_pool['#合同号'].astype(str)                
+            #AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str)
+            #self.asset_pool['No_Contract'] = '#' + self.asset_pool['No_Contract'].astype(str) 
+       
+        if isinstance(self.asset_pool['No_Contract'][0],numpy.int64) == False:pass
+        else: self.asset_pool['No_Contract'] = '#' + self.asset_pool['No_Contract'].astype(str)
+            
         logger.info('Asset Pool Gotten.')
         
         
@@ -96,7 +104,7 @@ class Deal():
                 try:AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
                 except: AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
                 AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
-            #AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str)
+            
             #AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_new'})
             logger.info('Left Merging Columns...')
             self.asset_pool = self.asset_pool.merge(AssetPool,left_on= left,right_on = right,how='left')
@@ -111,17 +119,31 @@ class Deal():
         logger.info('Reading Assets_to_' + exclude_or_focus + '....')
         for these_asset in these_assets:
             path_assets = path_project + '/AssetPoolList/' + these_asset + '.csv'
+            logger.info('Reading ' + these_asset + '....')
             try:  assets_to_exclude_or_focus_this = pd.read_csv(path_assets,encoding = 'utf-8') 
             except: assets_to_exclude_or_focus_this = pd.read_csv(path_assets,encoding = 'gbk') 
-            assets_to_exclude_or_focus = assets_to_exclude_or_focus.append(assets_to_exclude_or_focus_this,ignore_index=True)
-        
+            
+            try:
+                print(isinstance(assets_to_exclude_or_focus_this['#合同号'][0],numpy.int64))            
+                if isinstance(assets_to_exclude_or_focus_this['#合同号'][0],numpy.int64) == False:pass
+                else: assets_to_exclude_or_focus_this['#合同号'] = '#' + assets_to_exclude_or_focus_this['#合同号'].astype(str) 
+                assets_to_exclude_or_focus = assets_to_exclude_or_focus.append(assets_to_exclude_or_focus_this[['#合同号']],ignore_index=True)
+                #print(assets_to_exclude_or_focus[:5])
+            except(KeyError):
+                print(isinstance(assets_to_exclude_or_focus_this['订单号'][0],numpy.int64))            
+                if isinstance(assets_to_exclude_or_focus_this['订单号'][0],numpy.int64) == False:pass
+                else: assets_to_exclude_or_focus_this['订单号'] = '#' + assets_to_exclude_or_focus_this['订单号'].astype(str) 
+                assets_to_exclude_or_focus = assets_to_exclude_or_focus.append(assets_to_exclude_or_focus_this[['订单号']],ignore_index=True)
+            
         logger.info(exclude_or_focus + 'ing ...') 
         if exclude_or_focus == 'exclude':
-            try:self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
-            except(KeyError):self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['No_Contract'])]
+            try:self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['订单号'])]
+            except(KeyError):self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
+            #finally:self.asset_pool = self.asset_pool[~self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['订单号'])]
         else:
-            try:self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
-            except(KeyError):self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['No_Contract'])]
+            try:self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['订单号'])]
+            except(KeyError):self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['#合同号'])]
+            #finally:self.asset_pool = self.asset_pool[self.asset_pool['No_Contract'].isin(assets_to_exclude_or_focus['订单号'])]
         logger.info(exclude_or_focus +' assets is done.')
         
         
