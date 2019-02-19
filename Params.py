@@ -12,7 +12,7 @@ from constant import ProjectName
 
 Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute)+str(datetime.datetime.now().second)
 
-simulation_times = 2
+simulation_times = 1
 
 days_in_a_year = 365
 amount_ReserveAcount = 1000000
@@ -35,7 +35,7 @@ elif ProjectName == 'ABS9_following':
     Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
     rate_discount = 0.2
-    dt_param = {'dt_pool_cut':datetime.date(2018,10,1),'dt_trust_effective':datetime.date(2018,10,1)}
+    dt_param = {'dt_pool_cut':datetime.date(2019,1,1),'dt_trust_effective':datetime.date(2019,1,1)}
     
 elif ProjectName == 'ABS10':
     amount_total_issuance = 3014292721.30
@@ -50,8 +50,8 @@ elif ProjectName == 'ABS10':
 elif ProjectName == 'ABS11':
     amount_total_issuance = 2501010000.7
     Bonds = {}
-    Bonds['A'] = {'ptg':0.6697,'amount':1675000000 , 'rate':0.05750}
-    Bonds['B'] = {'ptg':0.12,'amount':300000000,'rate':0.07190}
+    Bonds['A'] = {'ptg':0.6697,'amount':1675000000 , 'rate':0.045}
+    Bonds['B'] = {'ptg':0.12,'amount':300000000,'rate':0.055}
     Bonds['C'] = {'ptg':0.2103,'amount':526010000.7,'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
     rate_discount = 0.185
@@ -89,7 +89,7 @@ except(NameError):
 
 ###############################################################
 if ProjectName == 'ABS9_following':
-    nbr_revolving_pools = 3
+    nbr_revolving_pools = 0
     Redeem_or_Not = False
 else:
     nbr_revolving_pools = 6
@@ -143,30 +143,34 @@ MaxWAScore = 0.065
 MinWAScore = 0.04
 
 MinWARate = 0.18
-MaxWARate = 0.18*1.005
+MaxWARate = 0.18*1.002
 
-MaxWALoanTerm = 450
+MinWALoanRemainTerm = 310
+MaxWALoanRemainTerm = 350
 
-MaxIssueVolumn = 657413588.9*1.2*1.0001
-MinIssueVolumn = 657413588.9*1.2
+MaxIssueVolumn = 429093146.83#*1.2*1.0001
+MinIssueVolumn =  429093146#.83*1.2
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
 
 Targets_all = { 
-           'SCp':{'object':'SC Proportion LessThan','object_value_h':MaxSCProp,'object_sign':-1},
            'Credit_Score_max':{'object':'Weighted Average LessThan','object_value':MaxWAScore,'object_sign':-1},
            'Credit_Score_min':{'object':'Weighted Average GreaterThan','object_value':MinWAScore,'object_sign':1},
-           'LoanTerm':{'object':'Weighted Average LessThan','object_value':MaxWALoanTerm,'object_sign':-1},
-           'Interest_Rate_min':{'object':'Weighted Average GreaterThan','object_value':MinWARate,'object_sign':1},
+           
+           'LoanRemainTerm_max':{'object':'Weighted Average LessThan','object_value':MaxWALoanRemainTerm,'object_sign':-1},
+           'LoanRemainTerm_min':{'object':'Weighted Average GreaterThan','object_value':MinWALoanRemainTerm,'object_sign':1},
+           
            'Interest_Rate_max':{'object':'Weighted Average LessThan','object_value':MaxWARate,'object_sign':-1},
+           'Interest_Rate_min':{'object':'Weighted Average GreaterThan','object_value':MinWARate,'object_sign':1},
+           
            'Amount_Outstanding_max':{'object':'LessThan','object_value':MaxIssueVolumn},
            'Amount_Outstanding_min':{'object':'GreaterThan','object_value':MinIssueVolumn},
            }
 
 Targets_keys = ['Credit_Score_max','Credit_Score_min',
                 'Interest_Rate_min','Interest_Rate_max',
-                #'LoanTerm',#'',
+                #'LoanRemainTerm_min',#'',
                 'Amount_Outstanding_min','Amount_Outstanding_max',                
                ]
 
@@ -193,13 +197,13 @@ outstanding_principal_bins = [-0.001,2000,4000,6000,8000,10000,20000,1000000]
 credit_bins = [-0.001,2000,4000,6000,8000,10000,20000,1000000]
 
 duration_days_bins = [0,90,180,360,540,720,1080,3000]
-past_days_bins = [-0.01,90,180,360,540,720,1080,3000]
-future_days_bins = [-0.01,90,180,360,540,720,1080,3000]
+past_days_bins = [-0.01,30,60,90,180,360,720,1080,3000]
+future_days_bins = [-0.01,30,60,90,180,360,720,1080,3000]
 
 duration_months_bins = [0,5.999,9.999,12,18,24,31]
 
 overdue_times_bins = [-0.001,0,1,2,5,10,15,20,25,30]
-dpd_max_bins = [-0.01,0,5,10,15,20,25,30]
+dpd_max_bins = [-0.01,0,5,10,15,20,25,30,90,360]
 dpd_bins = [-0.01,0,30,60,90,120,150,180,360,1000]
 #total_fee_rate_bins = [-0.01,0,0.2,0.24,0.36,0.5,0.6]
 credit_score_bins = [-0.01,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,

@@ -45,15 +45,12 @@ class ServiceReport():
                     AssetPool_all_pre = pd.read_csv(AssetPoolPath_all_pre,encoding = 'utf-8') 
                 except:
                     AssetPool_all_pre = pd.read_csv(AssetPoolPath_all_pre,encoding = 'gbk') 
-                try:
-                    AssetPool_all_pre['订单号'] = '#' + AssetPool_all_pre['订单号'].astype(str)
-                except(KeyError):
-                    #AssetPool_all_pre['订单号'] = AssetPool_all_pre['#合同号']
-                    AssetPool_all_pre['#合同号'] = '#' + AssetPool_all_pre['#合同号'].astype(str)                    
-                
                 self.service_report_AllAssetList_pre = self.service_report_AllAssetList_pre.append(AssetPool_all_pre,ignore_index=True)
             self.service_report_AllAssetList_pre = self.service_report_AllAssetList_pre.rename(columns = Header_Rename) 
-            logger.info('SR.service_report_AllAssetList_pre[[Amount_Outstanding_yuan]].sum() is {0}'.format(self.service_report_AllAssetList_pre['Amount_Outstanding_yuan'].sum()))
+                            
+            #print(isinstance(AssetPool_all_pre['订单号'][0],np.int64))
+            if isinstance(self.service_report_AllAssetList_pre['No_Contract'][0],np.int64) == False:pass
+            else: self.service_report_AllAssetList_pre['No_Contract'] = '#' + self.service_report_AllAssetList_pre['No_Contract'].astype(str)  
             
         for Pool_index,Pool_name in enumerate(AllAssetList):
             logger.info('Getting AllAssetList part ' + str(Pool_index+1) + '...')
@@ -62,12 +59,12 @@ class ServiceReport():
                 AssetPool_all = pd.read_csv(AssetPoolPath_all,encoding = 'utf-8') 
             except:
                 AssetPool_all = pd.read_csv(AssetPoolPath_all,encoding = 'gbk') 
-            AssetPool_all['订单号'] = '#' + AssetPool_all['订单号'].astype(str)
             self.service_report_AllAssetList = self.service_report_AllAssetList.append(AssetPool_all,ignore_index=True)
         self.service_report_AllAssetList = self.service_report_AllAssetList.rename(columns = Header_Rename)
-        logger.info('SR.service_report_AllAssetList[[Amount_Outstanding_yuan]].sum() is {0}'.format(self.service_report_AllAssetList['Amount_Outstanding_yuan'].sum()))
-
-            
+                
+        if isinstance(self.service_report_AllAssetList['No_Contract'][0],np.int64) == False:pass
+        else: self.service_report_AllAssetList['No_Contract'] = '#' + self.service_report_AllAssetList['No_Contract'].astype(str)   
+                    
         if DefaultAssetList != '':
             logger.info('Getting DefaultAssetList...')
             AssetPoolPath_Default = path_root +'/../CheckTheseProjects/'+self.name+'/ServiceReportList/'+ FilePath + '/' + DefaultAssetList + '.csv'
@@ -84,8 +81,12 @@ class ServiceReport():
                 AssetPool_Waive = pd.read_csv(AssetPoolPath_Waive,encoding = 'utf-8') 
             except:
                 AssetPool_Waive = pd.read_csv(AssetPoolPath_Waive,encoding = 'gbk') 
-                #AssetPool_Waive['订单号'] = '#' + AssetPool_Waive['订单号'].astype(str)
+
+                if isinstance(AssetPool_Waive['订单号'][0],np.int64) == False:pass
+                else: AssetPool_Waive['订单号'] = '#' + AssetPool_Waive['订单号'].astype(str)   
+                
             self.service_report_WaivedAssetList = self.service_report_WaivedAssetList.append(AssetPool_Waive,ignore_index=True)
+            self.service_report_WaivedAssetList = self.service_report_WaivedAssetList.rename(columns = Header_Rename)
         
         if RedemptionAssetList != '':
             logger.info('Getting RedemptionAssetList...')
@@ -95,10 +96,13 @@ class ServiceReport():
                 AssetPool_redemp = pd.read_csv(AssetPoolPath_redemp,encoding = 'utf-8') 
             except:
                 AssetPool_redemp = pd.read_csv(AssetPoolPath_redemp,encoding = 'gbk') 
-            AssetPool_redemp['订单号'] = '#' + AssetPool_redemp['订单号'].astype(str)
+
+            if isinstance(AssetPool_redemp['订单号'][0],np.int64) == False:pass
+            else: AssetPool_redemp['订单号'] = '#' + AssetPool_redemp['订单号'].astype(str)  
+                
             self.service_report_RedemptionAssetList = self.service_report_RedemptionAssetList.append(AssetPool_redemp,ignore_index=True)
 
-            #self.service_report_RedemptionAssetList = self.service_report_RedemptionAssetList.rename(columns = sr_distribution_rename)
+            self.service_report_RedemptionAssetList = self.service_report_RedemptionAssetList.rename(columns = Header_Rename)
         
         
     def add_SeviceRate_From(self,df):
@@ -136,18 +140,21 @@ class ServiceReport():
     
     def check_OutstandingPrincipal(self):
         logger.info('check_OutstandingPrincipal......')
-        DetailList = self.service_report_AllAssetList#[(~self.service_report_AllAssetList['本金:账务处理'].isnull())& (self.service_report_AllAssetList['本金:账务处理'] != 0)]
-        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']]
-        DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']] = DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']].where(DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5：账务处理']]!=0,0)
-        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})
-        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['B1：正常回收']+DetailList['B2：提前还款']+DetailList['B3：拖欠回收']+DetailList['B4：违约回收']+DetailList['B5：账务处理']
+        DetailList = self.service_report_AllAssetList#[(self.service_report_AllAssetList['入池时间'] == '2018/12/01')]
+        
+#        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']]
+#        DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']] = DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']].where(DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']]!=0,0)
+#        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})        
+#        if '调整回收款'.isin(list(DetailList.columns.values)):pass
+#        else:DetailList['调整回收款'] = 0                
+#        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['B1：正常回收']+DetailList['B2：提前还款']+DetailList['B3：拖欠回收']+DetailList['B4：违约回收']+DetailList['B5:账务处理'] + DetailList['调整回收款']
 #        
-#        header_name_dict = {k:k.replace(":","：") for k in list(DetailList.columns.values) }    
-#        DetailList = DetailList.rename(columns = {k:v for k,v in header_name_dict.items()})    
-#        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]
-#        DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']] = DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']].where(DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]!=0,0)
-#        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})
-#        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['本金：正常回收']+DetailList['本金：提前还款']+DetailList['本金：拖欠回收']+DetailList['本金：违约回收']+DetailList['本金：账务处理'] + DetailList['调整回收款']
+        header_name_dict = {k:k.replace(":","：") for k in list(DetailList.columns.values) }    
+        DetailList = DetailList.rename(columns = {k:v for k,v in header_name_dict.items()})    
+        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]
+        DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']] = DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']].where(DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]!=0,0)
+        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})
+        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['本金：正常回收']+DetailList['本金：提前还款']+DetailList['本金：拖欠回收']+DetailList['本金：违约回收']+DetailList['本金：账务处理'] + DetailList['调整回收款']
 #        
 #        DetailList = self.service_report_RedemptionAssetList
 #        DetailList['No_Contract'] = '#' + DetailList['订单号'].astype(str)
@@ -156,8 +163,8 @@ class ServiceReport():
 #        DetailList = DetailList.rename(columns = {'赎回贷款债权的未偿本金余额':'Amount_Outstanding'})
 #        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['本金']
         
-        try:return DetailList,self.service_report_WaivedAssetList[['订单号','本金减免金额']]
-        except(KeyError):return DetailList,self.service_report_WaivedAssetList[['订单号','减免金额']]
+        try:return DetailList,self.service_report_WaivedAssetList[['No_Contract','本金减免金额']]
+        except(KeyError):return DetailList,self.service_report_WaivedAssetList[['No_Contract','减免金额']]
      
     def check_AgePoolCutDate(self):
         logger.info('check_AgePoolCutDate......')
@@ -224,6 +231,10 @@ class ServiceReport():
 #        self.service_report_AllAssetList = self.service_report_AllAssetList[(self.service_report_AllAssetList['贷款是否已结清'] == 'N') 
 #                                                  #&(self.service_report_AllAssetList['入池时间'] == '2018/8/1')
 #                                                  ]
+
+        #self.service_report_AllAssetList = self.service_report_AllAssetList.merge(self.service_report_AllAssetList_pre[['订单号','剩余期数']],left_on= 'No_Contract',right_on = '订单号',how='left')
+        #self.service_report_AllAssetList = self.service_report_AllAssetList[self.service_report_AllAssetList['剩余期数'] - self.service_report_AllAssetList['Term_Remain'] > 1]
+        
         
         cal_table_4_1(self.service_report_AllAssetList,wb_name_sr)
         #cal_table_4_2(self.service_report_DefaultAssetList,self.wb_save_results)
