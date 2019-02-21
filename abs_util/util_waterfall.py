@@ -20,11 +20,10 @@ from Accounts.TaxAccount import TaxAccount
 
 logger = get_logger(__name__)
 
-def run_Accounts(princ_original,princ_outstanding,princ_reserve,#princ_loss,
-                 princ_actual,princ_actual_o,princ_actual_r,
-                 princ_pay,princ_buy,
+def run_Accounts(princ_original,princ_actual,princ_pay,princ_buy,
                  int_original,int_actual,int_pay,int_buy,
-                 scenario_id,Bonds,RevolvingDeal,RevolvingPool_PurchaseAmount = None,
+                 princ_outstanding,princ_reserve,#princ_loss,
+                 scenario_id,RevolvingDeal,Liability_Acc,RevolvingPool_PurchaseAmount = None
                  ): # Initalizing BondsCashFlow
     
     logger.info('run_Accounts...')
@@ -34,25 +33,25 @@ def run_Accounts(princ_original,princ_outstanding,princ_reserve,#princ_loss,
     interest_actual = deepcopy(int_actual)
     interest_to_pay = deepcopy(int_pay)
     #TODO:When to use deepcopy
-    tranches_ABC = deepcopy(Bonds)
+    #tranches_ABC = deepcopy(Bonds)
     reserveAccount_used = {}
     
     #preissue_FAcc = FeesAccount('pre_issue',fees)
-    tax_Acc = TaxAccount('tax',fees)
-    trustee_FAcc = FeesAccount('trustee',fees)
-    custodian_FAcc = FeesAccount('custodian',fees)
-    servicer_FAcc = FeesAccount('servicer',fees)
-    pre_issue_FAcc = FeesAccount('pre_issue',fees)
-    pay_interest_service_FAcc = FeesAccount('pay_interest_service',fees)
+    tax_Acc = deepcopy(Liability_Acc['tax_Acc'])
+    trustee_FAcc = deepcopy(Liability_Acc['trustee_FAcc'])
+    custodian_FAcc = deepcopy(Liability_Acc['custodian_FAcc'])
+    servicer_FAcc = deepcopy(Liability_Acc['servicer_FAcc'])
+    #pre_issue_FAcc = Liability_Acc[]
+    #pay_interest_service_FAcc = Liability_Acc[]
     
-    A_IAcc = FeesAccount('A',fees)
-    B_IAcc = FeesAccount('B',fees)
-    C_IAcc = FeesAccount('C',fees)
+    A_IAcc = deepcopy(Liability_Acc['A_IAcc'])
+    B_IAcc = deepcopy(Liability_Acc['B_IAcc'])
+    C_IAcc = deepcopy(Liability_Acc['C_IAcc'])
 
-    A_PAcc = BondPrinAccount('A',tranches_ABC)
-    B_PAcc = BondPrinAccount('B',tranches_ABC)
-    C_PAcc = BondPrinAccount('C',tranches_ABC)
-    EE_Acc = BondPrinAccount('EE',tranches_ABC)
+    A_PAcc = deepcopy(Liability_Acc['A_PAcc'])
+    B_PAcc = deepcopy(Liability_Acc['B_PAcc'])
+    C_PAcc = deepcopy(Liability_Acc['C_PAcc'])
+    EE_Acc = deepcopy(Liability_Acc['EE_Acc'])
 
     #preissue_FAcc
     for date_pay_index,date_pay in enumerate(dates_pay):
@@ -113,16 +112,10 @@ def run_Accounts(princ_original,princ_outstanding,princ_reserve,#princ_loss,
             reserveAccount_used[date_pay] = [principal_reserve[dates_recycle[date_pay_index]] - reserved]
             principal_reserve[dates_recycle[date_pay_index]] = reserved
     
-    AP_PAcc_actual_wf = pd.DataFrame(list(princ_actual.items()), columns=['date_recycle', 'principal_recycle_total'])
-    AP_PAcc_pay_wf = pd.DataFrame(list(princ_pay.items()), columns=['date_recycle', 'principal_recycle_to_pay'])
-    AP_PAcc_buy_wf = pd.DataFrame(list(princ_buy.items()), columns=['date_recycle', 'principal_recycle_to_buy'])
-    AP_PAcc_reserve_wf = pd.DataFrame(list(principal_reserve.items()), columns=['date_recycle', 'principal_reserve_remain'])
-    #AP_PAcc_loss_wf = pd.DataFrame(list(princ_loss.items()), columns=['date_recycle', 'principal_recycle_loss'])
+
     
-    AP_IAcc_actual_wf = pd.DataFrame(list(int_actual.items()), columns=['date_recycle', 'interest_recycle_total'])
-    AP_IAcc_pay_wf = pd.DataFrame(list(int_pay.items()), columns=['date_recycle', 'interest_recycle_to_pay'])
-    AP_IAcc_buy_wf = pd.DataFrame(list(int_buy.items()), columns=['date_recycle', 'interest_recycle_to_buy'])
-    #AP_IAcc_loss_wf = pd.DataFrame(list(int_loss.items()), columns=['date_recycle', 'interest_recycle_loss'])
+    AP_PAcc_reserve_wf = pd.DataFrame(list(principal_reserve.items()), columns=['date_recycle', 'principal_reserve_remain'])
+    AP_PAcc_reserve_wf['date_pay'] = dates_pay
     
     A_Principal_wf = pd.DataFrame(list(A_PAcc.receive.items()), columns=['date_pay', 'amount_pay_A_principal'])
     B_Principal_wf = pd.DataFrame(list(B_PAcc.receive.items()), columns=['date_pay', 'amount_pay_B_principal'])
@@ -141,18 +134,7 @@ def run_Accounts(princ_original,princ_outstanding,princ_reserve,#princ_loss,
     B_Balance_wf = pd.DataFrame(list(B_PAcc.balance.items()), columns=['date_pay', 'amount_outstanding_B_principal'])
     C_Balance_wf = pd.DataFrame(list(C_PAcc.balance.items()), columns=['date_pay', 'amount_outstanding_C_principal'])
     EE_Balance_wf = pd.DataFrame(list(EE_Acc.balance.items()), columns=['date_pay', 'amount_outstanding_EE_principal'])
-    
-    AssetPool_wf = AP_PAcc_actual_wf\
-                    .merge(AP_PAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
-                    .merge(AP_PAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
-                    .merge(AP_IAcc_actual_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
-                    .merge(AP_IAcc_pay_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
-                    .merge(AP_IAcc_buy_wf,left_on='date_recycle',right_on='date_recycle',how='outer')\
-                    .merge(AP_PAcc_reserve_wf,left_on='date_recycle',right_on='date_recycle',how='outer')#\
-                    #.merge(AP_PAcc_loss_wf,left_on='date_recycle',right_on='date_recycle',how='outer')
                     
-    AssetPool_wf['date_pay'] = dates_pay
-    
     wf = A_Principal_wf\
               .merge(B_Principal_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(C_Principal_wf,left_on='date_pay',right_on='date_pay',how='outer')\
@@ -168,7 +150,7 @@ def run_Accounts(princ_original,princ_outstanding,princ_reserve,#princ_loss,
               .merge(B_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(C_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
               .merge(EE_Balance_wf,left_on='date_pay',right_on='date_pay',how='outer')\
-              .merge(AssetPool_wf,left_on='date_pay',right_on='date_pay',how='outer')\
+              .merge(AP_PAcc_reserve_wf,left_on='date_pay',right_on='date_pay',how='outer')#\
                     
     
     #logger.info('actual principal payment is {0}'.format(sum(wf[['amount_pay_A_principal','amount_pay_B_principal','amount_pay_C_principal']].sum())))
