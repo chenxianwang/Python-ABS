@@ -129,14 +129,14 @@ class APCF_adjuster():
             ppmt_M0,ipmt_M0,ppmt_M1,ipmt_M1 = self.transit_Status(ppmt_M0,ipmt_M0,OoR,date_r_index,'M0_2_M1','Overdue')
             
             if date_r_index > 2:
-                ppmt_M0 = ppmt_M0.append(_ppmt_M1_2_M0).append(_ppmt_M2_2_M0).append(_ppmt_M3_2_M0,ignore_index=True)
-                ipmt_M0 = ipmt_M0.append(_ipmt_M1_2_M0).append(_ipmt_M2_2_M0).append(_ipmt_M3_2_M0,ignore_index=True)
+                ppmt_M0 = ppmt_M0.append(_ppmt_M1_2_M0,sort=True).append(_ppmt_M2_2_M0,sort=True).append(_ppmt_M3_2_M0,ignore_index=True,sort=True)
+                ipmt_M0 = ipmt_M0.append(_ipmt_M1_2_M0,sort=True).append(_ipmt_M2_2_M0,sort=True).append(_ipmt_M3_2_M0,ignore_index=True,sort=True)
             elif date_r_index > 1:
-                ppmt_M0 = ppmt_M0.append(_ppmt_M1_2_M0).append(_ppmt_M2_2_M0,ignore_index=True)
-                ipmt_M0 = ipmt_M0.append(_ipmt_M1_2_M0).append(_ipmt_M2_2_M0,ignore_index=True)
+                ppmt_M0 = ppmt_M0.append(_ppmt_M1_2_M0,sort=True).append(_ppmt_M2_2_M0,ignore_index=True,sort=True)
+                ipmt_M0 = ipmt_M0.append(_ipmt_M1_2_M0,sort=True).append(_ipmt_M2_2_M0,ignore_index=True,sort=True)
             elif date_r_index > 0:
-                ppmt_M0 = ppmt_M0.append(_ppmt_M1_2_M0,ignore_index=True)
-                ipmt_M0 = ipmt_M0.append(_ipmt_M1_2_M0,ignore_index=True)
+                ppmt_M0 = ppmt_M0.append(_ppmt_M1_2_M0,ignore_index=True,sort=True)
+                ipmt_M0 = ipmt_M0.append(_ipmt_M1_2_M0,ignore_index=True,sort=True)
             else:pass
             
             #ER
@@ -245,8 +245,10 @@ class APCF_adjuster():
         
         ppmt_this,ipmt_this = ppmt_this.reset_index(drop=True),ipmt_this.reset_index(drop=True)
         
-        ppmt_this[FLAG + '_'+str(date_r_index)] = pd.DataFrame(deepcopy(list(bernoulli.rvs(size=len(ppmt_this),p= (1-transit_down)))),columns=['bernollio_col'])            
+        #ppmt_this[FLAG + '_'+str(date_r_index)] = pd.DataFrame(deepcopy(list(bernoulli.rvs(size=len(ppmt_this),p= (1-transit_down)))),columns=['bernollio_col'])            
         
+        ppmt_this[FLAG + '_'+str(date_r_index)] = deepcopy(list(bernoulli.rvs(size=len(ppmt_this),p= (1-transit_down))))           
+
         if FLAG == 'Overdue':# and transition != 'D_2_RL':   
             ppmt_this[FLAG + '_'+str(date_r_index)] = ppmt_this[FLAG + '_'+str(date_r_index)].where(ppmt_this[first_due_period] <= date_r_index,1)
         
@@ -282,11 +284,11 @@ class APCF_adjuster():
             else: 
                 if transition in ['M0_2_M1','M0_2_ERM0','M1_2_M0M2','M2_2_M0M3','M3_2_M0D','D_2_RL']: transit_down = 1
                 else: pass
-        elif self.asset_status == '正常贷款' :
-            if date_r_index > 0:pass
-            else: 
-                if transition == 'M0_2_M1':transit_down *= ((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
-                elif transition == 'M0_2_ERM0':transit_down = 1 - (1-transit_down)*((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
+        elif self.asset_status == '正常贷款' : pass
+#            if date_r_index > 0:pass
+#            else: 
+#                if transition == 'M0_2_M1':transit_down *= ((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
+#                elif transition == 'M0_2_ERM0':transit_down = 1 - (1-transit_down)*((get_next_eom(self.pool_cut_date,0)-self.pool_cut_date).days+1) / get_next_eom(self.pool_cut_date,0).day
         #logger.info('transit_down is {0} for dates_recycle_list[date_r_index] {1} for M0_2_M1 '.format(transit_down,self.dates_recycle_list[date_r_index]))
         
         return transit_down

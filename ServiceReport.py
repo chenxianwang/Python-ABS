@@ -142,19 +142,19 @@ class ServiceReport():
         logger.info('check_OutstandingPrincipal......')
         DetailList = self.service_report_AllAssetList#[(self.service_report_AllAssetList['入池时间'] == '2018/12/01')]
         
-#        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']]
-#        DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']] = DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']].where(DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']]!=0,0)
-#        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})        
-#        if '调整回收款'.isin(list(DetailList.columns.values)):pass
-#        else:DetailList['调整回收款'] = 0                
-#        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['B1：正常回收']+DetailList['B2：提前还款']+DetailList['B3：拖欠回收']+DetailList['B4：违约回收']+DetailList['B5:账务处理'] + DetailList['调整回收款']
+        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']]
+        DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']] = DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']].where(DetailList[['Amount_Outstanding_yuan','B1：正常回收','B2：提前还款','B3：拖欠回收','B4：违约回收','B5:账务处理']]!=0,0)
+        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})        
+        if '调整回收款' in list(DetailList.columns.values):pass
+        else:DetailList['调整回收款'] = 0                
+        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['B1：正常回收']+DetailList['B2：提前还款']+DetailList['B3：拖欠回收']+DetailList['B4：违约回收']+DetailList['B5:账务处理'] + DetailList['调整回收款']
 #        
-        header_name_dict = {k:k.replace(":","：") for k in list(DetailList.columns.values) }    
-        DetailList = DetailList.rename(columns = {k:v for k,v in header_name_dict.items()})    
-        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]
-        DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']] = DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']].where(DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]!=0,0)
-        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})
-        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['本金：正常回收']+DetailList['本金：提前还款']+DetailList['本金：拖欠回收']+DetailList['本金：违约回收']+DetailList['本金：账务处理'] + DetailList['调整回收款']
+#        header_name_dict = {k:k.replace(":","：") for k in list(DetailList.columns.values) }    
+#        DetailList = DetailList.rename(columns = {k:v for k,v in header_name_dict.items()})    
+#        DetailList = DetailList[['No_Contract','Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]
+#        DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']] = DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']].where(DetailList[['Amount_Outstanding_yuan','本金：正常回收','本金：提前还款','本金：拖欠回收','本金：违约回收','本金：账务处理','调整回收款']]!=0,0)
+#        DetailList = DetailList.rename(columns = {'Amount_Outstanding_yuan':'Amount_Outstanding'})
+#        DetailList['剩余本金_poolcutdate_calc'] = DetailList['Amount_Outstanding']+DetailList['本金：正常回收']+DetailList['本金：提前还款']+DetailList['本金：拖欠回收']+DetailList['本金：违约回收']+DetailList['本金：账务处理'] + DetailList['调整回收款']
 #        
 #        DetailList = self.service_report_RedemptionAssetList
 #        DetailList['No_Contract'] = '#' + DetailList['订单号'].astype(str)

@@ -5,7 +5,7 @@ Created on Thu May 24 17:02:56 2018
 @author: jonah.chen
 """
 import pandas as pd
-from constant import wb_name
+from constant import wb_name,CN_EN_dict,Output_Columns_Name_EN,Output_Columns_Name_CN
 from abs_util.util_general import save_to_excel,get_logger,stastics_group_by_d,df_bins_result
 import datetime
 from Params import Batch_ID
@@ -15,11 +15,16 @@ logger = get_logger(__name__)
 
 class Statistics():
     
-    def __init__(self,df):
+    def __init__(self,df,CN_EN):
 
         self.asset_pool = df
         self.max_maturity_date = datetime.date(3000,1,1)
         self.max_province_profession = {}
+        self.CN_EN = CN_EN
+        
+        if self.CN_EN == 'EN':
+            self.Output_Columns_Name = Output_Columns_Name_EN
+        else:self.Output_Columns_Name = Output_Columns_Name_CN
         
     def general_statistics_1(self):
         logger.info('calculating basic tables')
@@ -44,13 +49,13 @@ class Statistics():
         b_s_1 = {'贷款笔数':df['No_Contract'].count(),
                  '合同数':df_unique_NO['NO_Unique'].count(),
                '借款人数量':df_unique_ID['ID_Unique'].count(),
-               '合同初始金额总额（万元）':df['Amount_Contract'].sum(),
-               '未偿本金余额总额（万元）':df['Amount_Outstanding'].sum(),
-               '借款人平均未偿本金余额（万元）':df['Amount_Outstanding'].sum() / df_unique_ID['ID_Unique'].count(),
-               '单笔贷款最高本金余额（万元）':df['Amount_Outstanding'].max(),
-               '单笔贷款平均本金余额（万元）': df['Amount_Outstanding'].sum() / df['No_Contract'].count(),
-               '单笔贷款最高合同金额（万元）': df['Amount_Contract'].max(),                                      
-               '单笔贷款平均合同金额（万元）':df['Amount_Contract'].sum() / df['No_Contract'].count()
+               '合同初始金额总额（元）':df['Amount_Contract'].sum(),
+               '未偿本金余额总额（元）':df['Amount_Outstanding'].sum(),
+               '借款人平均未偿本金余额（元）':df['Amount_Outstanding'].sum() / df_unique_ID['ID_Unique'].count(),
+               '单笔贷款最高本金余额（元）':df['Amount_Outstanding'].max(),
+               '单笔贷款平均本金余额（元）': df['Amount_Outstanding'].sum() / df['No_Contract'].count(),
+               '单笔贷款最高合同金额（元）': df['Amount_Contract'].max(),                                      
+               '单笔贷款平均合同金额（元）':df['Amount_Contract'].sum() / df['No_Contract'].count()
                }
     
         b_s_2 = {'加权平均贷款合同期限（天）':(df['LoanTerm']*df['Amount_Outstanding']).sum()/df['Amount_Outstanding'].sum(),
@@ -89,9 +94,18 @@ class Statistics():
                 }
         except(KeyError):b_s_4 = {}
 #    
+            
         df_b_s_list = []
         for b_s_dict in [b_s_1,b_s_2,b_s_3,b_s_4]:
-            df_b_s = pd.DataFrame(list(b_s_dict.items()),columns=['项目','数值'])
+            
+            if self.CN_EN == 'EN':
+                b_s_dict_transformed = {}
+                for k in b_s_dict:
+                    b_s_dict_transformed[CN_EN_dict[k]] = b_s_dict[k]
+                
+                b_s_dict = b_s_dict_transformed
+            
+            df_b_s = pd.DataFrame(list(b_s_dict.items()),columns=self.Output_Columns_Name)
             df_b_s_list.append(df_b_s)
         save_to_excel(df_b_s_list,'statistics'+Batch_ID,wb_name)
 
@@ -154,7 +168,7 @@ class Statistics():
     
         df_b_s_list = []
         for b_s_dict in [b_s_5,b_s_6]:   
-            df_b_s = pd.DataFrame(list(b_s_dict.items()),columns=['项目','数值'])
+            df_b_s = pd.DataFrame(list(b_s_dict.items()),columns = self.Output_Columns_Name)
             df_b_s_list.append(df_b_s)
         save_to_excel(df_b_s_list,'statistics'+Batch_ID,wb_name)
         
@@ -174,9 +188,8 @@ class Statistics():
                        .agg({'Income':'mean','wa_Term_Remain':'sum','Amount_Outstanding':'sum'})\
                        .reset_index()
     
-        WA_Income2Debt_by_ID = (Income2Debt_by_ID['Income']/12*Income2Debt_by_ID['wa_Term_Remain']).sum() / (Income2Debt_by_ID['Amount_Outstanding']).sum() / 10000
-    
+        WA_Income2Debt_by_ID = (Income2Debt_by_ID['Income']/12*Income2Debt_by_ID['wa_Term_Remain']).sum() / (Income2Debt_by_ID['Amount_Outstanding']).sum()
         WA_Income2Debt = {'加权平均债务收入比':WA_Income2Debt_by_ID}
-        df_WA_Income2Debt = pd.DataFrame(list(WA_Income2Debt.items()),columns=['项目','数值'])
+        df_WA_Income2Debt = pd.DataFrame(list(WA_Income2Debt.items()),columns=self.Output_Columns_Name)
     
         save_to_excel(df_WA_Income2Debt,'statistics'+Batch_ID,wb_name)

@@ -12,7 +12,7 @@ from constant import ProjectName
 
 Batch_ID = str(datetime.datetime.now().hour) + str(datetime.datetime.now().minute)+str(datetime.datetime.now().second)
 
-simulation_times = 1
+simulation_times = 2
 
 days_in_a_year = 365
 amount_ReserveAcount = 1000000
@@ -27,15 +27,15 @@ if ProjectName == 'ABS9':
     rate_discount = 0.2
     dt_param = {'dt_pool_cut':datetime.date(2018,4,16),'dt_trust_effective':datetime.date(2018,7,24)}
 
-elif ProjectName == 'ABS9_following':
-    amount_total_issuance = 3015926877.69
+elif ProjectName == 'ABS13':
+    amount_total_issuance = 2500151269.50
     Bonds = {}
-    Bonds['A'] = {'ptg':0.6714,'amount':2025000000, 'rate':0.05750}
-    Bonds['B'] = {'ptg':0.1107,'amount':334000000,'rate':0.07190}
-    Bonds['C'] = {'ptg':0.2178,'amount':656926877.69,'rate':0.0}
+    Bonds['A'] = {'ptg':0.6714,'amount':2500151269.50*0.6714, 'rate':0.05750}
+    Bonds['B'] = {'ptg':0.1107,'amount':2500151269.50*0.1107,'rate':0.07190}
+    Bonds['C'] = {'ptg':0.2178,'amount':2500151269.50*(1-0.6714-0.1107),'rate':0.0}
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
-    rate_discount = 0.2
-    dt_param = {'dt_pool_cut':datetime.date(2019,1,1),'dt_trust_effective':datetime.date(2019,1,1)}
+    rate_discount = 0.207
+    dt_param = {'dt_pool_cut':datetime.date(2019,3,1),'dt_trust_effective':datetime.date(2019,5,31)}
     
 elif ProjectName == 'ABS10':
     amount_total_issuance = 3014292721.30
@@ -56,17 +56,7 @@ elif ProjectName == 'ABS11':
     Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
     rate_discount = 0.185
     dt_param = {'dt_pool_cut':datetime.date(2018,8,31),'dt_trust_effective':datetime.date(2018,12,7)}
-    
-elif ProjectName == 'ABS8':
-    amount_total_issuance = 3599052985.68
-    Bonds = {}
-    Bonds['A'] = {'ptg':0.7696,'amount':2770000000 , 'rate':0.05750}
-    Bonds['B'] = {'ptg':0.0822,'amount':296000000,'rate':0.07190}
-    Bonds['C'] = {'ptg':0.1481,'amount':533052985.68 ,'rate':0.0}
-    Bonds['EE'] = {'ptg':0,'amount':100000000000,'rate':0.0}
-    rate_discount = 0.185
-    dt_param = {'dt_pool_cut':datetime.date(2017,12,19),'dt_trust_effective':datetime.date(2018,3,23)}
-    
+
 else: 
     amount_total_issuance = 3599052985.68
     Bonds = {}
@@ -115,7 +105,7 @@ all_asset_status = ['正常贷款','拖欠1-30天贷款','拖欠31-60天贷款',
 fees = { 'tax':{'rate':0.032621359223},
         'pay_interest_service':{'rate':0.00005},
         'pre_issue':{'amount':245797.32215745+500000},
-        'trustee':{'dates_to_calc':[dt_param['dt_trust_effective']]+dates_recycle,'rate':0.0005},
+        'trustee':{'dates_to_calc':[dt_param['dt_trust_effective']]+dates_recycle,'rate':0.00042},
         'custodian':{'dates_to_calc':[dt_param['dt_trust_effective']]+dates_recycle,'rate':0.0000539},
         'servicer':{'dates_to_calc':[dt_param['dt_pool_cut']]+dates_recycle,'rate':0.001},
          'A':{'dates_to_calc':[dt_param['dt_trust_effective']]+dates_pay},
@@ -140,16 +130,16 @@ scenarios['best'] = {'M0_2_ERM0':0.98,'M0_2_M1':0.03,'M1_2_M0M2':0.5,'M2_2_M0M3'
 #payment_frequency = {'month':1,'quarter':3,'semi-annual':6,'annual':12}
 
 MaxWAScore = 0.065
-MinWAScore = 0.04
+MinWAScore = 0.03
 
 MinWARate = 0.18
-MaxWARate = 0.18*1.002
+MaxWARate = 0.18*1.0035
 
 MinWALoanRemainTerm = 310
 MaxWALoanRemainTerm = 350
 
-MaxIssueVolumn = 429093146.83#*1.2*1.0001
-MinIssueVolumn =  429093146#.83*1.2
+MaxIssueVolumn = 438593111.33
+MinIssueVolumn =  438593110
 
 MaxSCProp = 0.70
 MaxSDProp = 0.3 
@@ -196,9 +186,9 @@ age_bins = [17.9999,20,30,40,50,55,60]
 outstanding_principal_bins = [-0.001,2000,4000,6000,8000,10000,20000,1000000]
 credit_bins = [-0.001,2000,4000,6000,8000,10000,20000,1000000]
 
-duration_days_bins = [0,90,180,360,540,720,1080,3000]
-past_days_bins = [-0.01,30,60,90,180,360,720,1080,3000]
-future_days_bins = [-0.01,30,60,90,180,360,720,1080,3000]
+duration_days_bins = [0,90,180,200,250,300,360,540,720,725,730,735,740,745,750,1080,3000]
+past_days_bins = [-0.01,5,10,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,60,90,96,97,98,99,100,110,111,112,113,114,115,120,150,180,360,720,1080,3000]
+future_days_bins = [-0.01,30,60,90,180,360,380,600,620,621,622,623,624,700,720,1080,3000]
 
 duration_months_bins = [0,5.999,9.999,12,18,24,31]
 

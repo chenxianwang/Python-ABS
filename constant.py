@@ -10,8 +10,8 @@ import datetime
 
 path_root = os.path.dirname(os.path.realpath(__file__))
 #
-DATA_FROME_SYSTEM = True #True
-ProjectName = 'ABS11'#ABS9_following'
+DATA_FROME_SYSTEM = False #True
+ProjectName = 'ABS13'#ABS9_following'
 #asset_pool_name_list = ['ServiceDate_1','ServiceDate_2','ServiceDate_3']
 asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']
 
@@ -21,7 +21,7 @@ wb_name = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectName
 wb_name_sr = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectName+'_ServiceReport.xlsx'
 
 Header_Rename = {'#合同号':'No_Contract','合同号':'No_Contract','订单号':'No_Contract','合同编号':'No_Contract','TO_CHAR(T1.TEXT_CONTRACT_NUMBE':'No_Contract',
-                 'SKP_CLIENT':'ID','证件号码':'ID','账户号':'ID','#证件号码':'ID',
+                 'SKP_CLIENT':'ID',#'证件号码':'ID','账户号':'ID','#证件号码':'ID',
                  '职业':'Profession','借款人职业':'Profession','职业_信托':'Profession',
                  '年收入':'Income','年收入(万元)':'Income','借款人年收入':'Income',
                  '省份':'Province',#'G3:省份':'Province',
@@ -81,7 +81,40 @@ Header_Rename_Unique = {'#合同号':'No_Contract',
                  '性别':'Gender',
                  '家庭状况':'Marriagestate',
                  '历史逾期次数':'Overdue_Times',
+                 '贷款状态':'贷款状态'
                           }
 
 Header_Rename_REVERSE  = {v:k for k,v in Header_Rename_Unique.items()}
 #Header_Rename_REVERSE['Credit_Score_15'] = '信用评分'
+
+CN_EN_dict = {'贷款笔数':'Asset Count','合同数':'Unique Asset Count',
+               '借款人数量':'Borrower Count',
+               '合同初始金额总额（元）':'Amount Contract',
+               '未偿本金余额总额（元）':'Amount Outstanding',
+               '借款人平均未偿本金余额（元）':'Average Amount Outstanding by Borrower',
+               '单笔贷款最高本金余额（元）':'Max Amount Outstanding',
+               '单笔贷款平均本金余额（元）': 'Average Amount Outstanding by Asset',
+               '单笔贷款最高合同金额（元）': 'Max Amount_Contract',                                      
+               '单笔贷款平均合同金额（元）':'Average Amount Contract by Asset',
+               
+               '加权平均贷款合同期限（天）':'Weighted Average Loan Term',
+                 '加权平均贷款账龄（天）':'Weighted Average  LoanAge',
+                 '加权平均贷款剩余期限（天）':'Weighted Average Loan Remain Term',
+                 '单笔贷款最长剩余期限（天）':'Max Loan Remain Term',
+                 '单笔贷款最短剩余期限（天）':'Min LoanRemainTerm',
+                 '单笔贷款最长期限（天）':'Max LoanTerm',
+                 '单笔贷款最短期限（天）':'Min LoanTerm',
+                 
+                 '加权平均贷款年利率（%）':'Weighted Average Interest Rate',
+                 '单笔贷款最高年利率（%）':'Max Interest Rate',
+                 '单笔贷款最低年利率（%）':'Min Interest Rate',    
+                 '加权平均贷款月度内部收益率（%）':'Weighted Average IRR',
+                 '加权平均信用评分':'Weighted Average Credit Score',
+                 
+                '借款人加权平均年龄':'Weighted Average Age',
+                 '30-40岁借款人贷款余额占比（%）':'Proportion of Age 30-40',                                 
+                 '借款人加权平均年收入（万元）':'Weighted Average Income'
+                }
+
+Output_Columns_Name_EN = ['Item','Value']
+Output_Columns_Name_CN = ['项目','数值']

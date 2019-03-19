@@ -76,13 +76,10 @@ class Deal():
             
             logger.info('Renaming header....')   
             AssetPool_this = AssetPool_this.rename(columns = Header_Rename)
-            #AssetPool_this = AssetPool_this[list(Header_Rename_REVERSE.keys())] 
-            
+            AssetPool_this = AssetPool_this[list(Header_Rename_REVERSE.keys())] 
             #print(list(AssetPool_this.columns.values))
             
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
-            #AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str)
-            #self.asset_pool['No_Contract'] = '#' + self.asset_pool['No_Contract'].astype(str) 
        
         if isinstance(self.asset_pool['No_Contract'][0],numpy.int64) == False:pass
         else: self.asset_pool['No_Contract'] = '#' + self.asset_pool['No_Contract'].astype(str)
@@ -104,6 +101,11 @@ class Deal():
                 try:AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'utf-8') 
                 except: AssetPool_this = pd.read_csv(AssetPoolPath_this,encoding = 'gbk') 
                 AssetPool = AssetPool.append(AssetPool_this,ignore_index=True)
+                
+            try:
+                if isinstance(AssetPool['#合同号'][0],numpy.int64) == False:pass
+                else: AssetPool['#合同号'] = '#' + AssetPool['#合同号'].astype(str) 
+            except(KeyError):pass
             
             #AssetPool = AssetPool.rename(columns = {'信用评分':'信用评分_new'})
             logger.info('Left Merging Columns...')
@@ -124,13 +126,13 @@ class Deal():
             except: assets_to_exclude_or_focus_this = pd.read_csv(path_assets,encoding = 'gbk') 
             
             try:
-                print(isinstance(assets_to_exclude_or_focus_this['#合同号'][0],numpy.int64))            
+                #print(isinstance(assets_to_exclude_or_focus_this['#合同号'][0],numpy.int64))            
                 if isinstance(assets_to_exclude_or_focus_this['#合同号'][0],numpy.int64) == False:pass
                 else: assets_to_exclude_or_focus_this['#合同号'] = '#' + assets_to_exclude_or_focus_this['#合同号'].astype(str) 
                 assets_to_exclude_or_focus = assets_to_exclude_or_focus.append(assets_to_exclude_or_focus_this[['#合同号']],ignore_index=True)
                 #print(assets_to_exclude_or_focus[:5])
             except(KeyError):
-                print(isinstance(assets_to_exclude_or_focus_this['订单号'][0],numpy.int64))            
+                #print(isinstance(assets_to_exclude_or_focus_this['订单号'][0],numpy.int64))            
                 if isinstance(assets_to_exclude_or_focus_this['订单号'][0],numpy.int64) == False:pass
                 else: assets_to_exclude_or_focus_this['订单号'] = '#' + assets_to_exclude_or_focus_this['订单号'].astype(str) 
                 assets_to_exclude_or_focus = assets_to_exclude_or_focus.append(assets_to_exclude_or_focus_this[['订单号']],ignore_index=True)
@@ -173,9 +175,9 @@ class Deal():
         
         return RS_results
 
-    def run_Stat(self,Distribution_By_Category,Distribution_By_Bins):
+    def run_Stat(self,Distribution_By_Category,Distribution_By_Bins,CN_EN):
         
-        S = Statistics(self.asset_pool)
+        S = Statistics(self.asset_pool,CN_EN)
         S.general_statistics_1()
         S.loop_Ds_ret_province_profession(Distribution_By_Category,Distribution_By_Bins)
         S.cal_income2debt_by_ID()
