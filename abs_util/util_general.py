@@ -124,8 +124,8 @@ def stastics_group_by_d(df,d_cut,d):
                .agg({'Amount_Contract':'sum',
                      'Amount_Outstanding':'sum','No_Contract':'count'})\
                .reset_index()\
-               .rename(columns = {'Amount_Contract':'合同本金（万元）',
-                                  'Amount_Outstanding':'本金余额（万元）',
+               .rename(columns = {'Amount_Contract':'合同本金（元）',
+                                  'Amount_Outstanding':'本金余额（元）',
                                   'No_Contract':'贷款笔数'                                                      
                                   }
                        )
@@ -134,18 +134,18 @@ def stastics_group_by_d(df,d_cut,d):
   
 def percentage_cal(df,d):
     
-    df[['合同本金（万元）','本金余额（万元）']] = df[['合同本金（万元）','本金余额（万元）']].where(df['贷款笔数']>0,0)
+    df[['合同本金（元）','本金余额（元）']] = df[['合同本金（元）','本金余额（元）']].where(df['贷款笔数']>0,0)
     
-    df['合同本金占比'] = df['合同本金（万元）'] / sum(df['合同本金（万元）'])
-    df['本金余额占比'] = df['本金余额（万元）'] / sum(df['本金余额（万元）'])
+    df['合同本金占比'] = df['合同本金（元）'] / sum(df['合同本金（元）'])
+    df['本金余额占比'] = df['本金余额（元）'] / sum(df['本金余额（元）'])
     df['贷款笔数占比'] = df['贷款笔数'] / sum(df['贷款笔数'])
     
     df.loc['总计']= df.sum()
     df.iloc[-1,df.columns.get_loc(d)] = '总计'
-    df['平均每笔余额（元）'] = 10000 * df['本金余额（万元）'] / df['贷款笔数']
+    df['平均每笔余额（元）'] = 10000 * df['本金余额（元）'] / df['贷款笔数']
     
     df[['合同本金占比','本金余额占比','贷款笔数占比']] = percentage_format(df[['合同本金占比','本金余额占比','贷款笔数占比']])
-    df[['合同本金（万元）','本金余额（万元）','平均每笔余额（元）']] = decimal_format(df[['合同本金（万元）','本金余额（万元）','平均每笔余额（元）']])
+    df[['合同本金（元）','本金余额（元）','平均每笔余额（元）']] = decimal_format(df[['合同本金（元）','本金余额（元）','平均每笔余额（元）']])
     
     return df
 
@@ -176,12 +176,12 @@ def Condition_Satisfied_or_Not(Assets,target_d,Targets):
                 print(target_d + ' Condition NOT Completed. ' + target_d + ' update:',value_d)
                 print('Target is...',Targets[target_d]['object'],Targets[target_d]['object_value'])
                 
-        else: print('OutstandingPrincipal Condition Completed. OutstandingPrincipal update:',sum(Assets['Amount_Outstanding']))
-#            if (sum(Assets['Amount_Outstanding']) <= Targets['Amount_Outstanding_max']['object_value']) & (sum(Assets['Amount_Outstanding']) >= Targets['Amount_Outstanding_min']['object_value']):
-#                print('OutstandingPrincipal Condition Completed. OutstandingPrincipal update:',sum(Assets['Amount_Outstanding']))
-#                print('Target is...',Targets['Amount_Outstanding_max']['object'],Targets['Amount_Outstanding_max']['object_value'], ' and ', Targets['Amount_Outstanding_min']['object'],Targets['Amount_Outstanding_min']['object_value'] )
-#            else:            
-#                print('!!! OutstandingPrincipal Condition NOT Completed !!! OutstandingPrincipal update:',sum(Assets['Amount_Outstanding']))
-#                print('Target is...',Targets['Amount_Outstanding_max']['object'],Targets['Amount_Outstanding_max']['object_value'], ' and ', Targets['Amount_Outstanding_min']['object'],Targets['Amount_Outstanding_min']['object_value'] )
+        else: #print('OutstandingPrincipal Condition Completed. OutstandingPrincipal update:',sum(Assets['Amount_Outstanding']))
+            if (sum(Assets['Amount_Outstanding']) <= Targets['Amount_Outstanding_max']['object_value']) & (sum(Assets['Amount_Outstanding']) >= Targets['Amount_Outstanding_min']['object_value']):
+                print('OutstandingPrincipal Condition Completed. OutstandingPrincipal update:',sum(Assets['Amount_Outstanding']))
+                print('Target is...',Targets['Amount_Outstanding_max']['object'],Targets['Amount_Outstanding_max']['object_value'], ' and ', Targets['Amount_Outstanding_min']['object'],Targets['Amount_Outstanding_min']['object_value'] )
+            else:            
+                print('!!! OutstandingPrincipal Condition NOT Completed !!! OutstandingPrincipal update:',sum(Assets['Amount_Outstanding']))
+                print('Target is...',Targets['Amount_Outstanding_max']['object'],Targets['Amount_Outstanding_max']['object_value'], ' and ', Targets['Amount_Outstanding_min']['object'],Targets['Amount_Outstanding_min']['object_value'] )
 
 
