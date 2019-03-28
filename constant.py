@@ -11,7 +11,7 @@ import datetime
 path_root = os.path.dirname(os.path.realpath(__file__))
 #
 DATA_FROME_SYSTEM = False #True
-ProjectName = 'ABS13'#ABS9_following'
+ProjectName = 'ABS11'#ABS9_following'
 #asset_pool_name_list = ['ServiceDate_1','ServiceDate_2','ServiceDate_3']
 asset_pool_name_list = ['OriginalPool_part1','OriginalPool_part2']
 
@@ -21,7 +21,7 @@ wb_name = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectName
 wb_name_sr = path_root  + '/../CheckTheseProjects/' + ProjectName + '/'+ProjectName+'_ServiceReport.xlsx'
 
 Header_Rename = {'#合同号':'No_Contract','合同号':'No_Contract','订单号':'No_Contract','合同编号':'No_Contract','TO_CHAR(T1.TEXT_CONTRACT_NUMBE':'No_Contract',
-                 'SKP_CLIENT':'ID',#'证件号码':'ID','账户号':'ID','#证件号码':'ID',
+                 'SKP_CLIENT':'ID','#证件号码':'#证件号码',#'证件号码':'ID','账户号':'ID',
                  '职业':'Profession','借款人职业':'Profession','职业_信托':'Profession',
                  '年收入':'Income','年收入(万元)':'Income','借款人年收入':'Income',
                  '省份':'Province',#'G3:省份':'Province',
@@ -44,9 +44,11 @@ Header_Rename = {'#合同号':'No_Contract','合同号':'No_Contract','订单号
                  '剩余期数':'Term_Remain','剩余期限':'Term_Remain',
                  '五级分类':'Type_Five_Category',
                  '最长逾期天数':'Days_Overdue_Max','历史最大逾期天数':'Days_Overdue_Max',
-                 #'IS_NEW_SERVICE_FEE_CALCULATION':'IS_NEW_SERVICE_FEE_CALCULATION',
+                 'IS_NEW_SERVICE_FEE_CALCULATION':'IS_NEW_SERVICE_FEE_CALCULATION',
                  '初始还款日':'Dt_First_Pay','性别':'Gender','家庭状况':'Marriagestate','历史逾期次数':'Overdue_Times','贷款发放时借款人年龄':'Age_Loan_Start',
-                 #'业务品种':'Type_Loans','G1:产品类型':'Type_Loans',#'贷款状态':'贷款状态',
+                 '担保情况':'担保情况','还款方式':'还款方式',
+                 '贷款类型':'Type_Loans',#'G1:产品类型':'Type_Loans',#'贷款状态':'贷款状态',
+                 '逾期本金金额':'逾期本金金额'
                           }
 
 sr_recycle_rename = {'E1:正常回收':'E1：正常回收','E2：提前还款':'E2：提前还款','E3:拖欠回收':'E3；拖欠回收','E4:违约回收':'E4：违约回收','E5:账务处理':'E5：账务处理',
@@ -54,13 +56,14 @@ sr_recycle_rename = {'E1:正常回收':'E1：正常回收','E2：提前还款':'
              }
 
 Header_Rename_Unique = {'#合同号':'No_Contract',
-                 'SKP_CLIENT':'ID',
+                 'SKP_CLIENT':'ID','#证件号码':'#证件号码',
                  '职业':'Profession',
                  '年收入':'Income',
                  '省份':'Province',
                  '购买商品':'Usage',
                  '起始日':'Dt_Start',              
                  '到期日':'Dt_Maturity',          
+                 '出生日期':'出生日期',
                  '合同本金':'Amount_Contract_yuan',
                  '截至封包日剩余本金':'Amount_Outstanding_yuan',
                  'INTEREST_RATE':'Interest_Rate',
@@ -75,13 +78,13 @@ Header_Rename_Unique = {'#合同号':'No_Contract',
                  '合同期限':'Term_Contract','剩余期数':'Term_Remain',
                  '五级分类':'Type_Five_Category',
                  '最长逾期天数':'Days_Overdue_Max',
-                 #'IS_NEW_SERVICE_FEE_CALCULATION':'IS_NEW_SERVICE_FEE_CALCULATION',
+                 'IS_NEW_SERVICE_FEE_CALCULATION':'IS_NEW_SERVICE_FEE_CALCULATION',
                  '初始还款日':'Dt_First_Pay',
                  '贷款发放时借款人年龄':'Age_Loan_Start',
                  '性别':'Gender',
                  '家庭状况':'Marriagestate',
-                 '历史逾期次数':'Overdue_Times',
-                 '贷款状态':'贷款状态'
+                 '历史逾期次数':'Overdue_Times','担保情况':'担保情况','还款方式':'还款方式',
+                 '贷款状态':'贷款状态','贷款类型':'Type_Loans', '逾期本金金额':'逾期本金金额'
                           }
 
 Header_Rename_REVERSE  = {v:k for k,v in Header_Rename_Unique.items()}

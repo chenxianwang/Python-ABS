@@ -76,7 +76,7 @@ class Deal():
             
             logger.info('Renaming header....')   
             AssetPool_this = AssetPool_this.rename(columns = Header_Rename)
-            AssetPool_this = AssetPool_this[list(Header_Rename_REVERSE.keys())] 
+            #AssetPool_this = AssetPool_this[list(Header_Rename_REVERSE.keys())] 
             #print(list(AssetPool_this.columns.values))
             
             self.asset_pool = self.asset_pool.append(AssetPool_this,ignore_index=True)
